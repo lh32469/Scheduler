@@ -1,8 +1,7 @@
 package org.gpc4j.web.api;
 
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.gpc4j.web.repository.BookingRepository;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,31 +13,48 @@ import java.time.OffsetDateTime;
 
 /**
  * Simple REST controller to receive class booking information.
- * <p>
+ *
  * Endpoint: POST /api/bookings
  * Content-Type: application/json
- * <p>
- * This implementation only receives and echoes the posted data with a status and
- * timestamp.
- * There is no persistence or validation by design to keep changes minimal.
  */
 @Slf4j
 @RestController
 @RequestMapping(path = "/api/bookings")
 public class BookingController {
 
+  private final BookingRepository repository;
+
+  public BookingController(BookingRepository repository) {
+    this.repository = repository;
+  }
+
   @PostMapping(
       consumes = MediaType.APPLICATION_JSON_VALUE,
       produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<BookingResponse> createBooking(
-      @RequestBody BookingRequest booking) {
-    log.info("Received booking: {}", booking);
-    BookingResponse response = new BookingResponse(
-        "received",
-        booking,
-        OffsetDateTime.now().toString()
-    );
-    return ResponseEntity.ok(response);
+      @RequestBody ClassOffering offering) {
+    String receivedAt = OffsetDateTime.now().toString();
+    log.info("Received booking (ClassOffering): {}", offering);
+
+    try {
+      String id = repository.save(offering);
+      BookingResponse response = new BookingResponse(
+          "stored",
+          offering,
+          receivedAt,
+          id
+      );
+      return ResponseEntity.ok(response);
+    } catch (Exception e) {
+      log.error("Failed to store booking: {}", e.toString());
+      BookingResponse response = new BookingResponse(
+          "error",
+          offering,
+          receivedAt,
+          null
+      );
+      return ResponseEntity.status(502).body(response);
+    }
   }
 
   /**
@@ -63,8 +79,9 @@ public class BookingController {
    */
   public record BookingResponse(
       String status,
-      BookingRequest booking,
-      String receivedAt
+      ClassOffering booking,
+      String receivedAt,
+      String id
   ) {
 
   }

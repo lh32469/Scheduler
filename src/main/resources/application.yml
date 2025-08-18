@@ -26,3 +26,8 @@ management:
       enabled: true
     os:
       enabled: true
+
+# RavenDB Configuration
+ravendb:
+  database: FitHub
+  urls: http://raven.dell.mcquarrie.cc
