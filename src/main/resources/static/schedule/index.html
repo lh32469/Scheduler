@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Exercise Classes Schedule</title>
+  <meta name="description" content="Weekly schedule of exercise classes">
+  <style>
+    :root { color-scheme: light dark; }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; margin: 0; color: #1b2a4a; }
+    header { padding: 1rem 1.25rem; background: linear-gradient(135deg,#f6f8ff,#eef3ff); border-bottom: 1px solid #e6e9f5; }
+    header .title { max-width: 1000px; margin: 0 auto; display: flex; align-items: center; gap: .75rem; }
+    header a.home { text-decoration: none; color: #274cff; border: 1px solid #3356ff33; padding: .45rem .7rem; border-radius: 10px; background: #fff; }
+    main { max-width: 1000px; margin: 0 auto; padding: 1.25rem; }
+
+    .toolbar { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; margin: .5rem 0 1rem; }
+    .day { padding: .5rem .75rem; border-radius: 999px; border: 1px solid #dde3ff; background: #fff; cursor: pointer; font-size: .95rem; }
+    .day[aria-pressed="true"] { background: #274cff; color: #fff; border-color: #274cff; }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; }
+    .card { background: rgba(255,255,255,0.9); border: 1px solid #eef1f9; border-radius: 14px; padding: 1rem; box-shadow: 0 6px 20px rgba(0,0,0,.06); display: flex; flex-direction: column; gap: .35rem; }
+    .when { font-weight: 600; color: #1b2a4a; }
+    .name { font-size: 1.05rem; font-weight: 700; }
+    .meta { color: #5c6b8a; font-size: .93rem; }
+    .location { font-size: .9rem; color: #3b4a6b; }
+
+    .muted { color: #5c6b8a; }
+    footer { margin-top: 1.25rem; font-size: .85rem; color: #6b6f76; text-align: center; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="title">
+      <h1 style="margin:.25rem 0">Exercise Classes Schedule</h1>
+      <a class="home" href="/">Home</a>
+    </div>
+  </header>
+
+  <main>
+    <p class="muted">Browse this week's classes. Use the day filter to view specific days.</p>
+
+    <nav class="toolbar" aria-label="Filter by day">
+      <button class="day" data-day="all" aria-pressed="true">All</button>
+      <button class="day" data-day="mon">Mon</button>
+      <button class="day" data-day="tue">Tue</button>
+      <button class="day" data-day="wed">Wed</button>
+      <button class="day" data-day="thu">Thu</button>
+      <button class="day" data-day="fri">Fri</button>
+      <button class="day" data-day="sat">Sat</button>
+      <button class="day" data-day="sun">Sun</button>
+    </nav>
+
+    <section class="grid" id="schedule" aria-live="polite"></section>
+
+    <footer>
+      <span>Last updated: <time id="updated"></time></span>
+    </footer>
+  </main>
+
+  <script>
+    // Demo data: weekly schedule
+    const SCHEDULE = [
+      { day: 'mon', time: '06:30 – 07:15', name: 'Sunrise Yoga', instructor: 'Ava Chen', level: 'All', location: 'Studio A' },
+      { day: 'mon', time: '12:15 – 13:00', name: 'HIIT Express', instructor: 'Liam Patel', level: 'Intermediate', location: 'Studio B' },
+      { day: 'mon', time: '18:00 – 19:00', name: 'Strength & Conditioning', instructor: 'Noah Smith', level: 'All', location: 'Gym Floor' },
+      { day: 'tue', time: '07:00 – 07:45', name: 'Pilates Core', instructor: 'Emma Davis', level: 'Beginner', location: 'Studio C' },
+      { day: 'tue', time: '17:30 – 18:15', name: 'Spin Class', instructor: 'Mia Williams', level: 'All', location: 'Cycle Room' },
+      { day: 'wed', time: '06:45 – 07:30', name: 'Bootcamp', instructor: 'Oliver Brown', level: 'Advanced', location: 'Outdoor Turf' },
+      { day: 'wed', time: '12:00 – 12:45', name: 'Mobility Flow', instructor: 'Sophia Johnson', level: 'All', location: 'Studio A' },
+      { day: 'wed', time: '18:15 – 19:00', name: 'Zumba', instructor: 'Lucas Garcia', level: 'All', location: 'Studio B' },
+      { day: 'thu', time: '07:15 – 08:00', name: 'Barre Burn', instructor: 'Isabella Martinez', level: 'All', location: 'Studio C' },
+      { day: 'thu', time: '17:45 – 18:30', name: 'Functional Training', instructor: 'Ethan Lee', level: 'Intermediate', location: 'Gym Floor' },
+      { day: 'fri', time: '06:30 – 07:15', name: 'Cycle Power', instructor: 'Amelia Thompson', level: 'All', location: 'Cycle Room' },
+      { day: 'fri', time: '12:30 – 13:15', name: 'BoxFit', instructor: 'James Wilson', level: 'All', location: 'Studio B' },
+      { day: 'sat', time: '09:00 – 10:00', name: 'Vinyasa Yoga', instructor: 'Charlotte Taylor', level: 'All', location: 'Studio A' },
+      { day: 'sat', time: '10:30 – 11:15', name: 'Family Fitness', instructor: 'Benjamin Moore', level: 'All', location: 'Gym Floor' },
+      { day: 'sun', time: '10:00 – 10:45', name: 'Stretch & Restore', instructor: 'Harper Anderson', level: 'All', location: 'Studio C' },
+      { day: 'sun', time: '17:00 – 17:45', name: 'Calm Pilates', instructor: 'Evelyn Martin', level: 'Beginner', location: 'Studio A' }
+    ];
+
+    const dayNames = { mon:'Monday', tue:'Tuesday', wed:'Wednesday', thu:'Thursday', fri:'Friday', sat:'Saturday', sun:'Sunday' };
+
+    function render(list) {
+      const root = document.getElementById('schedule');
+      root.innerHTML = '';
+      if (!list.length) {
+        const p = document.createElement('p');
+        p.className = 'muted';
+        p.textContent = 'No classes for the selected day.';
+        root.appendChild(p);
+        return;
+      }
+      // Group by day to render sections in weekday order
+      const order = ['mon','tue','wed','thu','fri','sat','sun'];
+      const groups = Object.fromEntries(order.map(d => [d, []]));
+      list.forEach(item => groups[item.day]?.push(item));
+
+      const frag = document.createDocumentFragment();
+      order.forEach(d => {
+        if (!groups[d].length) return;
+        groups[d].forEach(c => {
+          const card = document.createElement('article');
+          card.className = 'card';
+          card.setAttribute('data-day', c.day);
+          card.innerHTML = `
+            <div class="when">${dayNames[c.day]} • ${c.time}</div>
+            <div class="name">${c.name}</div>
+            <div class="meta">Instructor: ${c.instructor} — Level: ${c.level}</div>
+            <div class="location">Location: ${c.location}</div>
+          `;
+          frag.appendChild(card);
+        });
+      });
+      root.appendChild(frag);
+    }
+
+    function setActiveDay(day) {
+      document.querySelectorAll('.day').forEach(btn => btn.setAttribute('aria-pressed', String(btn.dataset.day === day)));
+      if (day === 'all') return render(SCHEDULE);
+      render(SCHEDULE.filter(x => x.day === day));
+    }
+
+    // Initialize
+    render(SCHEDULE);
+    document.getElementById('updated').textContent = new Date().toLocaleString();
+    document.querySelectorAll('.day').forEach(btn => btn.addEventListener('click', () => setActiveDay(btn.dataset.day)));
+  </script>
+</body>
+</html>
