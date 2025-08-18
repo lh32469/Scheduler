@@ -22,7 +22,7 @@ import java.util.*;
 
 /**
  * LoggingInterceptor: logs HTTP request and response headers and bodies.
- *
+ * <p>
  * Implemented as a OncePerRequestFilter to ensure we can wrap the request/response
  * with content-caching wrappers and safely read bodies after the downstream processing.
  */
@@ -42,7 +42,8 @@ public class LoggingInterceptor extends OncePerRequestFilter {
   ));
 
   @Override
-  protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+  protected void doFilterInternal(HttpServletRequest request,
+                                  HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
 
     boolean isFirstRequest = !isAsyncDispatch(request);
@@ -62,7 +63,8 @@ public class LoggingInterceptor extends OncePerRequestFilter {
       filterChain.doFilter(requestToUse, responseToUse);
     } finally {
       long durationMs = System.currentTimeMillis() - start;
-      logExchange((HttpServletRequest) requestToUse, (HttpServletResponse) responseToUse, durationMs);
+      logExchange((HttpServletRequest) requestToUse, (HttpServletResponse) responseToUse,
+          durationMs);
       // Important: copy body back to the real response
       if (responseToUse instanceof ContentCachingResponseWrapper ccrw) {
         ccrw.copyBodyToResponse();
@@ -70,7 +72,8 @@ public class LoggingInterceptor extends OncePerRequestFilter {
     }
   }
 
-  private void logExchange(HttpServletRequest request, HttpServletResponse response, long durationMs) {
+  private void logExchange(HttpServletRequest request, HttpServletResponse response,
+                           long durationMs) {
     try {
       String method = request.getMethod();
       String uri = request.getRequestURI();
@@ -85,7 +88,9 @@ public class LoggingInterceptor extends OncePerRequestFilter {
       Map<String, String> respHeaders = collectHeaders(response);
       String respBody = extractResponseBody(response);
 
-      log.info("HTTP {} {} ({} ms)\n> Headers: {}\n> Body: {}\n< Status: {}\n< Headers: {}\n< Body: {}",
+      log.info(
+          "HTTP {} {} ({} ms)\n> Headers: {}\n> Body: {}\n< Status: {}\n< Headers: " +
+              "{}\n< Body: {}",
           method, fullUrl, durationMs,
           reqHeaders,
           abbreviate(reqBody),
@@ -104,7 +109,9 @@ public class LoggingInterceptor extends OncePerRequestFilter {
     while (names != null && names.hasMoreElements()) {
       String name = names.nextElement();
       String value = String.join(", ", Collections.list(request.getHeaders(name)));
-      if (isSensitive(name)) value = redact(value);
+      if (isSensitive(name)) {
+        value = redact(value);
+      }
       map.put(name, value);
     }
     return map;
@@ -114,7 +121,9 @@ public class LoggingInterceptor extends OncePerRequestFilter {
     Map<String, String> map = new LinkedHashMap<>();
     for (String name : response.getHeaderNames()) {
       String value = String.join(", ", response.getHeaders(name));
-      if (isSensitive(name)) value = redact(value);
+      if (isSensitive(name)) {
+        value = redact(value);
+      }
       map.put(name, value);
     }
     return map;
@@ -125,26 +134,40 @@ public class LoggingInterceptor extends OncePerRequestFilter {
   }
 
   private String redact(String value) {
-    if (!StringUtils.hasText(value)) return value;
+    if (!StringUtils.hasText(value)) {
+      return value;
+    }
     return "***redacted***";
   }
 
   @Nullable
   private String extractRequestBody(HttpServletRequest request) {
-    if (!(request instanceof ContentCachingRequestWrapper wrapper)) return null;
+    if (!(request instanceof ContentCachingRequestWrapper wrapper)) {
+      return null;
+    }
     byte[] buf = wrapper.getContentAsByteArray();
-    if (buf.length == 0) return null;
-    if (!isTextLike(request.getContentType())) return "[non-textual body omitted]";
+    if (buf.length == 0) {
+      return null;
+    }
+    if (!isTextLike(request.getContentType())) {
+      return "[non-textual body omitted]";
+    }
     return toString(buf, request.getCharacterEncoding());
   }
 
   @Nullable
   private String extractResponseBody(HttpServletResponse response) {
-    if (!(response instanceof ContentCachingResponseWrapper wrapper)) return null;
+    if (!(response instanceof ContentCachingResponseWrapper wrapper)) {
+      return null;
+    }
     byte[] buf = wrapper.getContentAsByteArray();
-    if (buf.length == 0) return null;
+    if (buf.length == 0) {
+      return null;
+    }
     String contentType = response.getContentType();
-    if (!isTextLike(contentType)) return "[non-textual body omitted]";
+    if (!isTextLike(contentType)) {
+      return "[non-textual body omitted]";
+    }
     return toString(buf, response.getCharacterEncoding());
   }
 
@@ -152,14 +175,21 @@ public class LoggingInterceptor extends OncePerRequestFilter {
     int length = Math.min(buf.length, MAX_PAYLOAD_LENGTH);
     Charset charset = null;
     if (StringUtils.hasText(encoding)) {
-      try { charset = Charset.forName(encoding); } catch (Exception ignored) {}
+      try {
+        charset = Charset.forName(encoding);
+      } catch (Exception ignored) {
+      }
     }
-    if (charset == null) charset = StandardCharsets.UTF_8;
+    if (charset == null) {
+      charset = StandardCharsets.UTF_8;
+    }
     return new String(buf, 0, length, charset);
   }
 
   private boolean isTextLike(@Nullable String contentType) {
-    if (!StringUtils.hasText(contentType)) return true; // assume textual if unknown
+    if (!StringUtils.hasText(contentType)) {
+      return true; // assume textual if unknown
+    }
     try {
       MediaType mt = MediaType.parseMediaType(contentType);
       return MediaType.TEXT_PLAIN.isCompatibleWith(mt)
@@ -174,8 +204,11 @@ public class LoggingInterceptor extends OncePerRequestFilter {
   }
 
   private String abbreviate(@Nullable String s) {
-    if (s == null) return null;
+    if (s == null) {
+      return null;
+    }
     int max = 2000;
     return s.length() > max ? s.substring(0, max) + "...[truncated]" : s;
   }
+
 }
