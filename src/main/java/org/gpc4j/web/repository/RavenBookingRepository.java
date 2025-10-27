@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.ravendb.client.documents.IDocumentStore;
 import net.ravendb.client.documents.session.IDocumentSession;
+import net.ravendb.client.exceptions.ConcurrencyException;
 import org.gpc4j.web.api.BookingDocument;
 import org.gpc4j.web.api.ClassOffering;
 import org.springframework.stereotype.Repository;
@@ -20,6 +21,9 @@ public class RavenBookingRepository implements BookingRepository {
   @Override
   public String save(BookingDocument doc) {
     try (IDocumentSession session = documentStore.openSession()) {
+      session.advanced().setUseOptimisticConcurrency(true);
+
+      doc.getAvailability();
       session.store(doc);
       session.saveChanges();
       String id = doc.getId();

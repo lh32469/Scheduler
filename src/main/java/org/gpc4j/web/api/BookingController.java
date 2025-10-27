@@ -1,7 +1,11 @@
 package org.gpc4j.web.api;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.ravendb.client.documents.IDocumentStore;
+import net.ravendb.client.documents.session.IDocumentSession;
 import org.gpc4j.web.repository.BookingRepository;
+import org.gpc4j.web.repository.ClassOfferingRepository;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -9,32 +13,49 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 
 /**
  * Simple REST controller to receive class booking information.
- *
+ * <p>
  * Endpoint: POST /api/bookings
  * Content-Type: application/json
  */
 @Slf4j
 @RestController
+@RequiredArgsConstructor
 @RequestMapping(path = "/api/bookings")
 public class BookingController {
 
+  private final IDocumentStore documentStore;
   private final BookingRepository repository;
-
-  public BookingController(BookingRepository repository) {
-    this.repository = repository;
-  }
+  private final ClassOfferingRepository classOfferingRepository;
 
   @PostMapping(
       consumes = MediaType.APPLICATION_JSON_VALUE,
       produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<BookingResponse> createBooking(
       @RequestBody ClassOffering offering) {
-    String receivedAt = OffsetDateTime.now().toString();
+
     log.info("Received booking (ClassOffering): {}", offering);
+
+    try (IDocumentSession session = documentStore.openSession()) {
+      session.advanced().setUseOptimisticConcurrency(true);
+
+      ClassOffering classOffering = session.query(ClassOffering.class)
+                                           .whereEquals("schedule.start",
+                                                        offering.getSchedule().getStart())
+                                           .whereEquals("classType",
+                                                        offering.getClassType())
+                                           .firstOrDefault();
+
+      System.out.println("classOffering = " + classOffering);
+    }
+
+    String receivedAt = OffsetDateTime.now().toString();
+
+//    offering.getSchedule().setStart(LocalDateTime.now().plusDays(14));
 
     try {
       String id = repository.save(offering);
@@ -55,6 +76,7 @@ public class BookingController {
       );
       return ResponseEntity.status(502).body(response);
     }
+
   }
 
   /**

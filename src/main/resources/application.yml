@@ -1,6 +1,11 @@
 spring:
   application:
     name: WebTemplate
+  devtools:
+    restart:
+      # Trigger full restart on any changes under src/main/resources/static
+      # Override Boot's default exclude list (which normally ignores static/**)
+      exclude: ""
 
 info:
   app:

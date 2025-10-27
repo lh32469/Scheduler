@@ -309,97 +309,35 @@
 </main>
 
 <script>
-    // Sample class data
-    const classes = [
-        {
-            name: "Morning Flow Yoga",
-            type: "yoga",
-            time: "7:00 AM - 8:00 AM",
-            day: "Monday, Wednesday, Friday",
-            duration: "60 min",
-            level: "All Levels",
-            instructor: "Sarah Chen",
-            bio: "Certified yoga instructor with 8+ years experience in Hatha and Vinyasa styles.",
-            spots: "12 spots available"
-        },
-        {
-            name: "HIIT Cardio Blast",
-            type: "cardio",
-            time: "6:30 PM - 7:15 PM",
-            day: "Tuesday, Thursday",
-            duration: "45 min",
-            level: "Intermediate",
-            instructor: "Mike Rodriguez",
-            bio: "Former athlete turned fitness coach specializing in high-intensity training.",
-            spots: "8 spots available"
-        },
-        {
-            name: "Strength & Conditioning",
-            type: "strength",
-            time: "5:30 PM - 6:30 PM",
-            day: "Monday, Wednesday, Friday",
-            duration: "60 min",
-            level: "Beginner to Advanced",
-            instructor: "Emma Thompson",
-            bio: "Certified personal trainer with expertise in functional movement and strength building.",
-            spots: "15 spots available"
-        },
-        {
-            name: "Latin Dance Fitness",
-            type: "dance",
-            time: "7:00 PM - 8:00 PM",
-            day: "Tuesday, Saturday",
-            duration: "60 min",
-            level: "All Levels",
-            instructor: "Carlos Martinez",
-            bio: "Professional dancer and choreographer bringing the joy of Latin music to fitness.",
-            spots: "20 spots available"
-        },
-        {
-            name: "Core Pilates",
-            type: "pilates",
-            time: "8:30 AM - 9:15 AM",
-            day: "Monday, Wednesday, Friday",
-            duration: "45 min",
-            level: "All Levels",
-            instructor: "Lisa Park",
-            bio: "Mat Pilates certified instructor focusing on core strength and flexibility.",
-            spots: "10 spots available"
-        },
-        {
-            name: "Sunset Yoga",
-            type: "yoga",
-            time: "6:00 PM - 7:00 PM",
-            day: "Sunday",
-            duration: "60 min",
-            level: "All Levels",
-            instructor: "David Kim",
-            bio: "Mindfulness and meditation expert combining yoga with stress relief techniques.",
-            spots: "18 spots available"
-        },
-        {
-            name: "Boxing Fundamentals",
-            type: "cardio",
-            time: "7:30 PM - 8:30 PM",
-            day: "Wednesday, Friday",
-            duration: "60 min",
-            level: "Beginner",
-            instructor: "Alex Johnson",
-            bio: "Former competitive boxer teaching proper technique and fitness through boxing.",
-            spots: "12 spots available"
-        },
-        {
-            name: "Barre Sculpt",
-            type: "strength",
-            time: "9:00 AM - 9:45 AM",
-            day: "Tuesday, Thursday, Saturday",
-            duration: "45 min",
-            level: "All Levels",
-            instructor: "Rachel Green",
-            bio: "Ballet-trained instructor combining barre techniques with strength training.",
-            spots: "14 spots available"
+    // Load class data from API instead of static sample
+    let classes = [];
+
+    function mapOfferingToCard(o) {
+        return {
+            name: o.className ?? 'Untitled Class',
+            type: o.classType ?? 'general',
+            time: o?.schedule?.time ?? '',
+            start: o?.schedule?.start ?? '',
+            day: o?.schedule?.day ?? '',
+            duration: o?.schedule?.duration ?? '',
+            level: o.level ?? '',
+            instructor: o?.instructor?.name ?? '',
+            bio: o?.instructor?.bio ?? '',
+            spots: o.slots + " spots available"
+        };
+    }
+
+    async function loadClasses() {
+        try {
+            const res = await fetch('/api/offerings', {headers: {'Accept': 'application/json'}});
+            if (!res.ok) throw new Error('Failed to load offerings: ' + res.status);
+            const data = await res.json();
+            classes = Array.isArray(data) ? data.map(mapOfferingToCard) : [];
+        } catch (e) {
+            console.error('Error loading classes from /api/offerings:', e);
+            classes = [];
         }
-    ];
+    }
 
     // Generate class cards
     function renderClasses(classesToRender = classes) {
@@ -423,11 +361,11 @@
                     <div class="class-details">
                         <div class="detail-item">
                             <i class="fas fa-clock"></i>
-                            <span>${classItem.time}</span>
+                            <span>${new Date(classItem.start).toLocaleString()}</span>
                         </div>
                         <div class="detail-item">
                             <i class="fas fa-calendar"></i>
-                            <span>${classItem.day}</span>
+                            <span>${new Date(classItem.start).toLocaleDateString('en', {weekday: 'long'})}</span>
                         </div>
                         <div class="detail-item">
                             <i class="fas fa-hourglass-half"></i>
@@ -559,7 +497,8 @@
     }
 
     // Initialize the page
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
+        await loadClasses();
         renderClasses();
         setupFilters();
 
