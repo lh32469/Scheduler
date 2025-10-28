@@ -6,6 +6,11 @@ spring:
       # Trigger full restart on any changes under src/main/resources/static
       # Override Boot's default exclude list (which normally ignores static/**)
       exclude: ""
+  thymeleaf:
+    cache: false
+  web:
+    resources:
+      add-mappings: true
 
 info:
   app:

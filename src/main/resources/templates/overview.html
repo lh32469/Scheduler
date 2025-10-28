@@ -40,9 +40,16 @@
                 <button class="filter-btn" data-filter="pilates">Pilates</button>
             </div>
         </div>
-    </section>
+        </section>
 
-    <div class="schedule-grid" id="scheduleGrid">
+        <!-- Flash message from redirect -->
+        <div th:if="${message}"
+             th:classappend="${messageType} == 'error' ? ' error' : ' info'"
+             style="margin: 1rem 0; padding: 1rem; border-radius: 8px; background: #fdecea; color: #611a15;">
+            <span th:text="${message}"/>
+        </div>
+
+        <div class="schedule-grid" id="scheduleGrid">
         <div class="class-card"
              th:each="offering : ${offerings}"
              th:attr="data-type=${offering.classType}">

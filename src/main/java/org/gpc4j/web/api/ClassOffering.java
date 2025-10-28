@@ -11,7 +11,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
 /**
- * Model representing an exercise class offering matching the provided JSON schema.
+ * Model representing an exercise class newOffering matching the provided JSON schema.
  * <p>
  * Example JSON:
  * {

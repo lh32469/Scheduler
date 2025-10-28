@@ -20,7 +20,7 @@ public interface BookingRepository {
    * BookingDocument with a
    * current receivedAt timestamp and delegates to {@link #save(BookingDocument)}.
    *
-   * @param offering the class offering payload
+   * @param offering the class newOffering payload
    * @return RavenDB id of the stored document
    */
   String save(ClassOffering offering);

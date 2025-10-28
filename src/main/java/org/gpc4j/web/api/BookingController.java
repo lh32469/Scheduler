@@ -6,14 +6,14 @@ import net.ravendb.client.documents.IDocumentStore;
 import net.ravendb.client.documents.session.IDocumentSession;
 import org.gpc4j.web.repository.BookingRepository;
 import org.gpc4j.web.repository.ClassOfferingRepository;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 
 /**
@@ -23,7 +23,7 @@ import java.time.OffsetDateTime;
  * Content-Type: application/json
  */
 @Slf4j
-@RestController
+@Controller
 @RequiredArgsConstructor
 @RequestMapping(path = "/api/bookings")
 public class BookingController {
@@ -32,13 +32,14 @@ public class BookingController {
   private final BookingRepository repository;
   private final ClassOfferingRepository classOfferingRepository;
 
-  @PostMapping(
-      consumes = MediaType.APPLICATION_JSON_VALUE,
-      produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<BookingResponse> createBooking(
-      @RequestBody ClassOffering offering) {
+  @PostMapping(path = "/v2")
+  public String createBookingTwo(ClassOffering offering,
+                                 RedirectAttributes redirectAttributes) {
 
     log.info("Received booking (ClassOffering): {}", offering);
+
+    log.info("className = " + offering.getClassName());
+    log.info("Start:  + " + offering.getSchedule().getStart());
 
     try (IDocumentSession session = documentStore.openSession()) {
       session.advanced().setUseOptimisticConcurrency(true);
@@ -49,34 +50,42 @@ public class BookingController {
                                            .whereEquals("classType",
                                                         offering.getClassType())
                                            .firstOrDefault();
+      log.info("classOffering = " + classOffering);
 
-      System.out.println("classOffering = " + classOffering);
+      if (classOffering != null) {
+        if (classOffering.getSlots() == 0) {
+          // class is full, add message and redirect
+          redirectAttributes.addFlashAttribute("message",
+                                               "Class is full. Please choose another " +
+                                                   "time.");
+          redirectAttributes.addFlashAttribute("messageType",
+                                               "error");
+          return "redirect:/overview#schedule";
+
+        } else {
+
+          classOffering.setSlots(classOffering.getSlots() - 1);
+          classOffering.setParticipants(classOffering.getParticipants() + 1);
+          session.store(classOffering);
+          session.saveChanges();
+        }
+      }
+    } catch (net.ravendb.client.exceptions.ConcurrencyException e) {
+
+      redirectAttributes.addFlashAttribute("message",
+                                           "Error booking class, please try again.");
+      redirectAttributes.addFlashAttribute("messageType",
+                                           "error");
+
+      return "redirect:/overview#schedule";
     }
 
-    String receivedAt = OffsetDateTime.now().toString();
+    redirectAttributes.addFlashAttribute("message",
+                                         offering.getClassName() + " is booked.");
+    redirectAttributes.addFlashAttribute("messageType",
+                                         "info");
 
-//    offering.getSchedule().setStart(LocalDateTime.now().plusDays(14));
-
-    try {
-      String id = repository.save(offering);
-      BookingResponse response = new BookingResponse(
-          "stored",
-          offering,
-          receivedAt,
-          id
-      );
-      return ResponseEntity.ok(response);
-    } catch (Exception e) {
-      log.error("Failed to store booking: {}", e.toString());
-      BookingResponse response = new BookingResponse(
-          "error",
-          offering,
-          receivedAt,
-          null
-      );
-      return ResponseEntity.status(502).body(response);
-    }
-
+    return "redirect:/overview#schedule";
   }
 
   /**
