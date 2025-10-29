@@ -5,13 +5,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.gpc4j.web.api.ClassOffering;
 import org.gpc4j.web.repository.ClassOfferingRepository;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * MVC controller that renders the home page using Thymeleaf.
@@ -28,6 +28,7 @@ public class HomeController {
   public String home(
       @RequestParam(name = "page", required = false, defaultValue = "1") int page,
       @RequestParam(name = "size", required = false, defaultValue = "100") int size,
+      @RequestParam(name = "filter", required = false) String filter,
       Authentication authentication,
       Model model
   ) {
@@ -38,6 +39,14 @@ public class HomeController {
 
     List<ClassOffering> offerings =
         classOfferingRepository.list(safePage, safeSize);
+
+    if (filter != null) {
+      offerings = offerings.stream()
+                           .filter(o -> Objects.equals(
+                               o.getClassType()
+                                .toLowerCase(), filter.toLowerCase()))
+                           .toList();
+    }
     model.addAttribute("offerings", offerings);
     model.addAttribute("page", safePage);
     model.addAttribute("size", safeSize);
