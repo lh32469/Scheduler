@@ -38,6 +38,7 @@ public class SecurityConfig {
             .permitAll()
             .requestMatchers("/api/bookings/**")
             .authenticated()
+            .requestMatchers("/admin/**").hasRole("ADMIN")
             .anyRequest().permitAll()
         )
         .formLogin(login -> login

@@ -18,6 +18,8 @@ public class UserAccount {
 
   private String username;
   private String passwordHash; // BCrypt
+  // Plaintext password field for form binding only (not persisted)
+  private transient String password;
 
   private List<String> roles; // e.g., ["ROLE_USER"], ["ROLE_ADMIN"]
 
