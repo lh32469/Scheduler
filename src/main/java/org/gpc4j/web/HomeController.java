@@ -35,7 +35,7 @@ public class HomeController {
     int safePage = Math.max(1, page);
     int safeSize = Math.min(Math.max(1, size), 500);
 
-    log.info(authentication.toString());
+    log.info("" + authentication);
 
     List<ClassOffering> offerings =
         classOfferingRepository.list(safePage, safeSize);

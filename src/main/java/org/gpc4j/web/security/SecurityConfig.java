@@ -31,11 +31,12 @@ public class SecurityConfig {
         .csrf(csrf -> csrf.ignoringRequestMatchers("/actuator/**"))
         .authorizeHttpRequests(auth -> auth
             .requestMatchers(
+                "/",
                 "/login", "/error",
                 "/styles.css", "/static/**", "/webjars/**", "/favicon.ico",
                 "/templates/fragments/**")
             .permitAll()
-            .requestMatchers( "/","/api/bookings/**")
+            .requestMatchers("/api/bookings/**")
             .authenticated()
             .anyRequest().permitAll()
         )

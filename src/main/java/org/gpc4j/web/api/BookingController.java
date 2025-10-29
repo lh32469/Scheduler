@@ -83,7 +83,7 @@ public class BookingController {
                                            "error");
     }
 
-    return "redirect:/overview#schedule";
+    return "redirect:/#schedule";
   }
 
   /**
