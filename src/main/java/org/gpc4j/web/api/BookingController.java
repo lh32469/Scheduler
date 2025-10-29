@@ -6,15 +6,10 @@ import net.ravendb.client.documents.IDocumentStore;
 import net.ravendb.client.documents.session.IDocumentSession;
 import org.gpc4j.web.repository.BookingRepository;
 import org.gpc4j.web.repository.ClassOfferingRepository;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
-import java.time.OffsetDateTime;
 
 /**
  * Simple REST controller to receive class booking information.
@@ -49,6 +44,8 @@ public class BookingController {
                                                         offering.getSchedule().getStart())
                                            .whereEquals("classType",
                                                         offering.getClassType())
+                                           .whereEquals("className",
+                                                        offering.getClassName())
                                            .firstOrDefault();
       log.info("classOffering = " + classOffering);
 
@@ -60,15 +57,23 @@ public class BookingController {
                                                    "time.");
           redirectAttributes.addFlashAttribute("messageType",
                                                "error");
-          return "redirect:/overview#schedule";
-
         } else {
 
           classOffering.setSlots(classOffering.getSlots() - 1);
           classOffering.setParticipants(classOffering.getParticipants() + 1);
           session.store(classOffering);
           session.saveChanges();
+
+          redirectAttributes.addFlashAttribute("message",
+                                               offering.getClassName() + " is booked.");
+          redirectAttributes.addFlashAttribute("messageType",
+                                               "info");
         }
+      } else {
+        redirectAttributes.addFlashAttribute("message",
+                                             "Class not found.");
+        redirectAttributes.addFlashAttribute("messageType",
+                                             "error");
       }
     } catch (net.ravendb.client.exceptions.ConcurrencyException e) {
 
@@ -76,14 +81,7 @@ public class BookingController {
                                            "Error booking class, please try again.");
       redirectAttributes.addFlashAttribute("messageType",
                                            "error");
-
-      return "redirect:/overview#schedule";
     }
-
-    redirectAttributes.addFlashAttribute("message",
-                                         offering.getClassName() + " is booked.");
-    redirectAttributes.addFlashAttribute("messageType",
-                                         "info");
 
     return "redirect:/overview#schedule";
   }

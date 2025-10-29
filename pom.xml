@@ -45,10 +45,18 @@
       <artifactId>spring-boot-starter-actuator</artifactId>
     </dependency>
 
-<!--    <dependency>-->
-<!--      <groupId>org.thymeleaf.extras</groupId>-->
-<!--      <artifactId>thymeleaf-extras-java8time</artifactId>-->
-<!--    </dependency>-->
+    <!-- Spring Security -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-security</artifactId>
+    </dependency>
+
+    <!-- Thymeleaf extras for Spring Security dialect -->
+    <dependency>
+      <groupId>org.thymeleaf.extras</groupId>
+      <artifactId>thymeleaf-extras-springsecurity6</artifactId>
+      <version>3.1.2.RELEASE</version>
+    </dependency>
 
     <dependency>
       <groupId>net.ravendb</groupId>
