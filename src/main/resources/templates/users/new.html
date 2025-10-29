@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Create User - FitHub</title>
     <link rel="stylesheet" href="/styles.css"/>
+
     <style>
         .container {
             max-width: 900px;
@@ -63,6 +64,7 @@
             color: #111;
         }
     </style>
+
 </head>
 
 <body>
@@ -78,12 +80,28 @@
         <form method="post" th:action="@{/admin/users}" th:object="${userForm}">
             <div class="form-grid">
                 <div>
+                    <label for="name">Full Name</label>
+                    <input id="name"
+                           name="name"
+                           type="text"
+                           placeholder="John Doe"
+                           required/>
+                </div>
+                <div>
                     <label for="username">E-Mail Address</label>
-                    <input id="username" name="username" type="text" placeholder="user@example.com" required/>
+                    <input id="username"
+                           name="username"
+                           type="text"
+                           placeholder="user@example.com"
+                           required/>
                 </div>
                 <div>
                     <label for="password">Password</label>
-                    <input id="password" name="password" type="password" placeholder="••••••••" required/>
+                    <input id="password"
+                           name="password"
+                           type="password"
+                           placeholder="••••••••"
+                           required/>
                 </div>
                 <div class="full">
                     <label for="roles">Roles</label>
@@ -93,6 +111,23 @@
                         <option value="ADMIN">ADMIN</option>
                     </select>
                 </div>
+
+                <!-- Instructor account option -->
+                <div class="full">
+                    <label style="display:flex; align-items:center; gap:.5rem; font-weight:600;">
+                        Also create Instructor profile
+                    </label>
+                    <input id="isInstructor" name="isInstructor" type="checkbox" value="true"/>
+                    <small style="color:#555;">If checked, an InstructorAccount will be created and linked details can
+                        be stored. Make sure the INSTRUCTOR role is selected.</small>
+                </div>
+                <div class="full" id="instructorProfileGroup" style="display:none;">
+                    <label for="profile">Instructor Profile/Bio</label>
+                    <textarea id="profile" name="profile" rows="4"
+                              placeholder="Brief bio, specialties, certifications..."
+                              style="width:100%; padding:.6rem .8rem; border:1px solid #ddd; border-radius:8px;"></textarea>
+                </div>
+
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
             </div>
             <div class="actions">
@@ -102,5 +137,32 @@
         </form>
     </div>
 </main>
+
+<script>
+    (function () {
+        const isInstructor = document.getElementById('isInstructor');
+        const profileGroup = document.getElementById('instructorProfileGroup');
+        const roles = document.getElementById('roles');
+
+        function ensureInstructorRoleSelected() {
+            if (!roles) return;
+            const options = Array.from(roles.options);
+            const inst = options.find(o => o.value === 'INSTRUCTOR');
+            if (isInstructor.checked) {
+                if (inst) inst.selected = true;
+                profileGroup.style.display = '';
+            } else {
+                profileGroup.style.display = 'none';
+            }
+        }
+
+        if (isInstructor) {
+            isInstructor.addEventListener('change', ensureInstructorRoleSelected);
+            // Initialize on load (in case of back navigation)
+            ensureInstructorRoleSelected();
+        }
+    })();
+</script>
+
 </body>
 </html>

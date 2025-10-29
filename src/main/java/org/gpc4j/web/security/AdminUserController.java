@@ -44,7 +44,11 @@ public class AdminUserController {
   @PostMapping("/users")
   public String createUser(UserAccount user,
                            RedirectAttributes redirectAttributes) {
-    try {
+
+
+   log.info(user.toString());
+
+   try {
       String username = user.getUsername();
       String rawPassword = user.getPassword();
 
