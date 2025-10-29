@@ -35,14 +35,13 @@ public class SecurityConfig {
                 "/styles.css", "/static/**", "/webjars/**", "/favicon.ico",
                 "/templates/fragments/**")
             .permitAll()
-            .requestMatchers( "/", "/overview",
-                              "/classes","/api/bookings/**")
+            .requestMatchers( "/","/api/bookings/**")
             .authenticated()
             .anyRequest().permitAll()
         )
         .formLogin(login -> login
             .loginPage("/login").permitAll()
-            .defaultSuccessUrl("/overview", true)
+            .defaultSuccessUrl("/", true)
             .failureUrl("/login?error")
         )
         .logout(logout -> logout

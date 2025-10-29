@@ -29,6 +29,9 @@ public class RavenClassOfferingRepository implements ClassOfferingRepository {
     try (IDocumentSession session = documentStore.openSession()) {
       List<ClassOffering> results = session
           .query(ClassOffering.class)
+          .whereExists("slots")
+          .whereNotEquals("slots", 0)
+          .orderBy("schedule.start")
           .skip(skip)
           .take(safeSize)
           .toList();
