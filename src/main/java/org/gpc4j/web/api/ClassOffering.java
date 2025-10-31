@@ -4,10 +4,10 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.gpc4j.web.security.UserAccount;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
 /**
@@ -36,6 +36,13 @@ public class ClassOffering {
   private String classType;
   private Schedule schedule;
   private String level;
+
+  /**
+   * Represents the RavenDB document ID of the Instructor.
+   */
+  private String instructorId;
+  private UserAccount instructorAccount;
+
   private Instructor instructor;
   private String availability;
   private int participants;
@@ -52,8 +59,6 @@ public class ClassOffering {
   @AllArgsConstructor
   public static class Schedule {
 
-    private String time;
-    private String day;
     private LocalDateTime start;
     private String duration;
 

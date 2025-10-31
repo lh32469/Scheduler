@@ -138,9 +138,13 @@
                         <i class="fas fa-user"></i>
                         <span th:text="${offering.instructor != null ? offering.instructor.name : ''}">Instructor</span>
                     </div>
-                    <div class="instructor-bio" th:text="${offering.instructor != null ? offering.instructor.bio : ''}">
-                        Bio
+                    <div class="instructor-name">
+                        <i class="fas fa-user"></i>
+                        <span th:text="${offering.instructorAccount != null
+                        ? offering.instructorAccount.name : ''}">Instructor</span>
                     </div>
+                    <!--/*@thymesVar id="instructor" type=""*/-->
+                    <div class="instructor-bio" th:text="${offering.instructor.bio}">Bio</div>
                 </div>
 
                 <div class="detail-item" style="color: #28a745; font-weight: 500;">

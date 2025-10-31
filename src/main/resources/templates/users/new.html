@@ -74,6 +74,14 @@
 </header>
 
 <main class="container">
+
+    <!-- Flash message from redirect -->
+    <div th:if="${message}"
+         th:classappend="${messageType} == 'error' ? ' error' : ' info'"
+         style="margin: 1rem 0; padding: 1rem; border-radius: 8px; background: #17c329; color: #9f7572;">
+        <span th:text="${message}"/>
+    </div>
+
     <div class="card">
         <h2 style="margin-top:0">Create User</h2>
 

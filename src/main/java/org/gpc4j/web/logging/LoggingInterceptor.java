@@ -26,7 +26,7 @@ import java.util.*;
  * Implemented as a OncePerRequestFilter to ensure we can wrap the request/response
  * with content-caching wrappers and safely read bodies after the downstream processing.
  */
-@Component
+//@Component
 public class LoggingInterceptor extends OncePerRequestFilter {
 
   private static final Logger log = LoggerFactory.getLogger(LoggingInterceptor.class);

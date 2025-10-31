@@ -4,7 +4,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.gpc4j.web.api.ClassOffering;
 import org.gpc4j.web.repository.ClassOfferingRepository;
+import org.gpc4j.web.security.RavenUserRepository;
+import org.gpc4j.web.security.UserAccount;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,6 +27,8 @@ public class HomeController {
 
   private final ClassOfferingRepository classOfferingRepository;
 
+  private final RavenUserRepository userRepository;
+
   @GetMapping({"/"})
   public String home(
       @RequestParam(name = "page", required = false, defaultValue = "1") int page,
@@ -39,6 +44,25 @@ public class HomeController {
 
     List<ClassOffering> offerings =
         classOfferingRepository.list(safePage, safeSize);
+
+
+
+//    List<String> instructorIds =
+//        offerings.stream()
+//                 .map(ClassOffering::getInstructorId)
+//                 .filter(Objects::nonNull)
+//                 .toList();
+//
+//    log.info("Found {} instructors", instructorIds.size());
+//
+//    List<UserAccount> instructors = userRepository.findUsers(instructorIds);
+//    log.info("Instructors: " + instructors);
+//
+//    offerings.stream()
+//             .map(o -> {
+//
+//               return o;
+//             });
 
     if (filter != null) {
       offerings = offerings.stream()

@@ -29,6 +29,37 @@ public class RavenUserRepository {
     }
   }
 
+  public List<UserAccount> findAllInstructors() {
+    log.info("Finding All Instructors");
+    try (IDocumentSession session = documentStore.openSession()) {
+      List<UserAccount> instructors = session.query(UserAccount.class)
+                                             .whereIn("roles",
+                                                      List.of("INSTRUCTOR"))
+                                             .toList();
+      log.info("Found {} instructors", instructors.size());
+      return instructors;
+    } catch (Exception e) {
+      log.error("Failed to query instructors: {}", e.toString());
+      return List.of();
+    }
+
+  }
+
+  public List<UserAccount> findUsers(List<String> ids) {
+    log.info("Finding users with ids: " + ids);
+    try (IDocumentSession session = documentStore.openSession()) {
+      List<UserAccount> users = session.query(UserAccount.class)
+                                       .whereIn("id", ids)
+                                       .toList();
+      log.info("Found {} Users", users.size());
+      return users;
+    } catch (Exception e) {
+      log.error("Failed to query Users: {}", e.toString());
+      return List.of();
+    }
+
+  }
+
   public String save(UserAccount user) {
     try (IDocumentSession session = documentStore.openSession()) {
       session.store(user);
@@ -42,9 +73,13 @@ public class RavenUserRepository {
   public long count() {
     try (IDocumentSession session = documentStore.openSession()) {
       List<UserAccount> users = session.query(UserAccount.class).take(1).toList();
-      if (users.isEmpty()) return 0L;
-      // Use a rough estimate by querying index stats if needed; here we just check existence.
+      if (users.isEmpty()) {
+        return 0L;
+      }
+      // Use a rough estimate by querying index stats if needed; here we just check
+      // existence.
       return 1L;
     }
   }
+
 }

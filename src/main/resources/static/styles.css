@@ -30,6 +30,10 @@ header {
     z-index: 100;
 }
 
+footer .container {
+    text-align: center;
+}
+
 .header-content {
     display: flex;
     justify-content: space-between;

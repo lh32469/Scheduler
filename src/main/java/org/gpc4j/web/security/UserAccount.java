@@ -18,7 +18,7 @@ public class UserAccount {
 
   private String id; // RavenDB document id (e.g., users/1-A)
 
-  private String name;
+  private String name = "Blank";
   private String username;
 
   /**

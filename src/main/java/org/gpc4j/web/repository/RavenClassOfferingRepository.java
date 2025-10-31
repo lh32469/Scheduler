@@ -5,10 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import net.ravendb.client.documents.IDocumentStore;
 import net.ravendb.client.documents.session.IDocumentSession;
 import org.gpc4j.web.api.ClassOffering;
+import org.gpc4j.web.security.UserAccount;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * RavenDB-backed implementation of {@link ClassOfferingRepository}.
@@ -27,8 +29,9 @@ public class RavenClassOfferingRepository implements ClassOfferingRepository {
     int skip = (safePage - 1) * safeSize;
 
     try (IDocumentSession session = documentStore.openSession()) {
-      List<ClassOffering> results = session
+      List<ClassOffering> offerings = session
           .query(ClassOffering.class)
+          .include("instructorId")
           .whereExists("slots")
           .whereNotEquals("slots", 0)
           .orderBy("schedule.start")
@@ -36,10 +39,26 @@ public class RavenClassOfferingRepository implements ClassOfferingRepository {
           .take(safeSize)
           .toList();
       log.info("Fetched {} ClassOffering documents (page={}, size={})",
-               results.size(),
+               offerings.size(),
                safePage,
                safeSize);
-      return results;
+
+      for (ClassOffering offering : offerings) {
+        log.info("Found ClassOffering: {}", offering);
+        log.info("  Instructor: {}", offering.getInstructorId());
+
+        // Already loaded into session via include above.
+        // No request sent to DB.
+        UserAccount instructor =
+            session.load(UserAccount.class, offering.getInstructorId());
+
+        if (Objects.nonNull(instructor)) {
+          offering.setInstructorAccount(instructor);
+        }
+        log.info("  Instructor: {}", instructor);
+      }
+
+      return offerings;
     } catch (Exception e) {
       log.error("Failed to list ClassOfferings: {}", e.toString());
       return Collections.emptyList();

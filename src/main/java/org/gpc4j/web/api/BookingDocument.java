@@ -2,6 +2,8 @@ package org.gpc4j.web.api;
 
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 /**
  * Document representation for storing a booking in RavenDB.
  */
@@ -15,8 +17,7 @@ public class BookingDocument {
   private String phone;
   private String classId;
   private String className;
-  private String date;
-  private String time;
+  private LocalDateTime start;
   private Integer participants;
   private String notes;
 
@@ -35,29 +36,13 @@ public class BookingDocument {
 
   private String receivedAt; // ISO-8601 timestamp when received by our API
 
-  public static BookingDocument fromRequest(BookingController.BookingRequest req, String receivedAt) {
-    BookingDocument d = new BookingDocument();
-    d.setName(req.name());
-    d.setEmail(req.email());
-    d.setPhone(req.phone());
-    d.setClassId(req.classId());
-    d.setClassName(req.className());
-    d.setDate(req.date());
-    d.setTime(req.time());
-    d.setParticipants(req.participants());
-    d.setNotes(req.notes());
-    d.setReceivedAt(receivedAt);
-    return d;
-  }
-
   public static BookingDocument fromOffering(ClassOffering offering, String receivedAt) {
     BookingDocument d = new BookingDocument();
     if (offering != null) {
       d.setClassName(offering.getClassName());
       d.setClassType(offering.getClassType());
       if (offering.getSchedule() != null) {
-        d.setScheduleTime(offering.getSchedule().getTime());
-        d.setScheduleDay(offering.getSchedule().getDay());
+        d.setStart(offering.getSchedule().getStart());
         d.setScheduleDuration(offering.getSchedule().getDuration());
       }
       d.setLevel(offering.getLevel());
