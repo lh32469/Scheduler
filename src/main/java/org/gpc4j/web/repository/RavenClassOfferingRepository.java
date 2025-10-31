@@ -44,8 +44,8 @@ public class RavenClassOfferingRepository implements ClassOfferingRepository {
                safeSize);
 
       for (ClassOffering offering : offerings) {
-        log.info("Found ClassOffering: {}", offering);
-        log.info("  Instructor: {}", offering.getInstructorId());
+//        log.info("Found ClassOffering: {}", offering);
+//        log.info("  Instructor: {}", offering.getInstructorId());
 
         // Already loaded into session via include above.
         // No request sent to DB.
@@ -55,7 +55,7 @@ public class RavenClassOfferingRepository implements ClassOfferingRepository {
         if (Objects.nonNull(instructor)) {
           offering.setInstructorAccount(instructor);
         }
-        log.info("  Instructor: {}", instructor);
+//        log.info("  Instructor: {}", instructor);
       }
 
       return offerings;
@@ -82,15 +82,10 @@ public class RavenClassOfferingRepository implements ClassOfferingRepository {
   @Override
   public String save(ClassOffering offering) {
     try (IDocumentSession session = documentStore.openSession()) {
-      String id = offering != null && offering.getCustomerInfo() != null
-          ? offering.getCustomerInfo().getBookingId()
-          : null;
-      if (id != null && !id.isBlank()) {
-        session.store(offering, id);
-      } else {
-        session.store(offering);
-        id = session.advanced().getDocumentId(offering);
-      }
+
+      session.store(offering);
+      String id = session.advanced().getDocumentId(offering);
+
       session.saveChanges();
       log.info("Stored ClassOffering in RavenDB with id={}", id);
       return id;

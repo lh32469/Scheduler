@@ -6,10 +6,15 @@ import net.ravendb.client.documents.IDocumentStore;
 import net.ravendb.client.documents.session.IDocumentSession;
 import org.gpc4j.web.repository.BookingRepository;
 import org.gpc4j.web.repository.ClassOfferingRepository;
+import org.gpc4j.web.security.UserAccount;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.time.LocalDateTime;
 
 /**
  * Simple REST controller to receive class booking information.
@@ -25,6 +30,8 @@ public class BookingController {
 
   private final IDocumentStore documentStore;
   private final BookingRepository repository;
+
+  UserDetailsService userDetailsService;
   private final ClassOfferingRepository classOfferingRepository;
 
   @PostMapping(path = "/v2")
@@ -33,11 +40,16 @@ public class BookingController {
 
     log.info("Received booking (ClassOffering): {}", offering);
 
+
     log.info("className = " + offering.getClassName());
     log.info("Start:  + " + offering.getSchedule().getStart());
 
     try (IDocumentSession session = documentStore.openSession()) {
       session.advanced().setUseOptimisticConcurrency(true);
+
+      UserAccount user = session.query(UserAccount.class)
+          .whereEquals("username", offering.getCustomerInfo().getUsername())
+          .firstOrDefault();
 
       ClassOffering classOffering = session.query(ClassOffering.class)
                                            .whereEquals("schedule.start",
@@ -62,6 +74,18 @@ public class BookingController {
           classOffering.setSlots(classOffering.getSlots() - 1);
           classOffering.setParticipants(classOffering.getParticipants() + 1);
           session.store(classOffering);
+
+          BookingDocument booking = new BookingDocument();
+          booking.setClassId(offering.getId());
+
+          // Pass through data
+          booking.setUserId(user.getId());
+          booking.setUsername(offering.getCustomerInfo().getUsername());
+          booking.setDomain(offering.getDomain());
+
+          booking.setDateBooked(LocalDateTime.now());
+          session.store(booking);
+
           session.saveChanges();
 
           redirectAttributes.addFlashAttribute("message",

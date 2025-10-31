@@ -1,6 +1,7 @@
 package org.gpc4j.web.api;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -32,6 +33,8 @@ import java.util.Objects;
 @AllArgsConstructor
 public class ClassOffering {
 
+  private String id; // RavenDB document id (e.g., ClassOffering/1-A)
+  private String domain; // Client hostname with domain.
   private String className;
   private String classType;
   private Schedule schedule;
@@ -41,10 +44,9 @@ public class ClassOffering {
    * Represents the RavenDB document ID of the Instructor.
    */
   private String instructorId;
+  @JsonIgnore
   private UserAccount instructorAccount;
 
-  private Instructor instructor;
-  private String availability;
   private int participants;
   private int slots;
 
@@ -73,21 +75,9 @@ public class ClassOffering {
   @Data
   @NoArgsConstructor
   @AllArgsConstructor
-  public static class Instructor {
-
-    private String name;
-    private String bio;
-
-  }
-
-  @Data
-  @NoArgsConstructor
-  @AllArgsConstructor
   public static class CustomerInfo {
 
-    private String bookingId;
-    private String requestSource;
-
+    private String username;
   }
 
 }

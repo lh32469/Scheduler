@@ -15,14 +15,4 @@ public interface BookingRepository {
    */
   String save(BookingDocument doc);
 
-  /**
-   * Convenience overload to persist a ClassOffering directly. Creates a
-   * BookingDocument with a
-   * current receivedAt timestamp and delegates to {@link #save(BookingDocument)}.
-   *
-   * @param offering the class newOffering payload
-   * @return RavenDB id of the stored document
-   */
-  String save(ClassOffering offering);
-
 }
