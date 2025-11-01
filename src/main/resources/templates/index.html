@@ -9,7 +9,7 @@
 <header>
     <div class="container">
         <div class="header-content">
-            <div class="logo">FitHub</div>
+            <div class="logo" th:text="${banner.companyName}">FitHub</div>
             <nav>
                 <ul>
                     <li><a href="#" onclick="window.scrollTo({top:0,behavior:'smooth'})">Home</a></li>
@@ -77,8 +77,8 @@
 <main>
     <section class="hero">
         <div class="container">
-            <h1>Find Your Perfect Workout</h1>
-            <p>Join our diverse range of fitness classes led by expert instructors</p>
+            <h1 th:text="${banner.title}">Title</h1>
+            <p th:text="${banner.subTitle}">Subtitle</p>
         </div>
     </section>
 

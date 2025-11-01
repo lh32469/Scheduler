@@ -2,12 +2,13 @@ package org.gpc4j.web;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.ravendb.client.documents.session.IDocumentSession;
 import org.gpc4j.web.api.ClassOffering;
+import org.gpc4j.web.dto.Banner;
 import org.gpc4j.web.repository.ClassOfferingRepository;
-import org.gpc4j.web.security.RavenUserRepository;
-import org.gpc4j.web.security.UserAccount;
+import org.gpc4j.web.repository.RavenDB;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,7 +28,8 @@ public class HomeController {
 
   private final ClassOfferingRepository classOfferingRepository;
 
-  private final RavenUserRepository userRepository;
+
+  private final RavenDB ravenDB;
 
   @GetMapping({"/"})
   public String home(
@@ -45,25 +47,6 @@ public class HomeController {
     List<ClassOffering> offerings =
         classOfferingRepository.list(safePage, safeSize);
 
-
-
-//    List<String> instructorIds =
-//        offerings.stream()
-//                 .map(ClassOffering::getInstructorId)
-//                 .filter(Objects::nonNull)
-//                 .toList();
-//
-//    log.info("Found {} instructors", instructorIds.size());
-//
-//    List<UserAccount> instructors = userRepository.findUsers(instructorIds);
-//    log.info("Instructors: " + instructors);
-//
-//    offerings.stream()
-//             .map(o -> {
-//
-//               return o;
-//             });
-
     if (filter != null) {
       offerings = offerings.stream()
                            .filter(o -> Objects.equals(
@@ -71,7 +54,17 @@ public class HomeController {
                                 .toLowerCase(), filter.toLowerCase()))
                            .toList();
     }
+
+    Banner banner;
+
+    try (IDocumentSession session = ravenDB.openSession()) {
+      banner = session.query(Banner.class)
+                  .firstOrDefault();
+    }
+
     model.addAttribute("offerings", offerings);
+    model.addAttribute("banner", banner);
+
     model.addAttribute("page", safePage);
     model.addAttribute("size", safeSize);
 
