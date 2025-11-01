@@ -2,7 +2,6 @@ package org.gpc4j.web.repository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.ravendb.client.documents.IDocumentStore;
 import net.ravendb.client.documents.session.IDocumentSession;
 import org.gpc4j.web.api.ClassOffering;
 import org.gpc4j.web.security.UserAccount;
@@ -20,7 +19,7 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class RavenClassOfferingRepository implements ClassOfferingRepository {
 
-  private final IDocumentStore documentStore;
+  private final RavenDB ravenDB;
 
   @Override
   public List<ClassOffering> list(int page, int size) {
@@ -28,7 +27,7 @@ public class RavenClassOfferingRepository implements ClassOfferingRepository {
     int safeSize = Math.min(Math.max(1, size), 500);
     int skip = (safePage - 1) * safeSize;
 
-    try (IDocumentSession session = documentStore.openSession()) {
+    try (IDocumentSession session = ravenDB.openSession()) {
       List<ClassOffering> offerings = session
           .query(ClassOffering.class)
           .include("instructorId")
@@ -67,7 +66,7 @@ public class RavenClassOfferingRepository implements ClassOfferingRepository {
 
   @Override
   public ClassOffering findById(String id) {
-    try (IDocumentSession session = documentStore.openSession()) {
+    try (IDocumentSession session = ravenDB.openSession()) {
       ClassOffering found = session.load(ClassOffering.class, id);
       if (found == null) {
         log.info("ClassOffering not found for id={}", id);
@@ -81,7 +80,7 @@ public class RavenClassOfferingRepository implements ClassOfferingRepository {
 
   @Override
   public String save(ClassOffering offering) {
-    try (IDocumentSession session = documentStore.openSession()) {
+    try (IDocumentSession session = ravenDB.openSession()) {
 
       session.store(offering);
       String id = session.advanced().getDocumentId(offering);

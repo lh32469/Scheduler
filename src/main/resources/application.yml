@@ -11,6 +11,11 @@ spring:
   web:
     resources:
       add-mappings: true
+  cache:
+    type: caffeine
+    cache-names: documentStore, anotherCache
+    caffeine:
+      spec: maximumSize=100,expireAfterWrite=10m
 
 info:
   app:

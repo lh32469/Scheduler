@@ -2,12 +2,10 @@ package org.gpc4j.web.api;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.ravendb.client.documents.IDocumentStore;
 import net.ravendb.client.documents.session.IDocumentSession;
-import org.gpc4j.web.repository.BookingRepository;
 import org.gpc4j.web.repository.ClassOfferingRepository;
+import org.gpc4j.web.repository.RavenDB;
 import org.gpc4j.web.security.UserAccount;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,8 +26,7 @@ import java.time.LocalDateTime;
 @RequestMapping(path = "/api/bookings")
 public class BookingController {
 
-  private final IDocumentStore documentStore;
-  private final BookingRepository repository;
+  private final RavenDB ravenDB;
 
   UserDetailsService userDetailsService;
   private final ClassOfferingRepository classOfferingRepository;
@@ -40,16 +37,16 @@ public class BookingController {
 
     log.info("Received booking (ClassOffering): {}", offering);
 
-
     log.info("className = " + offering.getClassName());
     log.info("Start:  + " + offering.getSchedule().getStart());
 
-    try (IDocumentSession session = documentStore.openSession()) {
+    try (IDocumentSession session = ravenDB.getDocumentStore().openSession()) {
       session.advanced().setUseOptimisticConcurrency(true);
 
       UserAccount user = session.query(UserAccount.class)
-          .whereEquals("username", offering.getCustomerInfo().getUsername())
-          .firstOrDefault();
+                                .whereEquals("username",
+                                             offering.getCustomerInfo().getUsername())
+                                .firstOrDefault();
 
       ClassOffering classOffering = session.query(ClassOffering.class)
                                            .whereEquals("schedule.start",
