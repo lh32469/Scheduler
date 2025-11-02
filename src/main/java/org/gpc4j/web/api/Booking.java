@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
  * Document representation for storing a booking in RavenDB.
  */
 @Data
-public class BookingDocument {
+public class Booking {
 
   private String id; // RavenDB-assigned id
   private String domain; // Client hostname with domain.

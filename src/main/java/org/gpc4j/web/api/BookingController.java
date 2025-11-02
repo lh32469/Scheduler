@@ -72,7 +72,7 @@ public class BookingController {
           classOffering.setParticipants(classOffering.getParticipants() + 1);
           session.store(classOffering);
 
-          BookingDocument booking = new BookingDocument();
+          Booking booking = new Booking();
           booking.setClassId(offering.getId());
 
           // Pass through data

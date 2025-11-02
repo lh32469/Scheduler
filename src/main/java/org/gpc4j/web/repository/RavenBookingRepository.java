@@ -3,7 +3,7 @@ package org.gpc4j.web.repository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.ravendb.client.documents.session.IDocumentSession;
-import org.gpc4j.web.api.BookingDocument;
+import org.gpc4j.web.api.Booking;
 import org.springframework.stereotype.Repository;
 
 @Slf4j
@@ -14,7 +14,7 @@ public class RavenBookingRepository implements BookingRepository {
   private final RavenDB ravenDB;
 
   @Override
-  public String save(BookingDocument doc) {
+  public String save(Booking doc) {
     try (IDocumentSession session = ravenDB.openSession()) {
       session.advanced().setUseOptimisticConcurrency(true);
       session.store(doc);
