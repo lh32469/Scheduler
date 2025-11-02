@@ -19,6 +19,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Simple controller to handle class bookings and show user's bookings.
@@ -163,4 +164,60 @@ public class BookingController {
     return "redirect:/#schedule";
   }
 
+  @PostMapping("/cancel")
+  public String cancelBooking(@RequestParam("bookingId") String bookingId,
+                              @RequestParam(name = "page", defaultValue = "1") int page,
+                              @RequestParam(name = "size", defaultValue = "50") int size,
+                              Authentication authentication,
+                              RedirectAttributes redirectAttributes) {
+    int safePage = Math.max(1, page);
+    int safeSize = Math.min(Math.max(1, size), 200);
+
+    if (authentication == null || authentication.getName() == null) {
+      return "redirect:/login";
+    }
+
+    String username = authentication.getName();
+
+    try (IDocumentSession session = ravenDB.openSession()) {
+      session.advanced().setUseOptimisticConcurrency(true);
+
+      Booking booking = session.load(Booking.class, bookingId);
+      if (booking == null) {
+        redirectAttributes.addFlashAttribute("message", "Booking not found.");
+        redirectAttributes.addFlashAttribute("messageType", "error");
+        return "redirect:/bookings?page=" + safePage + "&size=" + safeSize;
+      }
+
+      if (!Objects.equals(username, booking.getUsername())) {
+        redirectAttributes.addFlashAttribute("message", "You are not allowed to cancel this booking.");
+        redirectAttributes.addFlashAttribute("messageType", "error");
+        return "redirect:/bookings?page=" + safePage + "&size=" + safeSize;
+      }
+
+      // Restore slot counts on the class offering if available
+      if (booking.getClassId() != null) {
+        ClassOffering off = session.load(ClassOffering.class, booking.getClassId());
+        if (off != null) {
+          off.setSlots(off.getSlots() + 1);
+          off.setParticipants(Math.max(0, off.getParticipants() - 1));
+          session.store(off);
+        }
+      }
+
+      session.delete(booking);
+      session.saveChanges();
+
+      redirectAttributes.addFlashAttribute("message", "Your booking has been canceled.");
+      redirectAttributes.addFlashAttribute("messageType", "info");
+    } catch (ConcurrencyException e) {
+      redirectAttributes.addFlashAttribute("message", "Could not cancel booking due to a concurrent update. Please try again.");
+      redirectAttributes.addFlashAttribute("messageType", "error");
+    } catch (Exception e) {
+      redirectAttributes.addFlashAttribute("message", "Failed to cancel booking: " + e.getMessage());
+      redirectAttributes.addFlashAttribute("messageType", "error");
+    }
+
+    return "redirect:/bookings?page=" + safePage + "&size=" + safeSize;
+  }
 }
