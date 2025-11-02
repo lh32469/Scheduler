@@ -35,7 +35,12 @@
 
         <label>
             Class Type
-            <input type="text" th:field="*{classType}" placeholder="yoga, cardio, strength..." required/>
+            <select th:field="*{classType}" required>
+                <option value="" disabled th:selected="${offering.classType} == null">Select a class type</option>
+                <option th:each="ct : ${T(org.gpc4j.web.api.ClassType).values()}"
+                        th:value="${ct}"
+                        th:text="${ct}"></option>
+            </select>
         </label>
 
         <label>

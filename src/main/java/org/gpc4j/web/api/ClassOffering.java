@@ -36,7 +36,7 @@ public class ClassOffering {
   private String id; // RavenDB document id (e.g., ClassOffering/1-A)
   private String domain; // Client hostname with domain.
   private String className;
-  private String classType;
+  private ClassType classType;
   private Schedule schedule;
   private String level;
 

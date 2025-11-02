@@ -275,7 +275,8 @@ nav a:hover {
 
 .form input[type="text"],
 .form input[type="number"],
-.form input[type="datetime-local"] {
+.form input[type="datetime-local"],
+.form select {
     width: 100%;
     padding: 0.65rem 0.75rem;
     border: 1px solid #ddd;

@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.ravendb.client.documents.IDocumentStore;
 import net.ravendb.client.documents.session.IDocumentSession;
 import org.springframework.stereotype.Component;
+import org.springframework.ui.Model;
 import org.springframework.web.context.annotation.RequestScope;
 
 /**
@@ -48,7 +49,9 @@ public class RavenDB {
 
     this.cache = cache;
     databaseName = request.getLocalName();
-    log.info(this + ": " + request.getLocalName());
+    if (log.isDebugEnabled()) {
+      log.debug(this + ": " + request.getLocalName());
+    }
   }
 
   public IDocumentStore getDocumentStore() {

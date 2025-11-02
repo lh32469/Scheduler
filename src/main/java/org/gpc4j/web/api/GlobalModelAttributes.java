@@ -13,7 +13,7 @@ public class GlobalModelAttributes {
   @ModelAttribute
   public void addRequestToModel(HttpServletRequest request, Model model) {
     model.addAttribute("request", request);
-    log.info("Request local address: {}", request.getLocalName());
+    log.debug("Domain name: " + request.getLocalName());
   }
 
 }

@@ -7,7 +7,6 @@ import org.gpc4j.web.api.ClassOffering;
 import org.gpc4j.web.dto.Banner;
 import org.gpc4j.web.repository.ClassOfferingRepository;
 import org.gpc4j.web.repository.RavenDB;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -28,7 +27,6 @@ public class HomeController {
 
   private final ClassOfferingRepository classOfferingRepository;
 
-
   private final RavenDB ravenDB;
 
   @GetMapping({"/"})
@@ -42,16 +40,18 @@ public class HomeController {
     int safePage = Math.max(1, page);
     int safeSize = Math.min(Math.max(1, size), 500);
 
-    log.info("" + authentication);
+    log.debug("Authentication: " + authentication);
 
     List<ClassOffering> offerings =
         classOfferingRepository.list(safePage, safeSize);
 
     if (filter != null) {
+      String f = filter.trim();
       offerings = offerings.stream()
-                           .filter(o -> Objects.equals(
-                               o.getClassType()
-                                .toLowerCase(), filter.toLowerCase()))
+                           .filter(o -> Objects.nonNull(o.getClassType()))
+                           .filter(o -> o.getClassType()
+                                         .name()
+                                         .equalsIgnoreCase(f))
                            .toList();
     }
 
@@ -59,7 +59,7 @@ public class HomeController {
 
     try (IDocumentSession session = ravenDB.openSession()) {
       banner = session.query(Banner.class)
-                  .firstOrDefault();
+                      .firstOrDefault();
     }
 
     model.addAttribute("offerings", offerings);
