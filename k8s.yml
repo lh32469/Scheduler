@@ -1,0 +1,115 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: ${project}
+  name: ${project}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ${project}
+  strategy: { }
+  template:
+    metadata:
+      labels:
+        app: ${project}
+    spec:
+      hostAliases:
+        - ip: "192.168.5.220"
+          hostnames:
+            - "dell-4290.local"
+      containers:
+        - name: ${project}
+          image: localhost:32000/${project}:${branch}
+          imagePullPolicy: "Always"
+          resources:
+            requests:
+              cpu: "100m"
+          env:
+            - name: JASYPT_ENCRYPTOR_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: jasypt-secret
+                  key: password
+            - name: BRANCH
+              value: ${branch}
+            - name: SPRING_PROFILES_ACTIVE
+              value: k8s
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8090
+              httpHeaders:
+                - name: Custom-Header
+                  value: Awesome
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            failureThreshold: 8
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8090
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            failureThreshold: 4
+
+---
+
+kind: Service
+apiVersion: v1
+metadata:
+  name: ${project}
+  annotations:
+    prometheus.io/scrape: 'true'
+    prometheus.io/port: '8085'
+    prometheus.io/path: '/actuator/prometheus'
+spec:
+  selector:
+    app: ${project}
+  ports:
+    - port: 8085 # Default port for image
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ${project}
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  tls:
+    - hosts:
+        - ${host}.${domain}
+      secretName: tls-secret
+  rules:
+    - host: ${host}.${domain}
+      http:
+        paths:
+          - pathType: Prefix
+            path: /
+            backend:
+              service:
+                name: ${project}
+                port:
+                  number: 8085
+
+
+---
+
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: ${project}
+spec:
+  maxReplicas: 4
+  minReplicas: 1
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: ${project}
+# One core = 1000% of 100m  (10x)
+  targetCPUUtilizationPercentage: 1000
