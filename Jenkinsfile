@@ -30,6 +30,7 @@ pipeline {
         container('maven') {
           script {
             sh "env"
+            sh "git config --global --add safe.directory $WORKSPACE"
             origin = sh(
                 returnStdout: true,
                 script: "git remote get-url origin"
