@@ -54,3 +54,9 @@ logging:
   pattern:
     dateformat: MM-dd HH:mm:ss.SSS,America/Los_Angeles
     console: "${CONSOLE_LOG_PATTERN:-%clr(%d{HH:mm:ss.SSS}){faint} %clr(${LOG_LEVEL_PATTERN:-%5p}) %clr(---){faint} %clr(%-25.35logger{1}.%M){cyan} %clr(:){faint} %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}}"
+
+server:
+  servlet:
+    session:
+      # Set HTTP session idle timeout to 2 hours
+      timeout: 2h
