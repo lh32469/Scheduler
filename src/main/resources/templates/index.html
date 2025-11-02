@@ -150,10 +150,6 @@
                     <span th:text="${offering.slots} + ' spots available'">0 spots available</span>
                 </div>
 
-                <div sec:authorize="isAuthenticated()">Welcome, <span sec:authentication="name"></span></div>
-                <div>Current URL: <span th:text="${request.localName}"></span></div>
-                <div>Welcome, <span sec:authentication="name"></span></div>
-
                 <form th:action="@{/api/bookings/v2}"
                       method="post"
                       class="form">
