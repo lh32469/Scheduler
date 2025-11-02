@@ -29,6 +29,7 @@ pipeline {
       steps {
         container('maven') {
           script {
+            sh "env"
             origin = sh(
                 returnStdout: true,
                 script: "git remote get-url origin"
