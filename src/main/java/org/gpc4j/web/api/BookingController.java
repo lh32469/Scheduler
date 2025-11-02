@@ -6,18 +6,25 @@ import net.ravendb.client.documents.session.IDocumentSession;
 import net.ravendb.client.exceptions.ConcurrencyException;
 import org.gpc4j.web.repository.RavenDB;
 import org.gpc4j.web.security.UserAccount;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
- * Simple REST controller to receive class booking information.
+ * Simple controller to handle class bookings and show user's bookings.
  * <p>
- * Endpoint: POST /bookings
- * Content-Type: application/json
+ * POST /bookings — create a booking
+ * GET  /bookings — list current user's bookings
  */
 @Slf4j
 @Controller
@@ -26,6 +33,58 @@ import java.time.LocalDateTime;
 public class BookingController {
 
   private final RavenDB ravenDB;
+
+  @GetMapping
+  public String listUserBookings(@RequestParam(name = "page", defaultValue = "1") int page,
+                                 @RequestParam(name = "size", defaultValue = "50") int size,
+                                 Authentication authentication,
+                                 Model model) {
+    int safePage = Math.max(1, page);
+    int safeSize = Math.min(Math.max(1, size), 200);
+    int skip = (safePage - 1) * safeSize;
+
+    if (authentication == null || authentication.getName() == null) {
+      // SecurityConfig already requires auth for /bookings/**, but guard just in case
+      return "redirect:/login";
+    }
+
+    String username = authentication.getName();
+
+    try (IDocumentSession session = ravenDB.openSession()) {
+      // Fetch bookings for current user, newest first
+      List<Booking> bookings = session.query(Booking.class)
+          .whereEquals("username", username)
+          .orderByDescending("dateBooked")
+          .skip(skip)
+          .take(safeSize + 1) // over-fetch by one to detect if a next page exists
+          .toList();
+
+      boolean hasNext = bookings.size() > safeSize;
+      if (hasNext) {
+        bookings = bookings.subList(0, safeSize);
+      }
+
+      // Preload and map related ClassOffering docs for display
+      Map<String, ClassOffering> offeringsById = new HashMap<>();
+      for (Booking b : bookings) {
+        if (b.getClassId() != null && !offeringsById.containsKey(b.getClassId())) {
+          ClassOffering off = session.load(ClassOffering.class, b.getClassId());
+          if (off != null) {
+            offeringsById.put(b.getClassId(), off);
+          }
+        }
+      }
+
+      model.addAttribute("title", "My Bookings");
+      model.addAttribute("bookings", bookings);
+      model.addAttribute("offeringsById", offeringsById);
+      model.addAttribute("page", safePage);
+      model.addAttribute("size", safeSize);
+      model.addAttribute("hasNext", hasNext);
+    }
+
+    return "bookings/index";
+  }
 
   @PostMapping()
   public String createBooking(ClassOffering offering,

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/head :: head}"></head>
+<body>
+<header>
+    <div class="container">
+        <div class="header-content">
+            <div class="logo" th:text="${title} ?: 'My Bookings'">My Bookings</div>
+            <nav>
+                <ul>
+                    <li><a th:href="@{/}">Home</a></li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</header>
+
+<main class="container" style="margin: 2rem auto;">
+
+    <section class="filters" style="padding: 1rem 1.25rem;">
+        <h2 style="margin-bottom: 0;">Your Bookings</h2>
+    </section>
+
+    <div th:if="${#lists.isEmpty(bookings)}" style="background: #fff; padding: 1.5rem; border-radius: 12px; margin-top: 1rem;">
+        <p>You don't have any bookings yet.</p>
+        <p>
+            <a class="book-btn" style="display: inline-block; width: auto; padding: 0.6rem 1rem; margin-top: 0.5rem;"
+               th:href="@{/#schedule}">Browse Classes</a>
+        </p>
+    </div>
+
+    <div th:if="${!#lists.isEmpty(bookings)}" class="schedule-grid" style="padding-top: 1rem;">
+        <div class="class-card" th:each="b, iter : ${bookings}" th:with="off=${offeringsById[b.classId]}">
+            <div class="class-header">
+                <div>
+                    <div class="class-name" th:text="${off != null ? off.className : 'Class'}">Class Name</div>
+                </div>
+                <div class="class-type" th:text="${off != null ? off.classType : ''}">Type</div>
+            </div>
+
+            <div class="class-details">
+                <div class="detail-item">
+                    <i class="fas fa-clock"></i>
+                    <span th:text="${off != null && off.schedule != null ? #temporals.format(off.schedule.start, 'EEE, MMM d • h:mm a') : ''}">Mon, Oct 27 • 7:00 AM</span>
+                </div>
+                <div class="detail-item">
+                    <i class="fas fa-signal"></i>
+                    <span th:text="${off != null ? off.level : ''}">All Levels</span>
+                </div>
+                <div class="detail-item">
+                    <i class="fas fa-calendar-check"></i>
+                    <span>
+                        Booked on
+                        <span th:text="${#temporals.format(b.dateBooked, 'yyyy-MM-dd HH:mm')}">2025-11-02 08:00</span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="detail-item" th:if="${off != null}" style="color: #28a745; font-weight: 500;">
+                <i class="fas fa-users"></i>
+                <span th:text="${off.slots} + ' spots remaining'">0 spots remaining</span>
+            </div>
+        </div>
+    </div>
+
+    <div style="display: flex; gap: .5rem; margin: 1rem 0;" th:if="${!#lists.isEmpty(bookings)}">
+        <a class="book-btn" style="width: auto; background: #6c757d;" th:if="${page > 1}"
+           th:href="@{/bookings(page=${page - 1}, size=${size})}">Prev</a>
+        <a class="book-btn" style="width: auto;" th:if="${hasNext}"
+           th:href="@{/bookings(page=${page + 1}, size=${size})}">Next</a>
+    </div>
+
+</main>
+
+</body>
+</html>
