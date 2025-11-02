@@ -20,6 +20,7 @@
                     <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/admin/users/new}">Create User</a></li>
                     <!-- Admin or Instructor: Create Class Offering -->
                     <li sec:authorize="hasAnyRole('ADMIN','INSTRUCTOR')"><a th:href="@{/offerings/new}">Create Class Offering</a></li>
+                    <li sec:authorize="hasRole('USER')"><a th:href="@{/bookings}">My Bookings</a></li>
                     <li sec:authorize="isAuthenticated()">
                         <form th:action="@{/logout}" method="post" style="display: inline;">
                             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
@@ -150,7 +151,7 @@
                     <span th:text="${offering.slots} + ' spots available'">0 spots available</span>
                 </div>
 
-                <form th:action="@{/api/bookings/v2}"
+                <form th:action="@{/bookings}"
                       method="post"
                       class="form">
                     <input type="hidden" name="id"

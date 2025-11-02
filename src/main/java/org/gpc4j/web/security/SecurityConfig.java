@@ -36,7 +36,7 @@ public class SecurityConfig {
                 "/styles.css", "/static/**", "/webjars/**", "/favicon.ico",
                 "/templates/fragments/**")
             .permitAll()
-            .requestMatchers("/api/bookings/**")
+            .requestMatchers("/bookings/**")
             .authenticated()
             .requestMatchers("/admin/**").hasRole("ADMIN")
             .anyRequest().permitAll()

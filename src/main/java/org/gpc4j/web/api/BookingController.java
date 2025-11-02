@@ -3,10 +3,9 @@ package org.gpc4j.web.api;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.ravendb.client.documents.session.IDocumentSession;
-import org.gpc4j.web.repository.ClassOfferingRepository;
+import net.ravendb.client.exceptions.ConcurrencyException;
 import org.gpc4j.web.repository.RavenDB;
 import org.gpc4j.web.security.UserAccount;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,23 +16,20 @@ import java.time.LocalDateTime;
 /**
  * Simple REST controller to receive class booking information.
  * <p>
- * Endpoint: POST /api/bookings
+ * Endpoint: POST /bookings
  * Content-Type: application/json
  */
 @Slf4j
 @Controller
 @RequiredArgsConstructor
-@RequestMapping(path = "/api/bookings")
+@RequestMapping(path = "/bookings")
 public class BookingController {
 
   private final RavenDB ravenDB;
 
-  UserDetailsService userDetailsService;
-  private final ClassOfferingRepository classOfferingRepository;
-
-  @PostMapping(path = "/v2")
-  public String createBookingTwo(ClassOffering offering,
-                                 RedirectAttributes redirectAttributes) {
+  @PostMapping()
+  public String createBooking(ClassOffering offering,
+                              RedirectAttributes redirectAttributes) {
 
     log.info("Received booking (ClassOffering): {}", offering);
 
@@ -96,7 +92,8 @@ public class BookingController {
         redirectAttributes.addFlashAttribute("messageType",
                                              "error");
       }
-    } catch (net.ravendb.client.exceptions.ConcurrencyException e) {
+    } catch (ConcurrencyException e) {
+      // Document(s) has been modified by another transaction since we fetched it.
 
       redirectAttributes.addFlashAttribute("message",
                                            "Error booking class, please try again.");
@@ -105,35 +102,6 @@ public class BookingController {
     }
 
     return "redirect:/#schedule";
-  }
-
-  /**
-   * Incoming booking payload. Uses Java 21 record for brevity.
-   */
-  public record BookingRequest(
-      String name,
-      String email,
-      String phone,
-      String classId,
-      String className,
-      String date,   // ISO-8601 date string (e.g., 2025-08-18)
-      String time,   // Local time string (e.g., 14:30)
-      Integer participants,
-      String notes
-  ) {
-
-  }
-
-  /**
-   * Simple response wrapper.
-   */
-  public record BookingResponse(
-      String status,
-      ClassOffering booking,
-      String receivedAt,
-      String id
-  ) {
-
   }
 
 }
