@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/head :: head}"></head>
+<body>
+<header>
+    <div class="container">
+        <div class="header-content">
+            <div class="logo">Create Class Offering</div>
+            <nav>
+                <ul>
+                    <li><a th:href="@{/}">Home</a></li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</header>
+<main class="container" style="margin-top: 2rem;">
+    <h2>Create a New Class Offering</h2>
+
+    <div th:if="${message}"
+         th:classappend="${messageType} == 'error' ? ' error' : ' info'"
+         style="margin: 1rem 0; padding: 1rem; border-radius: 8px; background: #fdecea; color: #611a15;">
+        <span th:text="${message}"></span>
+    </div>
+
+    <form th:action="@{/offerings}" method="post" th:object="${offering}" class="form"
+          style="display: grid; gap: 1rem; max-width: 640px;">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+        <label>
+            Class Name
+            <input type="text" th:field="*{className}" placeholder="Morning Flow Yoga" required/>
+        </label>
+
+        <label>
+            Class Type
+            <input type="text" th:field="*{classType}" placeholder="yoga, cardio, strength..." required/>
+        </label>
+
+        <label>
+            Level
+            <input type="text" th:field="*{level}" placeholder="All Levels"/>
+        </label>
+
+        <label>
+            Start Date & Time
+            <input type="datetime-local" th:field="*{schedule.start}"/>
+        </label>
+
+        <label>
+            Duration
+            <input type="text" th:field="*{schedule.duration}" placeholder="60 min"/>
+        </label>
+
+        <label>
+            Slots Available
+            <input type="number" min="0" th:field="*{slots}"/>
+        </label>
+
+        <div class="actions">
+            <button class="book-btn" type="submit">Create Offering</button>
+            <a class="book-btn" style="background: #6c757d;" th:href="@{/}">Cancel</a>
+        </div>
+    </form>
+</main>
+</body>
+</html>
