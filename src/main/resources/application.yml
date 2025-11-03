@@ -23,24 +23,36 @@ info:
     description: WebTemplate Spring Boot application
     version: ${project.version:0.0.1-SNAPSHOT}
 
+
 management:
+  server:
+    port: 8090
   endpoints:
     web:
-      # Explicitly expose basic endpoints over HTTP
       exposure:
-        include: health,info
+        include: "*"
   endpoint:
     health:
-      show-details: when_authorized
-      probes:
-        enabled: true
-  info:
-    env:
-      enabled: true
-    java:
-      enabled: true
-    os:
-      enabled: true
+      show-details: always
+#
+#management:
+#  endpoints:
+#    web:
+#      # Explicitly expose basic endpoints over HTTP
+#      exposure:
+#        include: health,info
+#  endpoint:
+#    health:
+#      show-details: when_authorized
+#      probes:
+#        enabled: true
+#  info:
+#    env:
+#      enabled: true
+#    java:
+#      enabled: true
+#    os:
+#      enabled: true
 
 # RavenDB Configuration
 ravendb:
