@@ -1,3 +1,21 @@
+server:
+  port: 8085
+  http2:
+    enabled: true
+  tomcat:
+    redirect-context-root: false
+
+management:
+  server:
+    port: 8090
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+
 spring:
   application:
     name: WebTemplate
@@ -23,18 +41,6 @@ info:
     description: WebTemplate Spring Boot application
     version: ${project.version:0.0.1-SNAPSHOT}
 
-
-management:
-  server:
-    port: 8090
-  endpoints:
-    web:
-      exposure:
-        include: "*"
-  endpoint:
-    health:
-      show-details: always
-#
 #management:
 #  endpoints:
 #    web:
