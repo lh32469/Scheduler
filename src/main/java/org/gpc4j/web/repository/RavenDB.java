@@ -47,6 +47,17 @@ public class RavenDB {
   public RavenDB(HttpServletRequest request,
                  RavenDocumentStoreCache cache) {
 
+    String hostname = request.getHeader("X-Forwarded-Host");
+    log.info("X-Forwarded-Host: {}", hostname);
+
+    // Fall back to Host header if X-Forwarded-Host isn't set
+    if (hostname == null || hostname.isEmpty()) {
+      hostname = request.getHeader("Host");
+      log.info("Host: {}", hostname);
+    }
+
+    log.info("Request came through: {}", hostname);
+
     this.cache = cache;
     databaseName = request.getLocalName();
     if (log.isDebugEnabled()) {
