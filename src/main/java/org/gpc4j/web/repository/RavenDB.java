@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import net.ravendb.client.documents.IDocumentStore;
 import net.ravendb.client.documents.session.IDocumentSession;
 import org.springframework.stereotype.Component;
-import org.springframework.ui.Model;
 import org.springframework.web.context.annotation.RequestScope;
 
 /**
@@ -48,20 +47,17 @@ public class RavenDB {
                  RavenDocumentStoreCache cache) {
 
     String hostname = request.getHeader("X-Forwarded-Host");
-    log.info("X-Forwarded-Host: {}", hostname);
+    log.debug("X-Forwarded-Host: {}", hostname);
 
-    // Fall back to Host header if X-Forwarded-Host isn't set
-    if (hostname == null || hostname.isEmpty()) {
-      hostname = request.getHeader("Host");
-      log.info("Host: {}", hostname);
+    if (hostname == null) {
+      hostname = request.getLocalName();
+      log.debug("X-Forwarded-Host not found, using local name: {}", hostname);
     }
 
-    log.info("Request came through: {}", hostname);
-
     this.cache = cache;
-    databaseName = request.getLocalName();
+    databaseName = hostname;
     if (log.isDebugEnabled()) {
-      log.debug(this + ": " + request.getLocalName());
+      log.debug(this + ": " + databaseName);
     }
   }
 
