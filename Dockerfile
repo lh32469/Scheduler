@@ -1,4 +1,4 @@
-FROM amazoncorretto:21
+FROM amazoncorretto:25
 
 RUN rm /etc/localtime
 RUN ln -s /usr/share/zoneinfo/PST8PDT /etc/localtime
