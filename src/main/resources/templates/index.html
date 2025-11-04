@@ -19,7 +19,8 @@
                     <!-- Admin-only: Create User -->
                     <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/admin/users/new}">Create User</a></li>
                     <!-- Admin or Instructor: Create Class Offering -->
-                    <li sec:authorize="hasAnyRole('ADMIN','INSTRUCTOR')"><a th:href="@{/offerings/new}">Create Class Offering</a></li>
+                    <li sec:authorize="hasAnyRole('ADMIN','INSTRUCTOR')"><a th:href="@{/offerings/new}">Create Class
+                        Offering</a></li>
                     <li sec:authorize="hasRole('USER')"><a th:href="@{/bookings}">My Bookings</a></li>
                     <li sec:authorize="isAuthenticated()">
                         <form th:action="@{/logout}" method="post" style="display: inline;">
@@ -183,8 +184,9 @@
 
 <footer>
     <div class="container">
-        <p>© <span th:text="${#temporals.format(#temporals.createNow(), 'yyyy')}">2025</span> FitHub. All rights
-            reserved.</p>
+        <p>© <span th:text="${#temporals.format(#temporals.createNow(), 'yyyy')}">2025</span>
+            <span th:text="${banner.companyName}">FitHub</span>. All rights reserved.
+        </p>
     </div>
 </footer>
 
