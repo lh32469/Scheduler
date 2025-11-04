@@ -6,6 +6,13 @@ import lombok.Data;
 public class Banner {
 
   private String companyName;
+  /**
+   * Title on URL tab in browser.
+   */
+  private String tabTitle;
+  /**
+   * Title on main page.
+   */
   private String title;
   private String subTitle;
 
