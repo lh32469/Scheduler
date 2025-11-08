@@ -2,9 +2,7 @@ package org.gpc4j.web;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.ravendb.client.documents.session.IDocumentSession;
 import org.gpc4j.web.api.ClassOffering;
-import org.gpc4j.web.dto.Banner;
 import org.gpc4j.web.repository.ClassOfferingRepository;
 import org.gpc4j.web.repository.RavenDB;
 import org.springframework.security.core.Authentication;
@@ -55,16 +53,7 @@ public class HomeController {
                            .toList();
     }
 
-    Banner banner;
-
-    try (IDocumentSession session = ravenDB.openSession()) {
-      banner = session.query(Banner.class)
-                      .firstOrDefault();
-    }
-
     model.addAttribute("offerings", offerings);
-    model.addAttribute("banner", banner);
-
     model.addAttribute("page", safePage);
     model.addAttribute("size", safeSize);
 
