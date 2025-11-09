@@ -45,6 +45,12 @@
       <artifactId>spring-boot-starter-actuator</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>de.codecentric</groupId>
+      <artifactId>spring-boot-admin-starter-client</artifactId>
+      <version>3.3.5</version>
+    </dependency>
+
     <!-- Spring Security -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
