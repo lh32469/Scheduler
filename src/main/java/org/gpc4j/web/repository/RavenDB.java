@@ -22,6 +22,9 @@ public class RavenDB {
   @Value("${ravendb.database}")
   private String databaseName;
 
+  @Value("${management.server.port}")
+  int managementPort;
+
   public RavenDB(HttpServletRequest request,
                  RavenDocumentStoreCache cache) {
 
@@ -32,7 +35,11 @@ public class RavenDB {
   @PostConstruct
   public void postConstruct() {
 
-    log.info(request.getRequestURL() + " " + request.getMethod());
+    // Ignore calls to management port
+    if (managementPort == request.getServerPort()) {
+      return;
+    }
+
     final String hostname = request.getHeader("X-Forwarded-Host");
 
     if (Objects.isNull(hostname)) {
