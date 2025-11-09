@@ -20,6 +20,8 @@ public class GlobalModelAttributes {
   @ModelAttribute
   public void addRequestToModel(HttpServletRequest request, Model model) {
 
+    log.info(request.getRequestURL() + " " + request.getServerPort());
+
     if(log.isTraceEnabled()) {
       log.trace(request.getRequestURL() + " " + request.getMethod());
       log.trace("Model = " + model);
