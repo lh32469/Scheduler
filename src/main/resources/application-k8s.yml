@@ -5,7 +5,6 @@ spring:
       client:
         username: client
         password: 714df93cf5c9
-        url: http://svc.sba-k8s:8099
         auto-deregistration: true
         instance:
           service-host-type: ip
