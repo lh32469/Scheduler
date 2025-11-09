@@ -9,7 +9,6 @@ spring:
         auto-deregistration: true
         instance:
           service-host-type: ip
-          prefer-ip: true
           service-url: http://${POD_IP}:8090/actuator/info
           health-url: http://${POD_IP}:8090/actuator/health
           management-url: http://${POD_IP}:8090/actuator/

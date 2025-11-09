@@ -6,8 +6,8 @@ server:
     redirect-context-root: false
   servlet:
     session:
-          # Set HTTP session idle timeout to 2 hours
-          timeout: 2h
+      # Set HTTP session idle timeout to 2 hours
+      timeout: 2h
 
 management:
   server:
