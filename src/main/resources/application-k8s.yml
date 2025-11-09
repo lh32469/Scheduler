@@ -3,12 +3,12 @@ spring:
   boot:
     admin:
       client:
+        username: client
         password: 714df93cf5c9
         url: http://svc.sba-k8s:8099
         auto-deregistration: true
         instance:
           management-base-url: http://${POD_IP}:8090
-          service-base-url: http://${POD_IP}:8085
           service-host-type: ip
           prefer-ip: true
 
