@@ -1,4 +1,3 @@
-
 spring:
   boot:
     admin:
@@ -8,6 +7,8 @@ spring:
         url: http://svc.sba-k8s:8099
         auto-deregistration: true
         instance:
+          prefer-ip: true
+          service-host-type: ip
           service-url: http://${POD_IP}:8090
           health-url: http://${POD_IP}:8090/actuator/health
           management-url: http://${POD_IP}:8090/actuator
