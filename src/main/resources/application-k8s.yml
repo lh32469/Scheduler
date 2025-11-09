@@ -8,9 +8,11 @@ spring:
         url: http://svc.sba-k8s:8099
         auto-deregistration: true
         instance:
-          management-base-url: http://${POD_IP}:8090
           service-host-type: ip
           prefer-ip: true
+          service-url: http://${POD_IP}:8090/actuator/info
+          health-url: http://${POD_IP}:8090/actuator/health
+          management-url: http://${POD_IP}:8090/actuator/
 
 # RavenDB Configuration
 ravendb:
