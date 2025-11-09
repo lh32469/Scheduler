@@ -19,6 +19,11 @@ public class GlobalModelAttributes {
 
   @ModelAttribute
   public void addRequestToModel(HttpServletRequest request, Model model) {
+
+    if(log.isTraceEnabled()) {
+      log.trace(request.getRequestURL() + " " + request.getMethod());
+      log.trace("Model = " + model);
+    }
     model.addAttribute("request", request);
     log.debug("Domain name: " + request.getLocalName());
 
