@@ -15,8 +15,8 @@ import org.springframework.stereotype.Component;
  * It uses Spring's {@code @Cacheable} annotation to store and retrieve instances
  * of DocumentStore for a given database name.
  * <p>
- * The database URLs are specified through the external configuration property
- * {@code ravendb.urls}.
+ * The database URL is specified through the external configuration property
+ * {@code ravendb.url}.
  * <p>
  * This class also ensures proper setup of the Jackson {@code ObjectMapper} for
  * correct handling of Java {@code java.time} types.
@@ -28,12 +28,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class RavenDocumentStoreCache {
 
-  @Value("${ravendb.urls}")
-  private String[] urls;
+  @Value("${ravendb.url}")
+  private String url;
 
   @Cacheable(value = "documentStore", key = "#databaseName")
   public IDocumentStore getDocumentStore(String databaseName) {
-    DocumentStore store = new DocumentStore(urls, databaseName);
+    DocumentStore store = new DocumentStore(url, databaseName);
 
     // Configure Jackson ObjectMapper for proper DateTime handling
     ObjectMapper mapper = store.getConventions().getEntityMapper();
