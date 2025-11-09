@@ -7,11 +7,13 @@ import net.ravendb.client.documents.IDocumentStore;
 import net.ravendb.client.documents.session.IDocumentSession;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.annotation.RequestScope;
 
 import java.util.Objects;
 
 @Slf4j
 @Component
+@RequestScope
 public class RavenDB {
 
   private final RavenDocumentStoreCache cache;
