@@ -31,6 +31,8 @@ public class RavenDB {
 
   @PostConstruct
   public void postConstruct() {
+
+    log.info(request.getRequestURL() + " " + request.getMethod());
     final String hostname = request.getHeader("X-Forwarded-Host");
 
     if (Objects.isNull(hostname)) {
