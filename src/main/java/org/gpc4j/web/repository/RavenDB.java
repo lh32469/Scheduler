@@ -30,6 +30,9 @@ public class RavenDB {
 
     this.cache = cache;
     this.request = request;
+
+    log.info(request.getRequestURL() + " " + request.getServerPort());
+
   }
 
   @PostConstruct
