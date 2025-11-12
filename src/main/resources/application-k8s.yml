@@ -6,6 +6,7 @@ spring:
         username: admin
         password: Temp01!
         auto-registration: true
+        auto-deregistration: true
         instance:
           name: ${spring.application.name}
           prefer-ip: true
