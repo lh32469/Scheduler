@@ -2,16 +2,14 @@ spring:
   boot:
     admin:
       client:
-        username: client
-        password: 714df93cf5c9
-        url: http://svc.sba-k8s:8099
-        auto-deregistration: true
+        url: http://sba.sba-java25:8085
+        username: admin
+        password: Temp01!
+        auto-registration: true
         instance:
+          name: ${spring.application.name}
           prefer-ip: true
-          service-host-type: ip
-          service-url: http://${POD_IP}:8090
-          health-url: http://${POD_IP}:8090/actuator/health
-          management-url: http://${POD_IP}:8090/actuator
+          management-base-url: http://${POD_IP}:8090
 
 # RavenDB Configuration
 ravendb:
