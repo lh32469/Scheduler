@@ -1,6 +1,7 @@
 package org.gpc4j.web.security;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -18,6 +19,9 @@ import org.springframework.security.web.SecurityFilterChain;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+  @Value("${management.server.port}")
+  int managementPort;
+
   private final RavenUserDetailsService userDetailsService;
 
   @Bean
@@ -30,6 +34,9 @@ public class SecurityConfig {
     http
         .csrf(csrf -> csrf.ignoringRequestMatchers("/actuator/**"))
         .authorizeHttpRequests(auth -> auth
+            .requestMatchers(
+                request ->
+                    request.getLocalPort() == managementPort).permitAll()
             .requestMatchers(
                 "/",
                 "/login", "/error",
