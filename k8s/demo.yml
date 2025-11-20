@@ -1,0 +1,27 @@
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: demo
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  tls:
+    - hosts:
+        - demo.fithub.mcquarrie.cc
+      secretName: demo-tls-secret
+  rules:
+    - host: demo.fithub.mcquarrie.cc 
+      http:
+        paths:
+          - pathType: Prefix
+            path: /
+            backend:
+              service:
+                name: fithub
+                port:
+                  number: 8085
+
+
