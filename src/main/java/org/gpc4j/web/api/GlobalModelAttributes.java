@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.ravendb.client.documents.session.IDocumentSession;
 import org.gpc4j.web.dto.Banner;
 import org.gpc4j.web.repository.RavenDB;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -17,12 +18,20 @@ public class GlobalModelAttributes {
 
   private final RavenDB ravenDB;
 
+  @Value("${management.server.port}")
+  int managementPort;
+
   @ModelAttribute
   public void addRequestToModel(HttpServletRequest request, Model model) {
 
+    // Ignore calls to management port
+    if (managementPort == request.getServerPort()) {
+      return;
+    }
+
     log.info(request.getRequestURL() + " " + request.getServerPort());
 
-    if(log.isTraceEnabled()) {
+    if (log.isTraceEnabled()) {
       log.trace(request.getRequestURL() + " " + request.getMethod());
       log.trace("Model = " + model);
     }
@@ -30,8 +39,9 @@ public class GlobalModelAttributes {
     log.debug("Domain name: " + request.getLocalName());
 
     try (IDocumentSession session = ravenDB.openSession()) {
-      Banner banner = session.query(Banner.class)
-                             .firstOrDefault();
+      Banner banner = session
+          .query(Banner.class)
+          .firstOrDefault();
 
       model.addAttribute("banner", banner);
     }
