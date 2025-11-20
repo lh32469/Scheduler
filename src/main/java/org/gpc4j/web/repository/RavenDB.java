@@ -30,9 +30,6 @@ public class RavenDB {
 
     this.cache = cache;
     this.request = request;
-
-    log.info(request.getRequestURL() + " " + request.getServerPort());
-
   }
 
   @PostConstruct
@@ -43,6 +40,12 @@ public class RavenDB {
       return;
     }
 
+    // Ignore calls from Spring Boot Admin
+    if (request.getRequestURI().startsWith("/actuator")) {
+      log.info(request.getRequestURL() + " " + request.getServerPort());
+      return;
+    }
+
     final String hostname = request.getHeader("X-Forwarded-Host");
 
     if (Objects.isNull(hostname)) {
@@ -50,8 +53,6 @@ public class RavenDB {
     } else {
       this.databaseName = hostname;
     }
-
-    log.debug(this + ": " + databaseName);
   }
 
   public IDocumentStore getDocumentStore() {
