@@ -50,7 +50,6 @@ public class RavenDB {
     } else {
       this.databaseName = hostname;
     }
-    databaseName = "localhost";
 
     log.debug(this + ": " + databaseName);
   }
