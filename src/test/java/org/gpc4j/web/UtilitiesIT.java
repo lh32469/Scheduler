@@ -29,6 +29,15 @@ public class UtilitiesIT {
   @Value("${ravendb.database}")
   private String databaseName;
 
+  @Value("${spring.application.name}")
+  private String applicationName;
+
+  @Value("${info.app.description}")
+  private String description;
+
+  @Value("${info.app.version}")
+  private String version;
+
   @Autowired
   RavenDocumentStoreCache cache;
 
@@ -53,11 +62,11 @@ public class UtilitiesIT {
   void createBanner() {
 
     Banner banner = new Banner();
-    banner.setCompanyName("Company Name");
-    banner.setTitle("Title");
-    banner.setSubTitle("Subtitle");
+    banner.setCompanyName(applicationName);
+    banner.setTitle(description);
+    banner.setSubTitle("Version " + version);
 
-    session.store(banner);
+    session.store(banner, "Banners/1-A");
   }
 
   @Test

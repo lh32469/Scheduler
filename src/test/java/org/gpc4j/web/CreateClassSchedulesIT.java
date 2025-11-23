@@ -53,21 +53,35 @@ public class CreateClassSchedulesIT {
       return getRandomInstructor();
     }
 
-    String className = schedule.getClassName() != null ? schedule.getClassName().toLowerCase() : "";
+    String className =
+        schedule.getClassName() != null ? schedule.getClassName().toLowerCase() : "";
     ClassType type = schedule.getClassType();
 
     // Build keyword set based on type and className
     java.util.Set<String> keywords = new java.util.HashSet<>();
     if (type != null) {
       switch (type) {
-        case yoga -> keywords.addAll(java.util.List.of("yoga", "vinyasa", "hatha", "mindfulness"));
+        case yoga ->
+            keywords.addAll(java.util.List.of("yoga", "vinyasa", "hatha", "mindfulness"));
         case pilates -> keywords.add("pilates");
         case spin -> keywords.addAll(java.util.List.of("spin", "cycling"));
-        case cardio -> keywords.addAll(java.util.List.of("cardio", "hiit", "high-intensity", "boxing", "kickboxing", "martial"));
-        case strength -> keywords.addAll(java.util.List.of("strength", "conditioning", "crossfit", "body pump"));
+        case cardio -> keywords.addAll(java.util.List.of("cardio",
+                                                         "hiit",
+                                                         "high-intensity",
+                                                         "boxing",
+                                                         "kickboxing",
+                                                         "martial"));
+        case strength -> keywords.addAll(java.util.List.of("strength",
+                                                           "conditioning",
+                                                           "crossfit",
+                                                           "body pump"));
         case dance -> keywords.addAll(java.util.List.of("dance", "zumba", "ballet"));
-        case meditation -> keywords.addAll(java.util.List.of("meditation", "mindfulness", "tai chi", "yoga"));
-        case stretch -> keywords.addAll(java.util.List.of("stretch", "flexibility", "senior"));
+        case meditation -> keywords.addAll(java.util.List.of("meditation",
+                                                             "mindfulness",
+                                                             "tai chi",
+                                                             "yoga"));
+        case stretch ->
+            keywords.addAll(java.util.List.of("stretch", "flexibility", "senior"));
       }
     }
 
@@ -78,30 +92,36 @@ public class CreateClassSchedulesIT {
     if (className.contains("boxing") || className.contains("kickboxing")) {
       keywords.addAll(java.util.List.of("boxing", "kickboxing", "martial"));
     }
-    if (className.contains("crossfit") || className.contains("body pump") || className.contains("circuit") || className.contains("bootcamp")) {
+    if (className.contains("crossfit") || className.contains("body pump") || className.contains(
+        "circuit") || className.contains("bootcamp")) {
       keywords.addAll(java.util.List.of("crossfit", "strength", "conditioning"));
     }
     if (className.contains("pilates")) {
       keywords.add("pilates");
     }
-    if (className.contains("yoga") || className.contains("tai chi") || className.contains("meditation") || className.contains("mindful")) {
+    if (className.contains("yoga") || className.contains("tai chi") || className.contains(
+        "meditation") || className.contains("mindful")) {
       keywords.addAll(java.util.List.of("yoga", "meditation", "mindfulness", "tai chi"));
     }
-    if (className.contains("aqua") || className.contains("swim") || className.contains("pool")) {
+    if (className.contains("aqua") || className.contains("swim") || className.contains(
+        "pool")) {
       keywords.addAll(java.util.List.of("swim", "swimming"));
     }
 
     // Try to find matching instructors by profile keywords
     java.util.List<UserAccount> matches = instructors.stream()
-        .filter(u -> u.getProfile() != null)
-        .filter(u -> {
-          String p = u.getProfile().toLowerCase();
-          for (String kw : keywords) {
-            if (p.contains(kw)) return true;
-          }
-          return false;
-        })
-        .toList();
+                                                     .filter(u -> u.getProfile() != null)
+                                                     .filter(u -> {
+                                                       String p =
+                                                           u.getProfile().toLowerCase();
+                                                       for (String kw : keywords) {
+                                                         if (p.contains(kw)) {
+                                                           return true;
+                                                         }
+                                                       }
+                                                       return false;
+                                                     })
+                                                     .toList();
 
     if (!matches.isEmpty()) {
       return matches.get((int) (Math.random() * matches.size()));
@@ -143,9 +163,9 @@ public class CreateClassSchedulesIT {
     schedule.setClassStartTime(LocalTime.of(9, 0));
     schedule.setInstructorId(getInstructorFor(schedule).getId());
     schedule.setDuration(75);
-    schedule.setSlots(20);
+    schedule.setSlots(-1);
     schedule.setLocation(getRandomLocation());
-    session.store(schedule);
+    session.store(schedule, "ClassSchedules/1-A");
   }
 
   @Test
@@ -162,9 +182,9 @@ public class CreateClassSchedulesIT {
     schedule.setClassStartTime(LocalTime.of(10, 30));
     schedule.setInstructorId(getInstructorFor(schedule).getId());
     schedule.setDuration(60);
-    schedule.setSlots(15);
+    schedule.setSlots(-1);
     schedule.setLocation(getRandomLocation());
-    session.store(schedule);
+    session.store(schedule, "ClassSchedules/2-A");
   }
 
   @Test
@@ -181,7 +201,7 @@ public class CreateClassSchedulesIT {
     schedule.setDuration(45);
     schedule.setSlots(25);
     schedule.setLocation(getRandomLocation());
-    session.store(schedule);
+    session.store(schedule, "ClassSchedules/3-A");
   }
 
   @Test
@@ -198,9 +218,9 @@ public class CreateClassSchedulesIT {
     schedule.setClassStartTime(LocalTime.of(18, 30));
     schedule.setInstructorId(getInstructorFor(schedule).getId());
     schedule.setDuration(60);
-    schedule.setSlots(30);
+    schedule.setSlots(-1);
     schedule.setLocation(getRandomLocation());
-    session.store(schedule);
+    session.store(schedule, "ClassSchedules/4-A");
   }
 
   @Test
@@ -217,9 +237,9 @@ public class CreateClassSchedulesIT {
     schedule.setClassStartTime(LocalTime.of(19, 0));
     schedule.setInstructorId(getInstructorFor(schedule).getId());
     schedule.setDuration(60);
-    schedule.setSlots(20);
+    schedule.setSlots(-1);
     schedule.setLocation(getRandomLocation());
-    session.store(schedule);
+    session.store(schedule, "ClassSchedules/5-A");
   }
 
   @Test
@@ -234,9 +254,9 @@ public class CreateClassSchedulesIT {
     schedule.setClassStartTime(LocalTime.of(8, 0));
     schedule.setInstructorId(getInstructorFor(schedule).getId());
     schedule.setDuration(45);
-    schedule.setSlots(15);
+    schedule.setSlots(-1);
     schedule.setLocation(getRandomLocation());
-    session.store(schedule);
+    session.store(schedule, "ClassSchedules/6-A");
   }
 
   @Test
@@ -253,7 +273,7 @@ public class CreateClassSchedulesIT {
     schedule.setDuration(45);
     schedule.setSlots(20);
     schedule.setLocation(getRandomLocation());
-    session.store(schedule);
+    session.store(schedule, "ClassSchedules/7-A");
   }
 
   @Test
@@ -270,9 +290,9 @@ public class CreateClassSchedulesIT {
     schedule.setClassStartTime(LocalTime.of(7, 30));
     schedule.setInstructorId(getInstructorFor(schedule).getId());
     schedule.setDuration(30);
-    schedule.setSlots(25);
+    schedule.setSlots(-1);
     schedule.setLocation(getRandomLocation());
-    session.store(schedule);
+    session.store(schedule, "ClassSchedules/8-A");
   }
 
   @Test
@@ -291,7 +311,7 @@ public class CreateClassSchedulesIT {
     schedule.setDuration(60);
     schedule.setSlots(15);
     schedule.setLocation(getRandomLocation());
-    session.store(schedule);
+    session.store(schedule, "ClassSchedules/9-A");
   }
 
   @Test
@@ -308,7 +328,7 @@ public class CreateClassSchedulesIT {
     schedule.setDuration(60);
     schedule.setSlots(20);
     schedule.setLocation(getRandomLocation());
-    session.store(schedule);
+    session.store(schedule, "ClassSchedules/10-A");
   }
 
   @Test
@@ -323,9 +343,9 @@ public class CreateClassSchedulesIT {
     schedule.setClassStartTime(LocalTime.of(9, 30));
     schedule.setInstructorId(getInstructorFor(schedule).getId());
     schedule.setDuration(45);
-    schedule.setSlots(25);
+    schedule.setSlots(-1);
     schedule.setLocation(getRandomLocation());
-    session.store(schedule);
+    session.store(schedule, "ClassSchedules/11-A");
   }
 
   @Test
@@ -340,9 +360,9 @@ public class CreateClassSchedulesIT {
     schedule.setClassStartTime(LocalTime.of(19, 30));
     schedule.setInstructorId(getInstructorFor(schedule).getId());
     schedule.setDuration(60);
-    schedule.setSlots(15);
+    schedule.setSlots(-1);
     schedule.setLocation(getRandomLocation());
-    session.store(schedule);
+    session.store(schedule, "ClassSchedules/12-A");
   }
 
   @Test
@@ -359,9 +379,9 @@ public class CreateClassSchedulesIT {
     schedule.setClassStartTime(LocalTime.of(8, 30));
     schedule.setInstructorId(getInstructorFor(schedule).getId());
     schedule.setDuration(45);
-    schedule.setSlots(20);
+    schedule.setSlots(-1);
     schedule.setLocation(getRandomLocation());
-    session.store(schedule);
+    session.store(schedule, "ClassSchedules/13-A");
   }
 
   @Test
@@ -380,7 +400,7 @@ public class CreateClassSchedulesIT {
     schedule.setDuration(45);
     schedule.setSlots(20);
     schedule.setLocation(getRandomLocation());
-    session.store(schedule);
+    session.store(schedule, "ClassSchedules/14-A");
   }
 
   @Test
@@ -395,9 +415,9 @@ public class CreateClassSchedulesIT {
     schedule.setClassStartTime(LocalTime.of(11, 0));
     schedule.setInstructorId(getInstructorFor(schedule).getId());
     schedule.setDuration(45);
-    schedule.setSlots(15);
+    schedule.setSlots(-1);
     schedule.setLocation("Pool Area");
-    session.store(schedule);
+    session.store(schedule, "ClassSchedules/15-A");
   }
 
   @Test
@@ -414,7 +434,7 @@ public class CreateClassSchedulesIT {
     schedule.setDuration(60);
     schedule.setSlots(15);
     schedule.setLocation(getRandomLocation());
-    session.store(schedule);
+    session.store(schedule, "ClassSchedules/16-A");
   }
 
   @Test
@@ -429,9 +449,9 @@ public class CreateClassSchedulesIT {
     schedule.setClassStartTime(LocalTime.of(10, 0));
     schedule.setInstructorId(getInstructorFor(schedule).getId());
     schedule.setDuration(45);
-    schedule.setSlots(15);
+    schedule.setSlots(-1);
     schedule.setLocation(getRandomLocation());
-    session.store(schedule);
+    session.store(schedule, "ClassSchedules/17-A");
   }
 
   @Test
@@ -448,9 +468,9 @@ public class CreateClassSchedulesIT {
     schedule.setClassStartTime(LocalTime.of(6, 30));
     schedule.setInstructorId(getInstructorFor(schedule).getId());
     schedule.setDuration(60);
-    schedule.setSlots(20);
+    schedule.setSlots(-1);
     schedule.setLocation(getRandomLocation());
-    session.store(schedule);
+    session.store(schedule, "ClassSchedules/18-A");
   }
 
   @Test
@@ -464,10 +484,10 @@ public class CreateClassSchedulesIT {
     schedule.setDaysOfWeek(Set.of(DayOfWeek.TUESDAY, DayOfWeek.THURSDAY));
     schedule.setClassStartTime(LocalTime.of(20, 0));
     schedule.setInstructorId(getInstructorFor(schedule).getId());
-    schedule.setDuration(90);
+    schedule.setDuration(60);
     schedule.setSlots(20);
     schedule.setLocation(getRandomLocation());
-    session.store(schedule);
+    session.store(schedule, "ClassSchedules/19-A");
   }
 
   @Test
@@ -482,9 +502,9 @@ public class CreateClassSchedulesIT {
     schedule.setClassStartTime(LocalTime.of(11, 30));
     schedule.setInstructorId(getInstructorFor(schedule).getId());
     schedule.setDuration(60);
-    schedule.setSlots(12);
+    schedule.setSlots(-1);
     schedule.setLocation(getRandomLocation());
-    session.store(schedule);
+    session.store(schedule, "ClassSchedules/20-A");
   }
 
 }

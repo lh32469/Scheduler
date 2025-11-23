@@ -43,7 +43,7 @@ info:
   app:
     name: ${spring.application.name}
     description: WebTemplate Spring Boot application
-    version: ${project.version:0.0.1-SNAPSHOT}
+    version: ${project.version:2.0}
 
 #management:
 #  endpoints:
@@ -66,7 +66,7 @@ info:
 
 # RavenDB Configuration
 ravendb:
-  database: test1
+  database: v2.fithub.mcquarrie.cc
   url: http://raven.dell.mcquarrie.cc
 
 logging:
