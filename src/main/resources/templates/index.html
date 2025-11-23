@@ -18,9 +18,6 @@
                     <li><a href="#contact">Contact</a></li>
                     <!-- Admin-only: Create User -->
                     <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/admin/users/new}">Create User</a></li>
-                    <!-- Admin or Instructor: Create Class Offering -->
-                    <li sec:authorize="hasAnyRole('ADMIN','INSTRUCTOR')"><a th:href="@{/offerings/new}">Create Class
-                        Offering</a></li>
                     <!-- Instructor-only: My Classes -->
                     <li sec:authorize="hasRole('INSTRUCTOR')"><a th:href="@{/instructor/classes}">My Classes</a></li>
                     <li sec:authorize="!isAuthenticated()"><a th:href="@{/login}">Login</a></li>
@@ -91,12 +88,11 @@
     <section class="container" id="schedule">
         <div class="filters">
             <div class="filter-controls">
-                <button class="filter-btn" onclick="window.location.href='/'">All Classes</button>
-                <button class="filter-btn" onclick="window.location.href='?filter=yoga'">Yoga</button>
-                <button class="filter-btn" onclick="window.location.href='?filter=cardio'">Cardio</button>
-                <button class="filter-btn" onclick="window.location.href='?filter=strength'">Strength</button>
-                <button class="filter-btn" onclick="window.location.href='?filter=dance'">Dance</button>
-                <button class="filter-btn" onclick="window.location.href='?filter=pilates'">Pilates</button>
+                <a class="filter-btn" th:href="@{/}">All Classes</a>
+                <a class="filter-btn"
+                   th:each="ct : ${T(org.gpc4j.web.api.ClassType).values()}"
+                   th:href="@{/(filter=${ct.name()})}"
+                   th:text="${#strings.capitalize(ct.name())}">Type</a>
             </div>
         </div>
 
@@ -139,7 +135,7 @@
                     </div>
                     <div class="detail-item">
                         <i class="fas fa-signal"></i>
-                        <span>Location<span>
+                        <span>Location</span>
                     </div>
                     <div class="detail-item">
                         <i class="fas fa-signal"></i>

@@ -75,61 +75,6 @@ public class UtilitiesIT {
   }
 
   @Test
-  void createInstructorRachel() {
-
-    UserAccount account = new UserAccount();
-    account.setUsername("rachel@example.com");
-    account.setName("Rachel Green");
-    account.setProfile("Ballet-trained instructor combining barre techniques " +
-                                     "with strength training.");
-    account.setPasswordHash(passwordEncoder.encode("rachel"));
-
-    account.setEnabled(true);
-    account.setAccountNonLocked(true);
-    account.setRoles(List.of("ROLE_INSTRUCTOR"));
-
-    session.store(account, "UserAccounts/1-A");
-  }
-
-  @Test
-  void createInstructorAlex() {
-
-    UserAccount account = new UserAccount();
-    account.setUsername("alex@example.com");
-    account.setName("Alex Johnson");
-    account.setProfile("Former competitive boxer teaching proper " +
-                                     "technique and fitness through boxing");
-
-    account.setPasswordHash(passwordEncoder.encode("alex"));
-    account.setEnabled(true);
-    account.setAccountNonLocked(true);
-    account.setRoles(List.of("ROLE_INSTRUCTOR"));
-
-    session.store(account, "UserAccounts/2-A");
-  }
-
-//  @Test
-//  void createOneClass() {
-//
-//    ClassOffering offering = new ClassOffering();
-//    offering.setClassName("Demo Class");
-//    offering.setLevel("Beginner");
-//    offering.setSlots(10);
-//    offering.setClassType(ClassType.cardio);
-//    offering.setInstructorId("Instructor/1-A");
-//
-//    ClassOffering.Schedule schedule = new ClassOffering.Schedule();
-//    schedule.setStartWeek(LocalDate.now());
-//    schedule.setNumberOfWeeks(2);
-//    schedule.setTime(LocalTime.of(10, 0));
-//    schedule.setDuration(60);
-//    schedule.setDays(Set.of(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY));
-//    offering.setSchedule(schedule);
-//
-//    session.store(offering);
-//  }
-
-  @Test
   void createClassSchedule1A() {
 
     ClassSchedule schedule = new ClassSchedule();

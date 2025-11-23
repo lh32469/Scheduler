@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.ravendb.client.documents.session.IDocumentSession;
 import org.gpc4j.web.repository.RavenDB;
+import org.gpc4j.web.dto.ClassSchedule;
 import org.gpc4j.web.security.RavenUserRepository;
 import org.gpc4j.web.security.UserAccount;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -49,25 +50,25 @@ public class InstructorClassesController {
     }
 
     try (IDocumentSession session = ravenDB.openSession()) {
-      List<ClassOffering> offerings = session.query(ClassOffering.class)
+      List<ClassSchedule> schedules = session.query(ClassSchedule.class)
           .whereEquals("instructorId", user.getId())
-          .orderBy("schedule.start")
+          .orderBy("startWeek")
           .skip(skip)
           .take(safeSize + 1)
           .toList();
 
-      boolean hasNext = offerings.size() > safeSize;
+      boolean hasNext = schedules.size() > safeSize;
       if (hasNext) {
-        offerings = offerings.subList(0, safeSize);
+        schedules = schedules.subList(0, safeSize);
       }
 
       model.addAttribute("title", "My Classes");
-      model.addAttribute("offerings", offerings);
+      model.addAttribute("schedules", schedules);
       model.addAttribute("page", safePage);
       model.addAttribute("size", safeSize);
       model.addAttribute("hasNext", hasNext);
 
-      log.info("Instructor {} has {} classes.", username, offerings.size());
+      log.info("Instructor {} has {} schedules.", username, schedules.size());
     }
 
 

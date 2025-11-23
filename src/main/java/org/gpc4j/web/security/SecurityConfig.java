@@ -55,7 +55,8 @@ public class SecurityConfig {
         )
         .logout(logout -> logout
             .logoutUrl("/logout")
-            .logoutSuccessUrl("/login?logout")
+            // After logging out, send the user back to the main index page
+            .logoutSuccessUrl("/")
             .permitAll()
         );
 

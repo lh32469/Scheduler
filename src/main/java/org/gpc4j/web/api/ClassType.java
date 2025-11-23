@@ -7,4 +7,7 @@ public enum ClassType {
   strength,
   dance,
   pilates,
+  spin,
+  meditation,
+  stretch
 }
