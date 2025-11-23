@@ -11,6 +11,7 @@ import org.gpc4j.web.security.UserAccount;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
@@ -48,7 +49,7 @@ public class ClassSchedule {
   /**
    * Day(s) of the week the class will run.
    */
-  private Set<DayOfWeek> daysOfWeek;
+  private Set<DayOfWeek> daysOfWeek = Collections.emptySet();
 
   /**
    * Time of day the class will run.

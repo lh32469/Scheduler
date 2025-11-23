@@ -60,10 +60,31 @@
 
         <div>
             <div style="margin-bottom: .25rem; font-weight: 600;">Days of Week</div>
-            <div style="display: grid; grid-template-columns: repeat(3, minmax(120px, 1fr)); gap: .5rem 1rem;">
-                <label th:each="dow : ${T(java.time.DayOfWeek).values()}" style="display: flex; align-items: center; gap: .5rem;">
-                    <input type="checkbox" th:field="*{daysOfWeek}" th:value="${dow}"/>
-                    <span th:text="${dow}"></span>
+
+            <!-- Quick select controls -->
+            <div style="display:flex; flex-wrap: wrap; gap:.5rem; margin-bottom:.5rem;">
+                <button type="button" class="book-btn" style="width:auto; padding:.35rem .6rem; background:#6c757d;" data-days-action="weekdays">Weekdays</button>
+                <button type="button" class="book-btn" style="width:auto; padding:.35rem .6rem; background:#6c757d;" data-days-action="weekends">Weekends</button>
+                <button type="button" class="book-btn" style="width:auto; padding:.35rem .6rem; background:#6c757d;" data-days-action="mwf">Mon,Wed,Fri</button>
+                <button type="button" class="book-btn" style="width:auto; padding:.35rem .6rem; background:#6c757d;" data-days-action="tt">Tue,Thu</button>
+                <button type="button" class="book-btn" style="width:auto; padding:.35rem .6rem; background:#6c757d;" data-days-action="all">All</button>
+                <button type="button" class="book-btn" style="width:auto; padding:.35rem .6rem; background:#adb5bd;" data-days-action="clear">Clear</button>
+            </div>
+
+            <!-- Chip-style day selector (uses native checkboxes for binding) -->
+            <style>
+                .day-grid { display:grid; grid-template-columns: repeat(7, minmax(48px, 1fr)); gap:.5rem; }
+                .day-chip { position: relative; display:inline-flex; align-items:center; justify-content:center; padding:.5rem 0; border:1px solid #ced4da; border-radius: 999px; cursor:pointer; user-select:none; transition: all .15s ease; background:#fff; font-weight:600; }
+                .day-chip.selected { background:#0d6efd; color:#fff; border-color:#0d6efd; }
+                .day-chip:hover { border-color:#0d6efd; }
+                .visually-hidden { position: absolute; opacity: 0; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+            </style>
+
+            <div class="day-grid">
+                <label th:each="dow,iter : ${T(java.time.DayOfWeek).values()}" class="day-chip"
+                       th:classappend="${#lists.contains(schedule.daysOfWeek, dow)} ? ' selected' : ''">
+                    <input class="visually-hidden" type="checkbox" th:field="*{daysOfWeek}" th:value="${dow}"/>
+                    <span th:text="${#strings.capitalize(#strings.substring(dow.name(),0,3).toLowerCase())}">Mon</span>
                 </label>
             </div>
             <div id="daysValidationMessage" style="display:none; margin-top: .5rem; color: #842029; background:#f8d7da; border:1px solid #f5c2c7; padding:.5rem .75rem; border-radius: .5rem;">
@@ -99,6 +120,63 @@
         (function () {
             const form = document.querySelector('form[th\\:object], form[th-object]') || document.querySelector('form');
             if (!form) return;
+
+            // Helper to sync chip UI based on checkbox checked state
+            function updateChipStates(container) {
+                const chips = (container || form).querySelectorAll('.day-chip');
+                chips.forEach(chip => {
+                    const input = chip.querySelector('input[type="checkbox"][name="daysOfWeek"]');
+                    if (input) {
+                        chip.classList.toggle('selected', input.checked);
+                    }
+                });
+            }
+
+            // Toggle chip visuals when user clicks label/checkbox
+            form.addEventListener('change', function (e) {
+                if (e.target && e.target.matches('input[type="checkbox"][name="daysOfWeek"]')) {
+                    updateChipStates();
+                }
+            });
+
+            // Quick select buttons
+            form.querySelectorAll('[data-days-action]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const action = btn.getAttribute('data-days-action');
+                    const boxes = form.querySelectorAll('input[type="checkbox"][name="daysOfWeek"]');
+                    const weekendValues = new Set(['SATURDAY', 'SUNDAY']);
+                    const mwf = new Set(['MONDAY', 'WEDNESDAY', 'FRIDAY']);
+                    const tt = new Set(['TUESDAY', 'THURSDAY']);
+                    boxes.forEach(box => {
+                        const val = box.value;
+                        switch (action) {
+                            case 'weekdays':
+                                box.checked = !weekendValues.has(val);
+                                break;
+                            case 'weekends':
+                                box.checked = weekendValues.has(val);
+                                break;
+                            case 'all':
+                                box.checked = true;
+                                break;
+                            case 'mwf':
+                                box.checked = mwf.has(val);
+                                break;
+                            case 'tt':
+                                box.checked = tt.has(val);
+                                break;
+                            case 'clear':
+                                box.checked = false;
+                                break;
+                        }
+                    });
+                    updateChipStates();
+                    // Hide validation if after action there is at least one selected
+                    const daysMsg = document.getElementById('daysValidationMessage');
+                    const anyChecked = form.querySelectorAll('input[name="daysOfWeek"]:checked').length > 0;
+                    if (daysMsg) daysMsg.style.display = anyChecked ? 'none' : 'block';
+                });
+            });
             form.addEventListener('submit', function (e) {
                 const startWeek = form.querySelector('input[name="startWeek"]');
                 const startTime = form.querySelector('input[name="classStartTime"]');
@@ -138,6 +216,9 @@
                     }
                 }
             });
+
+            // Initialize chip states on load (to reflect any pre-selected days)
+            updateChipStates();
         })();
     </script>
 </main>
