@@ -110,63 +110,73 @@
 
         <div class="schedule-grid" id="scheduleGrid">
             <div class="class-card" style="animation-delay: 0s"
-                 th:each="offering : ${offerings}"
-                 th:attr="data-type=${offering.classType}">
+                 th:each="class : ${classes}"
+                 th:attr="data-type=${class.classType}">
 
                 <div class="class-header">
                     <div>
-                        <div class="class-name" th:text="${offering.className}">Class Name</div>
+                        <div class="class-name" th:text="${class.className}">Class Name</div>
                     </div>
-                    <div class="class-type" th:text="${offering.classType}">type</div>
+                    <div class="class-type" th:text="${class.classType}">type</div>
                 </div>
 
                 <div class="class-details">
                     <div class="detail-item">
                         <i class="fas fa-clock"></i>
-                        <span th:text="${#temporals.format(offering.schedule.start, 'EEE, MMM d • h:mm a')}">Mon, Oct 27 • 7:00 AM</span>
+                        <span th:text="${#temporals.format(class.start, 'EEE, MMM d')}">Mon, Oct 27 • 7:00 AM</span>
                     </div>
                     <div class="detail-item">
-                        <i class="fas fa-calendar"></i>
-                        <span th:text="${#temporals.dayOfWeekName(offering.schedule.start)}">Monday</span>
+                        <i class="fas fa-clock"></i>
+                        <span th:text="${#temporals.format(class.start, 'h:mm a')}">Mon, Oct 27 • 7:00 AM</span>
                     </div>
                     <div class="detail-item">
                         <i class="fas fa-hourglass-half"></i>
-                        <span th:text="${offering.schedule.duration}">60 min</span>
+                        <span th:text="${class.duration} + ' min'">60 min</span>
                     </div>
                     <div class="detail-item">
                         <i class="fas fa-signal"></i>
-                        <span th:text="${offering.level}">All Levels</span>
+                        <span th:text="${class.level}">All Levels</span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-signal"></i>
+                        <span>Location<span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-signal"></i>
+                        <span th:text="${class.location}">All Levels</span>
                     </div>
                 </div>
 
                 <div class="instructor">
                     <div class="instructor-name">
                         <i class="fas fa-user"></i>
-                        <span th:text="${offering.instructorAccount != null
-                        ? offering.instructorAccount.name : ''}">Instructor</span>
+                        <span th:text="${class.instructorAccount != null
+                        ? class.instructorAccount.name : ''}">Instructor</span>
                     </div>
                     <!--/*@thymesVar id="instructor" type=""*/-->
-                    <div class="instructor-bio" th:text="${offering.instructorAccount.profile}">Bio</div>
+                    <div class="instructor-bio" th:text="${class.instructorAccount.profile}">Bio</div>
                 </div>
 
-                <div class="detail-item" style="color: #28a745; font-weight: 500;">
+                <div class="detail-item" style="color: #28a745; font-weight: 500;"
+                     th:if="${class.slots} != -1">
                     <i class="fas fa-users"></i>
-                    <span th:text="${offering.slots} + ' spots available'">0 spots available</span>
+                    <span th:text="${class.slots} + ' spots available'"></span>
                 </div>
 
-                <form th:action="@{/bookings}"
+                <form th:if="${class.slots} != -1"
+                      th:action="@{/bookings}"
                       method="post"
                       class="form">
                     <input type="hidden" name="id"
-                           th:value="${offering.id}"/>
+                           th:value="${class.id}"/>
                     <input type="hidden" name="className"
-                           th:value="${offering.className}"/>
+                           th:value="${class.className}"/>
                     <input type="hidden" name="classType"
-                           th:value="${offering.classType}"/>
+                           th:value="${class.classType}"/>
                     <input type="hidden" name="level"
-                           th:value="${offering.level}"/>
+                           th:value="${class.level}"/>
                     <input type="hidden" name="schedule.start"
-                           th:value="${offering.schedule.start}"/>
+                           th:value="${class.start}"/>
                     <!-- User info -->
                     <input type="hidden" name="customerInfo.username"
                            th:value="${#authentication?.name != null ? #authentication.name : 'anonymous'}"/>

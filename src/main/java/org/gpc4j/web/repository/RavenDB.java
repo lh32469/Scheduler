@@ -46,6 +46,7 @@ public class RavenDB {
       return;
     }
 
+    // Get the Ingress hostname forwarded from nginx front-end.
     final String hostname = request.getHeader("X-Forwarded-Host");
 
     if (Objects.isNull(hostname)) {

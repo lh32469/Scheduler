@@ -26,6 +26,7 @@ public class UserAccount {
    */
   private String profile;
 
+  @ToString.Exclude
   private String passwordHash; // BCrypt
   // Plaintext password field for form binding only (not persisted)
   @JsonIgnore

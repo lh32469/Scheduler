@@ -49,8 +49,28 @@
         </label>
 
         <label>
-            Start Date & Time
-            <input type="datetime-local" th:field="*{schedule.start}"/>
+            Start Week (Sunday of first week)
+            <input type="date" th:field="*{schedule.startWeek}"/>
+        </label>
+
+        <label>
+            Number of Weeks (0 = ongoing)
+            <input type="number" min="0" th:field="*{schedule.numberOfWeeks}"/>
+        </label>
+
+        <div>
+            <div style="margin-bottom: .25rem; font-weight: 600;">Days of Week</div>
+            <div style="display: grid; grid-template-columns: repeat(3, minmax(120px, 1fr)); gap: .5rem 1rem;">
+                <label th:each="dow : ${T(java.time.DayOfWeek).values()}" style="display: flex; align-items: center; gap: .5rem;">
+                    <input type="checkbox" th:field="*{schedule.days}" th:value="${dow}"/>
+                    <span th:text="${dow}"></span>
+                </label>
+            </div>
+        </div>
+
+        <label>
+            Start Time
+            <input type="time" th:field="*{schedule.time}"/>
         </label>
 
         <label>

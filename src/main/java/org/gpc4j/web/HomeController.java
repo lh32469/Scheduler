@@ -3,14 +3,17 @@ package org.gpc4j.web;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.gpc4j.web.api.ClassOffering;
+import org.gpc4j.web.dto.ScheduledClass;
 import org.gpc4j.web.repository.ClassOfferingRepository;
 import org.gpc4j.web.repository.RavenDB;
+import org.gpc4j.web.services.ScheduleClassesService;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 
@@ -25,7 +28,7 @@ public class HomeController {
 
   private final ClassOfferingRepository classOfferingRepository;
 
-  private final RavenDB ravenDB;
+  private final ScheduleClassesService classesService;
 
   @GetMapping({"/"})
   public String home(
@@ -43,6 +46,11 @@ public class HomeController {
     List<ClassOffering> offerings =
         classOfferingRepository.list(safePage, safeSize);
 
+    LocalDate sunday = getSunday();
+    LocalDate fourWeeksFromNow = sunday.plusWeeks(4);
+    List<ScheduledClass> classes =
+        classesService.getScheduledClasses(sunday, fourWeeksFromNow);
+
     if (filter != null) {
       String f = filter.trim();
       offerings = offerings.stream()
@@ -51,13 +59,25 @@ public class HomeController {
                                          .name()
                                          .equalsIgnoreCase(f))
                            .toList();
+
+      classes = classes.stream()
+                       .filter(c -> c.getClassType()
+                                     .name()
+                                     .equalsIgnoreCase(f))
+                       .toList();
     }
 
+    model.addAttribute("classes", classes);
     model.addAttribute("offerings", offerings);
     model.addAttribute("page", safePage);
     model.addAttribute("size", safeSize);
 
     return "index"; // resolved from src/main/resources/templates/index.html
+  }
+
+  LocalDate getSunday() {
+    LocalDate today = LocalDate.now();
+    return today.minusDays(today.getDayOfWeek().getValue() - 1);
   }
 
 }
