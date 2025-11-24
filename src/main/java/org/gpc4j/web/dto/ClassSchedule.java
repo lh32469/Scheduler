@@ -77,9 +77,10 @@ public class ClassSchedule {
 
     List<ScheduledClass> classes = new LinkedList<>();
 
-    log.info("Generating classes for {} to {}.", startDate, endDate);
-    log.info("Number of weeks: {}", numberOfWeeks);
-    log.info("Start week: {}", startWeek);
+    log.debug(className);
+    log.debug("Generating classes for {} to {}.", startDate, endDate);
+    log.debug("Number of weeks: {}", numberOfWeeks);
+    log.debug("Start week: {}", startWeek);
 
     if (numberOfWeeks == 0) {
       numberOfWeeks = 5;
@@ -88,7 +89,7 @@ public class ClassSchedule {
     for (int i = 0; i < numberOfWeeks; i++) {
 
       LocalDate week = startWeek.plusWeeks(i);
-      log.info("Checking for classes in week {}: {}", i, week);
+      log.debug("Checking for classes in week {}: {}", i, week);
 
       if ((week.isAfter(startDate) || week.equals(startDate))
           && (week.isBefore(endDate))) {
