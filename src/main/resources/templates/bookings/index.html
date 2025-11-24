@@ -68,7 +68,6 @@
                 <input type="hidden" name="bookingId" th:value="${b.id}"/>
                 <input type="hidden" name="page" th:value="${page}"/>
                 <input type="hidden" name="size" th:value="${size}"/>
-                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                 <div class="actions">
                     <button class="book-btn" type="submit" style="width: auto; background: #dc3545;"
                             onclick="return confirm('Cancel this booking?');">Cancel</button>
