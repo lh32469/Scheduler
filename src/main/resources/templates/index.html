@@ -10,6 +10,10 @@
     <div class="container">
         <div class="header-content">
             <div class="logo" th:text="${banner.companyName}">FitHub</div>
+            <div class="snippet"
+                 sec:authorize="isAuthenticated()"
+                 sec:authentication="name" style="color: forestgreen">FitHub
+            </div>
             <nav>
                 <ul>
                     <li><a href="#" onclick="window.scrollTo({top:0,behavior:'smooth'})">Home</a></li>
