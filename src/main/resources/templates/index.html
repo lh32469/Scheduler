@@ -23,7 +23,6 @@
                     <li sec:authorize="!isAuthenticated()"><a th:href="@{/login}">Login</a></li>
                     <li sec:authorize="isAuthenticated()">
                         <form th:action="@{/logout}" method="post" style="display: inline;">
-                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                             <a href="#" onclick="this.parentElement.submit(); return false;">Logout</a>
                         </form>
                     </li>
@@ -161,28 +160,14 @@
 
                 <form th:if="${class.slots} != -1"
                       th:action="@{/bookings}"
-                      method="post"
-                      class="form">
-                    <input type="hidden" name="id"
-                           th:value="${class.id}"/>
-                    <input type="hidden" name="className"
-                           th:value="${class.className}"/>
-                    <input type="hidden" name="classType"
-                           th:value="${class.classType}"/>
-                    <input type="hidden" name="level"
-                           th:value="${class.level}"/>
-                    <input type="hidden" name="schedule.start"
-                           th:value="${class.start}"/>
-                    <!-- User info -->
-                    <input type="hidden" name="customerInfo.username"
-                           th:value="${#authentication?.name != null ? #authentication.name : 'anonymous'}"/>
-                    <input type="hidden" name="domain"
-                           th:value="${request.localName}"/>
-                    <!-- CSRF token -->
-                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                    <div>
-                        <button class="book-btn" type="submit">Book</button>
-                    </div>
+                      method="post" class="form">
+                    <input type="hidden" name="id" th:value="${class.id}"/>
+                    <input type="hidden" name="className" th:value="${class.className}"/>
+                    <input type="hidden" name="classType" th:value="${class.classType}"/>
+                    <input type="hidden" name="level" th:value="${class.level}"/>
+                    <input type="hidden" name="start" th:value="${class.start}"/>
+                    <input type="hidden" name="slots" th:value="${class.slots}"/>
+                    <button class="book-btn" type="submit">Book</button>
                 </form>
 
             </div>

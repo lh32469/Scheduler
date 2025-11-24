@@ -4,12 +4,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.ravendb.client.documents.session.IDocumentSession;
 import net.ravendb.client.exceptions.ConcurrencyException;
+import org.gpc4j.web.dto.ClassSchedule;
+import org.gpc4j.web.dto.ScheduledClass;
 import org.gpc4j.web.repository.RavenDB;
 import org.gpc4j.web.security.UserAccount;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -54,11 +57,12 @@ public class BookingController {
     try (IDocumentSession session = ravenDB.openSession()) {
       // Fetch bookings for current user, newest first
       List<Booking> bookings = session.query(Booking.class)
-          .whereEquals("username", username)
-          .orderByDescending("dateBooked")
-          .skip(skip)
-          .take(safeSize + 1) // over-fetch by one to detect if a next page exists
-          .toList();
+                                      .whereEquals("username", username)
+                                      .orderByDescending("dateBooked")
+                                      .skip(skip)
+                                      .take(safeSize + 1) // over-fetch by one to
+                                      // detect if a next page exists
+                                      .toList();
 
       boolean hasNext = bookings.size() > safeSize;
       if (hasNext) {
@@ -88,70 +92,70 @@ public class BookingController {
   }
 
   @PostMapping()
-  public String createBooking(ClassOffering offering,
+  public String createBooking(@ModelAttribute("class") ScheduledClass sClass,
+                              Authentication authentication,
                               RedirectAttributes redirectAttributes) {
 
-    log.info("Received booking (ClassOffering): {}", offering);
+    log.info("Received booking (ScheduledClass): {}", sClass);
 
-    log.info("className = " + offering.getClassName());
-    log.info("Start:  + " + offering.getSchedule().getStart());
+    log.info("className = " + sClass.getClassName());
+    log.info("Start:  + " + sClass.getStart());
 
     try (IDocumentSession session = ravenDB.getDocumentStore().openSession()) {
       session.advanced().setUseOptimisticConcurrency(true);
 
+      String username = authentication.getName();
+
       UserAccount user = session.query(UserAccount.class)
                                 .whereEquals("username",
-                                             offering.getCustomerInfo().getUsername())
+                                             username)
                                 .firstOrDefault();
 
-      ClassOffering classOffering = session.query(ClassOffering.class)
-                                           .whereEquals("schedule.start",
-                                                        offering.getSchedule().getStart())
-                                           .whereEquals("classType",
-                                                        offering.getClassType())
-                                           .whereEquals("className",
-                                                        offering.getClassName())
-                                           .firstOrDefault();
-      log.info("classOffering = " + classOffering);
+      int classHashCode = Math.abs(sClass.hashCode());
+      log.info("classHashCode = " + classHashCode);
 
-      if (classOffering != null) {
-        if (classOffering.getSlots() == 0) {
-          // class is full, add message and redirect
-          redirectAttributes.addFlashAttribute("message",
-                                               "Class is full. Please choose another " +
-                                                   "time.");
-          redirectAttributes.addFlashAttribute("messageType",
-                                               "error");
-        } else {
+      // See if anyone has already booked this class
+      ScheduledClass scheduledClass =
+          session.load(ScheduledClass.class, "ScheduledClass/" + classHashCode);
 
-          classOffering.setSlots(classOffering.getSlots() - 1);
-          classOffering.setParticipants(classOffering.getParticipants() + 1);
-          session.store(classOffering);
+      log.info("scheduledClass = " + scheduledClass);
 
-          Booking booking = new Booking();
-          booking.setClassId(offering.getId());
+      if (scheduledClass == null) {
+        // class has not been booked yet, create a new one
+        scheduledClass = sClass;
+      }
 
-          // Pass through data
-          booking.setUserId(user.getId());
-          booking.setUsername(offering.getCustomerInfo().getUsername());
-          booking.setDomain(offering.getDomain());
-
-          booking.setDateBooked(LocalDateTime.now());
-          session.store(booking);
-
-          session.saveChanges();
-
-          redirectAttributes.addFlashAttribute("message",
-                                               offering.getClassName() + " is booked.");
-          redirectAttributes.addFlashAttribute("messageType",
-                                               "info");
-        }
-      } else {
+      if (scheduledClass.getSlots() == 0) {
+        // class is full, add message and redirect
         redirectAttributes.addFlashAttribute("message",
-                                             "Class not found.");
+                                             "Class is full. Please choose another " +
+                                                 "time.");
         redirectAttributes.addFlashAttribute("messageType",
                                              "error");
+      } else {
+
+        scheduledClass.setSlots(scheduledClass.getSlots() - 1);
+        session.store(scheduledClass, "ScheduledClass/" + classHashCode);
+        String scheduledClassId = session.advanced().getDocumentId(scheduledClass);
+
+        Booking booking = new Booking();
+        booking.setClassId(scheduledClassId);
+
+        // Pass through data
+        booking.setUserId(user.getId());
+        booking.setUsername(username);
+
+        booking.setDateBooked(LocalDateTime.now());
+        session.store(booking);
+
+        session.saveChanges();
+
+        redirectAttributes.addFlashAttribute("message",
+                                             sClass.getClassName() + " is booked.");
+        redirectAttributes.addFlashAttribute("messageType",
+                                             "info");
       }
+
     } catch (ConcurrencyException e) {
       // Document(s) has been modified by another transaction since we fetched it.
 
@@ -190,7 +194,9 @@ public class BookingController {
       }
 
       if (!Objects.equals(username, booking.getUsername())) {
-        redirectAttributes.addFlashAttribute("message", "You are not allowed to cancel this booking.");
+        redirectAttributes.addFlashAttribute("message",
+                                             "You are not allowed to cancel this " +
+                                                 "booking.");
         redirectAttributes.addFlashAttribute("messageType", "error");
         return "redirect:/bookings?page=" + safePage + "&size=" + safeSize;
       }
@@ -211,13 +217,17 @@ public class BookingController {
       redirectAttributes.addFlashAttribute("message", "Your booking has been canceled.");
       redirectAttributes.addFlashAttribute("messageType", "info");
     } catch (ConcurrencyException e) {
-      redirectAttributes.addFlashAttribute("message", "Could not cancel booking due to a concurrent update. Please try again.");
+      redirectAttributes.addFlashAttribute("message",
+                                           "Could not cancel booking due to a " +
+                                               "concurrent update. Please try again.");
       redirectAttributes.addFlashAttribute("messageType", "error");
     } catch (Exception e) {
-      redirectAttributes.addFlashAttribute("message", "Failed to cancel booking: " + e.getMessage());
+      redirectAttributes.addFlashAttribute("message",
+                                           "Failed to cancel booking: " + e.getMessage());
       redirectAttributes.addFlashAttribute("messageType", "error");
     }
 
     return "redirect:/bookings?page=" + safePage + "&size=" + safeSize;
   }
+
 }
