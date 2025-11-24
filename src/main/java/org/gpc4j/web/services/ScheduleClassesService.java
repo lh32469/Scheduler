@@ -56,9 +56,9 @@ public class ScheduleClassesService {
 
     classes.sort(Comparator.comparing(ScheduledClass::getStart));
 
-    for (ScheduledClass aClass : classes) {
-      log.info(aClass.toString());
-    }
+//    for (ScheduledClass aClass : classes) {
+//      log.info(aClass.toString());
+//    }
     return classes;
   }
 
