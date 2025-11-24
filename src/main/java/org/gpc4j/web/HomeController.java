@@ -43,8 +43,6 @@ public class HomeController {
 
     log.debug("Authentication: " + authentication);
 
-    List<ClassOffering> offerings =
-        classOfferingRepository.list(safePage, safeSize);
 
     LocalDate sunday = getSunday();
     LocalDate fourWeeksFromNow = sunday.plusWeeks(4);
@@ -53,13 +51,6 @@ public class HomeController {
 
     if (filter != null) {
       String f = filter.trim();
-      offerings = offerings.stream()
-                           .filter(o -> Objects.nonNull(o.getClassType()))
-                           .filter(o -> o.getClassType()
-                                         .name()
-                                         .equalsIgnoreCase(f))
-                           .toList();
-
       classes = classes.stream()
                        .filter(c -> c.getClassType()
                                      .name()
@@ -68,7 +59,6 @@ public class HomeController {
     }
 
     model.addAttribute("classes", classes);
-    model.addAttribute("offerings", offerings);
     model.addAttribute("page", safePage);
     model.addAttribute("size", safeSize);
 
