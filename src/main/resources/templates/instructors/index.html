@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head}"></head>
+<body>
+
+<header>
+    <div class="container">
+        <div class="header-content">
+            <div class="logo" th:text="${banner.companyName}">FitHub</div>
+            <nav>
+                <ul>
+                    <li><a th:href="@{/}">Home</a></li>
+                    <li><a th:href="@{/instructors}">Instructors</a></li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</header>
+
+<main class="container" style="padding-top: 2rem; padding-bottom: 3rem;">
+    <h1 th:text="${title}">Instructors</h1>
+
+    <div th:if="${#lists.isEmpty(instructors)}" style="margin-top: 1rem;">
+        <p>No instructors found.</p>
+    </div>
+
+    <div class="schedule-grid" th:if="${!#lists.isEmpty(instructors)}">
+        <div class="class-card" th:each="inst : ${instructors}">
+            <div class="class-header">
+                <div>
+                    <div class="class-name" th:text="${inst.name}">Instructor Name</div>
+                </div>
+                <!--        <div class="class-type" th:text="${inst.username}">@username</div>-->
+            </div>
+
+            <div class="instructor">
+                <!--        <div class="instructor-name">-->
+                <!--          <i class="fas fa-user"></i>-->
+                <!--          <span th:text="${inst.name}">Name</span>-->
+                <!--        </div>-->
+                <div class="instructor-bio" th:text="${inst.profile}">Profile information goes here.</div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer>
+    <div class="container">
+        <p>© <span th:text="${#temporals.format(#temporals.createNow(), 'yyyy')}">2025</span>
+            <span th:text="${banner.companyName}">FitHub</span>. All rights reserved.
+        </p>
+    </div>
+</footer>
+
+</body>
+</html>

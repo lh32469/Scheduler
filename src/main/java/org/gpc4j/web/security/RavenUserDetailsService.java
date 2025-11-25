@@ -1,6 +1,7 @@
 package org.gpc4j.web.security;
 
 import lombok.RequiredArgsConstructor;
+import org.gpc4j.web.repository.RavenUserRepository;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;

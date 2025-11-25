@@ -1,9 +1,9 @@
-package org.gpc4j.web.security;
+package org.gpc4j.web.repository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.ravendb.client.documents.session.IDocumentSession;
-import org.gpc4j.web.repository.RavenDB;
+import org.gpc4j.web.security.UserAccount;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -34,7 +34,7 @@ public class RavenUserRepository {
     try (IDocumentSession session = ravenDB.openSession()) {
       List<UserAccount> instructors = session.query(UserAccount.class)
                                              .whereIn("roles",
-                                                      List.of("INSTRUCTOR"))
+                                                      List.of("ROLE_INSTRUCTOR"))
                                              .toList();
       log.info("Found {} instructors", instructors.size());
       return instructors;
