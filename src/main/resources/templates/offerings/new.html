@@ -112,6 +112,12 @@
         </label>
 
         <label>
+            Location
+            <input type="text" th:field="*{location}" placeholder="e.g., Studio 1, Pool, Outdoor" maxlength="100"/>
+            <small style="color:#6c757d; display:block;">Where will this class take place?</small>
+        </label>
+
+        <label>
             Slots Available
             <input type="number" min="-1" th:field="*{slots}" placeholder="e.g., 20 or -1 for unlimited"/>
             <small style="color:#6c757d; display:block;">Enter -1 for no defined limit.</small>
