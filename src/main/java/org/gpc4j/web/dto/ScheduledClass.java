@@ -31,6 +31,7 @@ public class ScheduledClass {
   @EqualsAndHashCode.Include
   private String location;
 
+  private String classDescription;
   private int duration;
   private int slots;
   private UserAccount instructorAccount;

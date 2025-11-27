@@ -34,6 +34,15 @@
         </label>
 
         <label>
+            Description
+            <textarea th:field="*{classDescription}"
+                      placeholder="Briefly describe this class (focus, format, who it's for)"
+                      rows="4" maxlength="500"
+                      style="width:100%; resize: vertical;"></textarea>
+            <small style="color:#6c757d;">Up to 500 characters.</small>
+        </label>
+
+        <label>
             Class Type
             <select th:field="*{classType}" required>
                 <option value="" disabled th:selected="${schedule.classType} == null">Select a class type</option>
@@ -104,7 +113,8 @@
 
         <label>
             Slots Available
-            <input type="number" min="0" th:field="*{slots}"/>
+            <input type="number" min="-1" th:field="*{slots}" placeholder="e.g., 20 or -1 for unlimited"/>
+            <small style="color:#6c757d; display:block;">Enter -1 for no defined limit.</small>
         </label>
 
         <div id="validationMessage" style="display:none; margin: .5rem 0; color: #842029; background:#f8d7da; border:1px solid #f5c2c7; padding:.75rem; border-radius: .5rem;">

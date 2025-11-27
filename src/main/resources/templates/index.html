@@ -141,11 +141,11 @@
                 <div class="class-details">
                     <div class="detail-item">
                         <i class="fas fa-clock"></i>
-                        <span th:text="${#temporals.format(class.start, 'EEE, MMM d')}">Mon, Oct 27 • 7:00 AM</span>
+                        <span th:text="${#temporals.format(class.start, 'EEE, MMM d')}">Day</span>
                     </div>
                     <div class="detail-item">
                         <i class="fas fa-clock"></i>
-                        <span th:text="${#temporals.format(class.start, 'h:mm a')}">Mon, Oct 27 • 7:00 AM</span>
+                        <span th:text="${#temporals.format(class.start, 'h:mm a')}">Time</span>
                     </div>
                     <div class="detail-item">
                         <i class="fas fa-hourglass-half"></i>
@@ -161,18 +161,25 @@
                     </div>
                     <div class="detail-item">
                         <i class="fas fa-signal"></i>
-                        <span th:text="${class.location}">All Levels</span>
+                        <span th:text="${class.location}">Location</span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-signal"></i>
+                        <span>Instructor</span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-signal"></i>
+                        <span th:text="${class.instructorAccount != null
+                        ? class.instructorAccount.name : ''}">Instructor</span>
                     </div>
                 </div>
 
                 <div class="instructor">
                     <div class="instructor-name">
                         <i class="fas fa-user"></i>
-                        <span th:text="${class.instructorAccount != null
-                        ? class.instructorAccount.name : ''}">Instructor</span>
+                        <span>Description</span>
                     </div>
-                    <!--/*@thymesVar id="instructor" type=""*/-->
-                    <div class="instructor-bio" th:text="${class.instructorAccount.profile}">Bio</div>
+                    <div class="instructor-bio" th:text="${class.classDescription}">Bio</div>
                 </div>
 
                 <div class="detail-item" style="color: #28a745; font-weight: 500;"

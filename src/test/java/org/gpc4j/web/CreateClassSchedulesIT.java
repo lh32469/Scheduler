@@ -155,6 +155,7 @@ public class CreateClassSchedulesIT {
   void createYogaClass() {
     ClassSchedule schedule = new ClassSchedule();
     schedule.setClassName("Power Yoga");
+    schedule.setClassDescription("Build strength and flexibility with breath-focused flows.");
     schedule.setClassType(ClassType.yoga);
     schedule.setLevel("Intermediate");
     schedule.setStartWeek(LocalDate.of(2025, 11, 30));
@@ -172,6 +173,7 @@ public class CreateClassSchedulesIT {
   void createPilatesClass() {
     ClassSchedule schedule = new ClassSchedule();
     schedule.setClassName("Core Pilates");
+    schedule.setClassDescription("Improve core strength and posture with classic Pilates mat work.");
     schedule.setClassType(ClassType.pilates);
     schedule.setLevel("All Levels");
     schedule.setStartWeek(LocalDate.of(2025, 12, 1));
@@ -191,6 +193,7 @@ public class CreateClassSchedulesIT {
   void createSpinClass() {
     ClassSchedule schedule = new ClassSchedule();
     schedule.setClassName("High Intensity Spin");
+    schedule.setClassDescription("High-energy indoor cycling with intervals and climbs.");
     schedule.setClassType(ClassType.spin);
     schedule.setLevel("Advanced");
     schedule.setStartWeek(LocalDate.of(2025, 12, 1));
@@ -208,6 +211,7 @@ public class CreateClassSchedulesIT {
   void createZumbaClass() {
     ClassSchedule schedule = new ClassSchedule();
     schedule.setClassName("Zumba Dance");
+    schedule.setClassDescription("Dance-based cardio workout set to upbeat Latin rhythms.");
     schedule.setClassType(ClassType.dance);
     schedule.setLevel("All Levels");
     schedule.setStartWeek(LocalDate.of(2025, 12, 2));
@@ -227,6 +231,7 @@ public class CreateClassSchedulesIT {
   void createBoxingClass() {
     ClassSchedule schedule = new ClassSchedule();
     schedule.setClassName("Boxing Fitness");
+    schedule.setClassDescription("Boxing-inspired cardio conditioning with combos and mitt work.");
     schedule.setClassType(ClassType.cardio);
     schedule.setLevel("Intermediate");
     schedule.setStartWeek(LocalDate.of(2025, 12, 1));
@@ -246,6 +251,7 @@ public class CreateClassSchedulesIT {
   void createStretchClass() {
     ClassSchedule schedule = new ClassSchedule();
     schedule.setClassName("Dynamic Stretching");
+    schedule.setClassDescription("Gentle flexibility session to increase range of motion.");
     schedule.setClassType(ClassType.stretch);
     schedule.setLevel("Beginner");
     schedule.setStartWeek(LocalDate.of(2025, 12, 1));
@@ -263,6 +269,7 @@ public class CreateClassSchedulesIT {
   void createHIITClass() {
     ClassSchedule schedule = new ClassSchedule();
     schedule.setClassName("HIIT Training");
+    schedule.setClassDescription("Short intense intervals with active recovery to boost cardio fitness.");
     schedule.setClassType(ClassType.cardio);
     schedule.setLevel("Advanced");
     schedule.setStartWeek(LocalDate.of(2025, 12, 2));
@@ -280,6 +287,7 @@ public class CreateClassSchedulesIT {
   void createMeditationClass() {
     ClassSchedule schedule = new ClassSchedule();
     schedule.setClassName("Mindful Meditation");
+    schedule.setClassDescription("Guided mindfulness and breathing for relaxation and focus.");
     schedule.setClassType(ClassType.meditation);
     schedule.setLevel("All Levels");
     schedule.setStartWeek(LocalDate.of(2025, 12, 1));
@@ -299,6 +307,7 @@ public class CreateClassSchedulesIT {
   void createCrossFitClass() {
     ClassSchedule schedule = new ClassSchedule();
     schedule.setClassName("CrossFit Training");
+    schedule.setClassDescription("Functional strength circuits combining lifts and metabolic conditioning.");
     schedule.setClassType(ClassType.strength);
     schedule.setLevel("Advanced");
     schedule.setStartWeek(LocalDate.of(2025, 12, 2));
@@ -318,6 +327,7 @@ public class CreateClassSchedulesIT {
   void createKickboxingClass() {
     ClassSchedule schedule = new ClassSchedule();
     schedule.setClassName("Kickboxing");
+    schedule.setClassDescription("Strike, kick, and condition in a fast-paced martial fitness class.");
     schedule.setClassType(ClassType.cardio);
     schedule.setLevel("Intermediate");
     schedule.setStartWeek(LocalDate.of(2025, 12, 1));
@@ -335,6 +345,7 @@ public class CreateClassSchedulesIT {
   void createBodyPumpClass() {
     ClassSchedule schedule = new ClassSchedule();
     schedule.setClassName("Body Pump");
+    schedule.setClassDescription("Full-body barbell workout targeting all major muscle groups.");
     schedule.setClassType(ClassType.strength);
     schedule.setLevel("All Levels");
     schedule.setStartWeek(LocalDate.of(2025, 12, 2));
@@ -352,6 +363,7 @@ public class CreateClassSchedulesIT {
   void createBellyDanceClass() {
     ClassSchedule schedule = new ClassSchedule();
     schedule.setClassName("Belly Dance");
+    schedule.setClassDescription("Learn foundational belly dance movements for fun and fitness.");
     schedule.setClassType(ClassType.dance);
     schedule.setLevel("Beginner");
     schedule.setStartWeek(LocalDate.of(2025, 12, 1));
@@ -369,6 +381,7 @@ public class CreateClassSchedulesIT {
   void createTaiChiClass() {
     ClassSchedule schedule = new ClassSchedule();
     schedule.setClassName("Tai Chi");
+    schedule.setClassDescription("Slow, flowing tai chi forms to improve balance and calm.");
     schedule.setClassType(ClassType.meditation);
     schedule.setLevel("All Levels");
     schedule.setStartWeek(LocalDate.of(2025, 12, 2));
@@ -388,6 +401,7 @@ public class CreateClassSchedulesIT {
   void createCircuitTrainingClass() {
     ClassSchedule schedule = new ClassSchedule();
     schedule.setClassName("Circuit Training");
+    schedule.setClassDescription("Rotating stations for strength and cardio conditioning.");
     schedule.setClassType(ClassType.strength);
     schedule.setLevel("Intermediate");
     schedule.setStartWeek(LocalDate.of(2025, 12, 1));
@@ -407,6 +421,7 @@ public class CreateClassSchedulesIT {
   void createAquaAerobicsClass() {
     ClassSchedule schedule = new ClassSchedule();
     schedule.setClassName("Aqua Aerobics");
+    schedule.setClassDescription("Low-impact water workout that builds endurance and strength.");
     schedule.setClassType(ClassType.cardio);
     schedule.setLevel("All Levels");
     schedule.setStartWeek(LocalDate.of(2025, 12, 2));
@@ -424,6 +439,7 @@ public class CreateClassSchedulesIT {
   void createBalletFitClass() {
     ClassSchedule schedule = new ClassSchedule();
     schedule.setClassName("Ballet Fit");
+    schedule.setClassDescription("Ballet-inspired conditioning to improve strength and posture.");
     schedule.setClassType(ClassType.dance);
     schedule.setLevel("Beginner");
     schedule.setStartWeek(LocalDate.of(2025, 12, 1));
@@ -441,6 +457,7 @@ public class CreateClassSchedulesIT {
   void createSeniorFitnessClass() {
     ClassSchedule schedule = new ClassSchedule();
     schedule.setClassName("Senior Fitness");
+    schedule.setClassDescription("Low-impact mobility, balance, and strength for active seniors.");
     schedule.setClassType(ClassType.stretch);
     schedule.setLevel("Beginner");
     schedule.setStartWeek(LocalDate.of(2025, 12, 2));
@@ -458,6 +475,7 @@ public class CreateClassSchedulesIT {
   void createMorningBootcampClass() {
     ClassSchedule schedule = new ClassSchedule();
     schedule.setClassName("Morning Bootcamp");
+    schedule.setClassDescription("Early-morning total-body bootcamp with drills and circuits.");
     schedule.setClassType(ClassType.cardio);
     schedule.setLevel("Advanced");
     schedule.setStartWeek(LocalDate.of(2025, 12, 1));
@@ -477,6 +495,7 @@ public class CreateClassSchedulesIT {
   void createMartialArtsClass() {
     ClassSchedule schedule = new ClassSchedule();
     schedule.setClassName("Martial Arts");
+    schedule.setClassDescription("Fundamentals of striking and movement for all levels.");
     schedule.setClassType(ClassType.cardio);
     schedule.setLevel("All Levels");
     schedule.setStartWeek(LocalDate.of(2025, 12, 2));
@@ -494,6 +513,7 @@ public class CreateClassSchedulesIT {
   void createPreNatalYogaClass() {
     ClassSchedule schedule = new ClassSchedule();
     schedule.setClassName("Pre-natal Yoga");
+    schedule.setClassDescription("Safe, supportive yoga to strengthen and relax during pregnancy.");
     schedule.setClassType(ClassType.yoga);
     schedule.setLevel("All Levels");
     schedule.setStartWeek(LocalDate.of(2025, 12, 1));

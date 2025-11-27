@@ -104,6 +104,7 @@ public class ClassSchedule {
           scheduledClass.setSlots(slots);
 
           scheduledClass.setClassName(className);
+          scheduledClass.setClassDescription(classDescription);
           scheduledClass.setClassType(classType);
           scheduledClass.setLevel(level);
 
