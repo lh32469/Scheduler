@@ -108,15 +108,6 @@
             </div>
 
             <!-- Description -->
-            <!--            <div class="meta-line meta-multiline"-->
-            <!--                 th:if="${sch.classDescription != null and !#strings.isEmpty(sch.classDescription)}">-->
-            <!--                <i class="fas fa-align-left" aria-hidden="true"></i>-->
-            <!--                <span style="font-weight:600;">Description:</span>-->
-            <!--                <i class="fas fa-align-left" aria-hidden="true"></i>-->
-            <!--                <span class="value" th:text="${sch.classDescription}">Brief description of the class.</span>-->
-            <!--            </div>-->
-
-            <!-- Description -->
             <div class="meta-line meta-multiline">
                 <i class="fas fa-align-left" aria-hidden="true"></i>
                 <span class="value"
@@ -125,7 +116,7 @@
 
             <!-- Actions -->
             <div style="display:flex; gap:.5rem; justify-content:flex-end; margin-top:.75rem;">
-                <a class="book-btn" style="width:auto; background:#6c757d;"
+                <a class="class-type" style="width:auto; background:#e48760;"
                    th:href="@{/offerings/{id}/edit(id=${sch.id})}">
                     Edit
                 </a>
