@@ -35,6 +35,7 @@ public class HomeController {
       @RequestParam(name = "page", required = false, defaultValue = "1") int page,
       @RequestParam(name = "size", required = false, defaultValue = "100") int size,
       @RequestParam(name = "filter", required = false) String filter,
+      @RequestParam(name = "instructor", required = false) String instructorId,
       Authentication authentication,
       Model model
   ) {
@@ -55,6 +56,15 @@ public class HomeController {
                        .filter(c -> c.getClassType()
                                      .name()
                                      .equalsIgnoreCase(f))
+                       .toList();
+    }
+
+    // Optional filter: only show classes for a specific instructor (by instructor UserAccount id)
+    if (instructorId != null && !instructorId.isBlank()) {
+      String target = instructorId.trim();
+      classes = classes.stream()
+                       .filter(c -> c.getInstructorAccount() != null
+                           && target.equals(c.getInstructorAccount().getId()))
                        .toList();
     }
 

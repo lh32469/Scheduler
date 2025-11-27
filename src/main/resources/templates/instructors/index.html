@@ -52,6 +52,15 @@
                         None currently scheduled.
                     </div>
                 </div>
+
+                <!-- Link to view only this instructor's classes on the main page -->
+                <div  th:if="${instructorClassTypes[inst.id] != null}"
+                      class="instructor-actions" style="margin-top:.75rem;">
+                    <a class="filter-btn" th:href="@{/(instructor=${inst.id})}"
+                       style="text-decoration:none;">
+                        View classes by <span th:text="${inst.name}">this instructor</span>
+                    </a>
+                </div>
             </div>
         </div>
     </div>
