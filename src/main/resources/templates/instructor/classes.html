@@ -10,7 +10,8 @@
             <nav>
                 <ul>
                     <li><a th:href="@{/}">Home</a></li>
-                    <li sec:authorize="hasAnyRole('ADMIN','INSTRUCTOR')"><a th:href="@{/offerings/new}">Schedule New Class</a></li>
+                    <li sec:authorize="hasAnyRole('ADMIN','INSTRUCTOR')"><a th:href="@{/offerings/new}">Schedule New
+                        Class</a></li>
                 </ul>
             </nav>
         </div>
@@ -23,7 +24,8 @@
         <h2 style="margin-bottom: 0;">Your Scheduled Classes</h2>
     </section>
 
-    <div th:if="${#lists.isEmpty(schedules)}" style="background: #fff; padding: 1.5rem; border-radius: 12px; margin-top: 1rem;">
+    <div th:if="${#lists.isEmpty(schedules)}"
+         style="background: #fff; padding: 1.5rem; border-radius: 12px; margin-top: 1rem;">
         <p>You don't have any classes scheduled yet.</p>
         <p>
             <a class="book-btn" style="display: inline-block; width: auto; padding: 0.6rem 1rem; margin-top: 0.5rem;"
@@ -40,33 +42,87 @@
                 <div class="class-type" th:text="${sch.classType}">Type</div>
             </div>
 
-            <div class="class-details">
-                <div class="detail-item">
-                    <i class="fas fa-clock"></i>
-                    <span>
-                        <span th:text="${#temporals.format(sch.startWeek, 'EEE, MMM d')}">Sun, Oct 27</span>
-                        •
-                        <span th:text="${#temporals.format(sch.classStartTime, 'h:mm a')}">7:00 AM</span>
-                    </span>
-                </div>
-                <div class="detail-item">
-                    <i class="fas fa-signal"></i>
-                    <span th:text="${sch.level}">All Levels</span>
-                </div>
-                <div class="detail-item">
-                    <i class="fas fa-calendar-day"></i>
-                    <span th:text="${sch.daysOfWeek}">Mon, Wed, Fri</span>
-                </div>
-                <div class="detail-item">
-                    <i class="fas fa-calendar-day"></i>
-                    <span th:text="'For: ' + ${sch.numberOfWeeks} + ' Weeks'">For: 8weeks</span>
-                </div>
+            <!-- Start Date -->
+            <div class="meta-line">
+                <i class="fas fa-calendar-alt" aria-hidden="true"></i>
+                <span style="font-weight:600;">Start Date:</span>
+                <span th:if="${sch.startWeek != null}"
+                      th:text="${#temporals.format(sch.startWeek, 'EEE, MMM d')}">Sun, Oct 27</span>
+                <span th:if="${sch.startWeek == null}">TBD</span>
             </div>
 
-            <div class="detail-item" style="color: #28a745; font-weight: 500;" th:if="${sch.slots} != -1">
-                <i class="fas fa-users"></i>
-                <span th:text="${sch.slots} + ' spots available'"></span>
+            <!-- Days of Week -->
+            <div class="meta-line"
+                 th:if="${sch.daysOfWeekAbbrevText != null and !#strings.isEmpty(sch.daysOfWeekAbbrevText)}">
+                <i class="fas fa-calendar-day" aria-hidden="true"></i>
+                <span style="font-weight:600;">Days:</span>
+                <span th:text="${sch.daysOfWeekAbbrevText}">Mon, Wed, Fri</span>
             </div>
+
+            <!-- Start Time -->
+            <div class="meta-line">
+                <i class="fas fa-clock" aria-hidden="true"></i>
+                <span style="font-weight:600;">Time:</span>
+                <span th:if="${sch.classStartTime != null}"
+                      th:text="${#temporals.format(sch.classStartTime, 'h:mm a')}">7:00 AM</span>
+                <span th:text="'for ' + ${sch.duration} + ' min'">60 min</span>
+                <span th:if="${sch.classStartTime == null}">TBD</span>
+            </div>
+
+            <!-- Number of Weeks -->
+            <div class="meta-line">
+                <i class="fas fa-calendar-week" aria-hidden="true"></i>
+                <span style="font-weight:600;">Weeks:</span>
+                <span th:text="${sch.numberOfWeeks == 0 ? 'Ongoing' : sch.numberOfWeeks + ' weeks'}">Ongoing</span>
+            </div>
+
+            <!-- Level -->
+            <div class="meta-line" th:if="${sch.level != null and !#strings.isEmpty(sch.level)}">
+                <i class="fas fa-signal" aria-hidden="true"></i>
+                <span style="font-weight:600;">Level:</span>
+                <span th:text="${sch.level}">All Levels</span>
+            </div>
+
+            <!-- Location -->
+            <div class="meta-line" th:if="${sch.location != null and !#strings.isEmpty(sch.location)}">
+                <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
+                <span style="font-weight:600;">Location:</span>
+                <span th:text="${sch.location}">Studio 1</span>
+            </div>
+            <div class="meta-line" th:if="${sch.location == null}">
+                <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
+                <span style="font-weight:600;">Location:</span>
+                <span>TBD</span>
+            </div>
+
+            <!-- Slots / Capacity -->
+            <div class="meta-line slots-info" th:if="${sch.slots == -1}">
+                <i class="fas fa-users" aria-hidden="true"></i>
+                <span style="font-weight:600;">Capacity:</span>
+                <span>Unlimited</span>
+            </div>
+            <div class="meta-line slots-info" th:if="${sch.slots != -1}">
+                <i class="fas fa-users" aria-hidden="true"></i>
+                <span style="font-weight:600;">Capacity:</span>
+                <span th:text="${sch.slots} + ' spots available'">spots</span>
+            </div>
+
+            <!-- Description -->
+            <!--            <div class="meta-line meta-multiline"-->
+            <!--                 th:if="${sch.classDescription != null and !#strings.isEmpty(sch.classDescription)}">-->
+            <!--                <i class="fas fa-align-left" aria-hidden="true"></i>-->
+            <!--                <span style="font-weight:600;">Description:</span>-->
+            <!--                <i class="fas fa-align-left" aria-hidden="true"></i>-->
+            <!--                <span class="value" th:text="${sch.classDescription}">Brief description of the class.</span>-->
+            <!--            </div>-->
+
+            <!-- Description -->
+            <div class="meta-line meta-multiline">
+                <i class="fas fa-align-left" aria-hidden="true"></i>
+                <span class="value"
+                      th:text="${sch.classDescription}"> description.</span>
+            </div>
+
         </div>
     </div>
 

@@ -177,6 +177,47 @@ nav a:hover {
     margin: 1rem 0;
 }
 
+/* Concise meta lines for instructor/classes */
+.meta-line {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    color: #555;
+    margin: .25rem 0;
+}
+.meta-line i { color: #667eea; width: 16px; }
+
+/* Allow multi-line content on meta rows that include larger text (e.g., description) */
+.meta-line.meta-multiline {
+    align-items: flex-start;
+}
+.meta-line.meta-multiline .value {
+    flex: 1;
+    white-space: normal;
+}
+
+/* Small chips for quick facts */
+.chip {
+    display: inline-block;
+    padding: .2rem .55rem;
+    border-radius: 999px;
+    background: #f1f3f5;
+    color: #495057;
+    font-size: .8rem;
+    font-weight: 600;
+}
+
+/* Slots info line */
+.slots-info {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    margin-top: .5rem;
+    color: #198754; /* Bootstrap success-ish */
+    font-weight: 600;
+}
+.slots-info.unlimited { color: #0b5ed7; }
+
 .detail-item {
     display: flex;
     align-items: center;
