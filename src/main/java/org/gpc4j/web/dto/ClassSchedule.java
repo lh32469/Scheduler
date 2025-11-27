@@ -26,6 +26,7 @@ public class ClassSchedule {
   private String id; // RavenDB document id (e.g., ClassSchedule/1-A)
 
   private String className;
+  private String classDescription;
   private ClassType classType;
   private String level;
 
