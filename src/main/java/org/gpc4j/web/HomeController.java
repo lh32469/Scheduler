@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.gpc4j.web.api.ClassOffering;
 import org.gpc4j.web.dto.ScheduledClass;
+import org.gpc4j.web.security.UserAccount;
 import org.gpc4j.web.repository.ClassOfferingRepository;
 import org.gpc4j.web.repository.RavenDB;
 import org.gpc4j.web.services.ScheduleClassesService;
@@ -66,6 +67,15 @@ public class HomeController {
                        .filter(c -> c.getInstructorAccount() != null
                            && target.equals(c.getInstructorAccount().getId()))
                        .toList();
+
+      // Try to determine the instructor's display name from the resulting classes
+      String instructorName = classes.stream()
+                                     .map(ScheduledClass::getInstructorAccount)
+                                     .filter(Objects::nonNull)
+                                     .map(UserAccount::getName)
+                                     .findFirst()
+                                     .orElse(null);
+      model.addAttribute("instructorName", instructorName);
     }
 
     model.addAttribute("classes", classes);
