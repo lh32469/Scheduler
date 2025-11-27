@@ -123,6 +123,14 @@
                       th:text="${sch.classDescription}"> description.</span>
             </div>
 
+            <!-- Actions -->
+            <div style="display:flex; gap:.5rem; justify-content:flex-end; margin-top:.75rem;">
+                <a class="book-btn" style="width:auto; background:#6c757d;"
+                   th:href="@{/offerings/{id}/edit(id=${sch.id})}">
+                    Edit
+                </a>
+            </div>
+
         </div>
     </div>
 

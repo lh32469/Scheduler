@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.gpc4j.web.api.ClassType;
 import org.gpc4j.web.security.UserAccount;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -42,6 +43,7 @@ public class ClassSchedule {
   /**
    * The Sunday of the week the first class(es) will run.
    */
+  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
   private LocalDate startWeek;
 
   /**
@@ -57,6 +59,7 @@ public class ClassSchedule {
   /**
    * Time of day the class will run.
    */
+  @DateTimeFormat(pattern = "HH:mm")
   private LocalTime classStartTime;
 
   /**
