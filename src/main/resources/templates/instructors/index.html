@@ -10,7 +10,6 @@
             <nav>
                 <ul>
                     <li><a th:href="@{/}">Home</a></li>
-                    <li><a th:href="@{/instructors}">Instructors</a></li>
                 </ul>
             </nav>
         </div>
@@ -30,15 +29,29 @@
                 <div>
                     <div class="class-name" th:text="${inst.name}">Instructor Name</div>
                 </div>
-                <!--        <div class="class-type" th:text="${inst.username}">@username</div>-->
             </div>
 
             <div class="instructor">
-                <!--        <div class="instructor-name">-->
-                <!--          <i class="fas fa-user"></i>-->
-                <!--          <span th:text="${inst.name}">Name</span>-->
-                <!--        </div>-->
-                <div class="instructor-bio" th:text="${inst.profile}">Profile information goes here.</div>
+                <div class="instructor-bio" th:text="${inst.profile}">Profile</div>
+                <!-- Instructor Class Types (aggregated across schedules) -->
+                <div class="instructor-class-types"
+                     th:with="types=${instructorClassTypes[inst.id]}"
+                     style="margin-top:.5rem;">
+                    <div th:if="${types != null}"
+                         style="display:flex; flex-wrap:wrap; gap:.5rem; align-items:center;">
+                        <span style="font-weight:600; color:#555;">Teaches:</span>
+                        <span th:each="t : ${types}"
+                              th:text="${#strings.capitalize(t.name())}"
+                              style="display:inline-block; padding:.2rem .5rem; border-radius:999px; background:#eef6ff; color:#0b5ed7; font-size:.85rem;">
+                            ClassType
+                        </span>
+                    </div>
+                    <div th:if="${types == null}"
+                         style="margin:.25rem 0 .75rem 0; color:#888; font-size:.9rem;">
+                        <span style="font-weight:600; color:#555;">Teaches:</span>
+                        None currently scheduled.
+                    </div>
+                </div>
             </div>
         </div>
     </div>
