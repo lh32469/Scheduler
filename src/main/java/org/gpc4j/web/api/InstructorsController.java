@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -38,14 +39,13 @@ public class InstructorsController {
 
     // Map of instructorId -> distinct ClassTypes taught based on current ClassSchedules
     Map<String, Set<ClassType>> instructorClassTypes = new HashMap<>();
+
     try (IDocumentSession session = ravenDB.openSession()) {
+
       // Collect instructor IDs
-      List<String> instructorIds = new LinkedList<>();
-      for (UserAccount ua : instructors) {
-        if (ua.getId() != null) {
-          instructorIds.add(ua.getId());
-        }
-      }
+      List<String> instructorIds = instructors.stream()
+                                              .map(UserAccount::getId)
+                                              .toList();
 
       log.debug("instructorIds " + instructorIds);
 
