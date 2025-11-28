@@ -47,18 +47,17 @@ public class ScheduleClassesService {
         scheduledClasses.forEach(clazz -> {
           if (Objects.nonNull(instructor)) {
             clazz.setInstructorAccount(instructor);
+            classes.add(clazz);
           }
-          classes.add(clazz);
         });
       });
 
     }
 
     classes.sort(Comparator.comparing(ScheduledClass::getStart));
+    log.debug("Found " + classes.size() + " classes for "
+                 + startDate + " to " + endDate);
 
-//    for (ScheduledClass aClass : classes) {
-//      log.info(aClass.toString());
-//    }
     return classes;
   }
 
