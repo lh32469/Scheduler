@@ -38,6 +38,17 @@ spring:
     cache-names: documentStore, anotherCache
     caffeine:
       spec: maximumSize=100,expireAfterWrite=10m
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: permits.pdx@gmail.com
+    password: 
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
 
 info:
   app:

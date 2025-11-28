@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Email Verification - FitHub</title>
+    <link rel="stylesheet" href="/styles.css"/>
+    <head th:replace="~{fragments/head :: head}"></head>
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="header-content">
+            <div class="logo">Email Verification</div>
+            <nav>
+                <ul>
+                    <li><a th:href="@{/}">Home</a></li>
+                    <li><a th:href="@{/login}">Login</a></li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</header>
+
+<main class="container" style="max-width: 720px; margin: 2rem auto;">
+    <div class="class-card" th:if="${status} == 'success'">
+        <h2 style="margin-top:0">You're all set!</h2>
+        <p>Your email has been verified and your account is now active.</p>
+        <p>
+            <a class="filter-btn" th:href="@{/login}">Sign in</a>
+        </p>
+    </div>
+
+    <div class="class-card" th:if="${status} == 'expired'">
+        <h2 style="margin-top:0">Link expired</h2>
+        <p>Sorry, this verification link has expired. Please sign up again to get a new link.</p>
+        <p>
+            <a class="filter-btn" th:href="@{/signup}">Back to Sign Up</a>
+        </p>
+    </div>
+
+    <div class="class-card" th:if="${status} == 'used'">
+        <h2 style="margin-top:0">Link already used</h2>
+        <p>This verification link was already used. If your account is active, you can sign in now.</p>
+        <p>
+            <a class="filter-btn" th:href="@{/login}">Go to Login</a>
+        </p>
+    </div>
+
+    <div class="class-card" th:if="${status} == 'invalid'">
+        <h2 style="margin-top:0">Invalid link</h2>
+        <p>We couldn't validate this link. Please ensure you copied it correctly or sign up again.</p>
+        <p>
+            <a class="filter-btn" th:href="@{/signup}">Back to Sign Up</a>
+        </p>
+    </div>
+</main>
+
+</body>
+</html>

@@ -45,6 +45,15 @@ public class RavenUserRepository {
 
   }
 
+  public UserAccount findById(String id) {
+    try (IDocumentSession session = ravenDB.openSession()) {
+      return session.load(UserAccount.class, id);
+    } catch (Exception e) {
+      log.error("Failed to load UserAccount by id={}: {}", id, e.toString());
+      return null;
+    }
+  }
+
   public List<UserAccount> findUsers(List<String> ids) {
     log.info("Finding users with ids: " + ids);
 

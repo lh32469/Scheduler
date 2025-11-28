@@ -39,6 +39,9 @@
                     <li sec:authorize="!isAuthenticated()">
                         <a th:href="@{/login}">Login</a>
                     </li>
+                    <li sec:authorize="!isAuthenticated()">
+                        <a th:href="@{/signup}">Sign Up</a>
+                    </li>
                     <li sec:authorize="isAuthenticated()">
                         <form th:action="@{/logout}" method="post" style="display: inline;">
                             <a href="#" onclick="this.parentElement.submit(); return false;">Logout</a>

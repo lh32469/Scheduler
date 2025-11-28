@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Sign Up - FitHub</title>
+    <link rel="stylesheet" href="/styles.css"/>
+    <style>
+        .container { max-width: 720px; margin: 2rem auto; }
+        .card { background:#fff; border-radius:12px; padding:1.5rem; box-shadow:0 10px 30px rgba(0,0,0,0.08); }
+        label { display:block; font-weight:600; margin:.5rem 0 .25rem; }
+        input, textarea { width:100%; padding:.6rem .8rem; border:1px solid #ddd; border-radius:8px; }
+        .actions { display:flex; gap:.5rem; margin-top:1rem; }
+        .btn { padding:.6rem 1rem; border:none; border-radius:8px; background:#667eea; color:#fff; font-weight:600; cursor:pointer; }
+        .btn.secondary { background:#e2e8f0; color:#111; }
+        .msg { margin: .5rem 0 1rem; padding: .75rem 1rem; border-radius: 8px; }
+        .msg.error { background:#fdecea; color:#611a15; }
+        .msg.info { background:#e6f4ff; color:#084298; }
+    </style>
+    <head th:replace="~{fragments/head :: head}"></head>
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="header-content">
+            <div class="logo">Sign Up</div>
+            <nav>
+                <ul>
+                    <li><a th:href="@{/}">Home</a></li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+    </header>
+
+<main class="container">
+    <div class="card" th:if="${submitted != true}">
+        <h2 style="margin-top:0">Create your account</h2>
+
+        <div class="msg error" th:if="${error}" th:text="${error}"></div>
+
+        <form method="post" th:action="@{/signup}" th:object="${signup}">
+            <label for="email">Email Address (will be your username)</label>
+            <input id="email" name="email" type="email" placeholder="you@example.com" required
+                   th:value="*{email}"/>
+
+            <label for="name">Full Name</label>
+            <input id="name" name="name" type="text" placeholder="Jane Doe" required th:value="*{name}"/>
+
+            <label for="profile">Profile</label>
+            <textarea id="profile" name="profile" rows="4"
+                      placeholder="Tell us a bit about yourself (optional)"
+                      th:text="*{profile}"></textarea>
+
+            <div class="actions">
+                <button class="btn" type="submit">Sign Up</button>
+                <a class="btn secondary" th:href="@{/}">Cancel</a>
+            </div>
+        </form>
+        <p style="margin-top:1rem; color:#555; font-size:.95rem;">By signing up, your account will be created in an inactive state. We will send you a verification email to activate it.</p>
+    </div>
+
+    <div class="card" th:if="${submitted == true}">
+        <h2>Check your email</h2>
+        <p class="msg info">We sent a verification link to <strong th:text="${email}">email</strong>. Click the link in that email to activate your account.</p>
+        <p>If you don't see it in a few minutes, check your spam folder.</p>
+        <div class="actions">
+            <a class="btn" th:href="@{/}">Back to Home</a>
+        </div>
+    </div>
+</main>
+
+</body>
+</html>

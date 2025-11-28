@@ -41,7 +41,8 @@ public class SecurityConfig {
                 "/",
                 "/login", "/error",
                 "/styles.css", "/static/**", "/webjars/**", "/favicon.ico",
-                "/templates/fragments/**")
+                "/templates/fragments/**",
+                "/signup", "/verify", "/verify/**")
             .permitAll()
             .requestMatchers("/bookings/**")
             .authenticated()
