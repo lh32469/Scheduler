@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head}"></head>
+<body>
+
+<header>
+    <div class="container">
+        <div class="header-content">
+            <div class="logo" th:text="${banner.companyName}">FitHub</div>
+            <nav>
+                <ul>
+                    <li><a th:href="@{/}">Home</a></li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</header>
+
+<main class="container" style="padding-top: 2rem; padding-bottom: 3rem;">
+    <h1 th:text="${title} ?: 'Terms &amp; Conditions'">Terms &amp; Conditions</h1>
+
+    <div class="class-card" style="margin-top:1rem;">
+        <h2 style="margin-top:0">Agreement</h2>
+        <p>
+            These Terms &amp; Conditions govern your use of this site and services. This is
+            placeholder text — replace with your organization’s legal terms.
+        </p>
+
+        <h3>Use of Services</h3>
+        <ul style="margin-left:1.25rem; list-style:disc;">
+            <li>Use the services in compliance with applicable laws</li>
+            <li>Provide accurate account information</li>
+            <li>Do not attempt to disrupt or misuse the service</li>
+        </ul>
+
+        <h3>Limitation of Liability</h3>
+        <p>
+            To the extent permitted by law, we are not liable for indirect or consequential damages.
+        </p>
+
+        <p style="margin-top:1rem; color:#555;">
+            See also our <a th:href="@{/privacy}">Privacy Notice</a> and
+            <a th:href="@{/contact}">Contact</a> page.
+        </p>
+    </div>
+</main>
+
+<footer>
+    <div class="container">
+        <p>© <span th:text="${#temporals.format(#temporals.createNow(), 'yyyy')}">2025</span>
+            <span th:text="${banner.companyName}">FitHub</span>. All rights reserved.
+        </p>
+    </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head}"></head>
+<body>
+
+<header>
+    <div class="container">
+        <div class="header-content">
+            <div class="logo" th:text="${banner.companyName}">FitHub</div>
+            <nav>
+                <ul>
+                    <li><a th:href="@{/}">Home</a></li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</header>
+
+<main class="container" style="padding-top: 2rem; padding-bottom: 3rem;">
+    <h1 th:text="${title} ?: 'Contact Us'">Contact Us</h1>
+
+    <div class="class-card" style="margin-top:1rem;">
+        <p style="color:#555;">We'd love to hear from you. Use the details below to get in touch.</p>
+
+        <div class="meta-line"><i class="fas fa-envelope"></i><span>Email:</span>
+            <a href="mailto:info@example.com" style="margin-left:.35rem;">info@example.com</a>
+        </div>
+        <div class="meta-line"><i class="fas fa-phone"></i><span>Phone:</span>
+            <span style="margin-left:.35rem;">(555) 123-4567</span>
+        </div>
+        <div class="meta-line"><i class="fas fa-map-marker-alt"></i><span>Address:</span>
+            <span style="margin-left:.35rem;">123 Main St, Anytown, USA</span>
+        </div>
+
+        <p style="margin-top:1rem; color:#555;">
+            Looking for our policies? See the
+            <a th:href="@{/privacy}">Privacy Notice</a> and
+            <a th:href="@{/terms}">Terms &amp; Conditions</a>.
+        </p>
+    </div>
+</main>
+
+<footer>
+    <div class="container">
+        <p>© <span th:text="${#temporals.format(#temporals.createNow(), 'yyyy')}">2025</span>
+            <span th:text="${banner.companyName}">FitHub</span>. All rights reserved.
+        </p>
+    </div>
+</footer>
+
+</body>
+</html>

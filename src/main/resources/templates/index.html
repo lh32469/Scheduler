@@ -26,7 +26,7 @@
                         <a th:href="@{/instructors}">Instructors</a>
                     </li>
                     <li>
-                        <a href="#contact">Contact</a>
+                        <a href="#contact">Contacts</a>
                     </li>
                     <!-- Admin-only: Create User -->
                     <li sec:authorize="hasRole('ADMIN')">
@@ -203,6 +203,19 @@
                     <button class="book-btn" type="submit">Book</button>
                 </form>
 
+            </div>
+        </div>
+    </section>
+    
+    <!-- Contact/Legal section -->
+    <section class="container" id="contact" style="margin-bottom: 3rem;">
+        <div class="class-card" style="animation: none; opacity: 1; transform: none;">
+            <h2 style="margin-top:0;">Get in Touch</h2>
+            <p style="color:#555; margin:.25rem 0 1rem;">Questions, feedback, or need assistance? Reach out or review our policies.</p>
+            <div style="display:flex; gap:.5rem; flex-wrap:wrap;">
+                <a class="filter-btn" th:href="@{/contact}" style="text-decoration:none;">Contact Us</a>
+                <a class="filter-btn" th:href="@{/privacy}" style="text-decoration:none;">Privacy Notice</a>
+                <a class="filter-btn" th:href="@{/terms}" style="text-decoration:none;">Terms &amp; Conditions</a>
             </div>
         </div>
     </section>

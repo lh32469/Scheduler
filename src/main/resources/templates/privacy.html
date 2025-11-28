@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head}"></head>
+<body>
+
+<header>
+    <div class="container">
+        <div class="header-content">
+            <div class="logo" th:text="${banner.companyName}">FitHub</div>
+            <nav>
+                <ul>
+                    <li><a th:href="@{/}">Home</a></li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</header>
+
+<main class="container" style="padding-top: 2rem; padding-bottom: 3rem;">
+    <h1 th:text="${title} ?: 'Privacy Notice'">Privacy Notice</h1>
+
+    <div class="class-card" style="margin-top:1rem;">
+        <h2 style="margin-top:0">Introduction</h2>
+        <p>
+            We value your privacy. This notice explains what information we collect, how we use it,
+            and your choices. This content is a placeholder; replace with your organization’s
+            actual privacy policy.
+        </p>
+
+        <h3>Information we collect</h3>
+        <ul style="margin-left:1.25rem; list-style:disc;">
+            <li>Account details such as name and email</li>
+            <li>Booking and schedule information</li>
+            <li>Basic analytics to improve the service</li>
+        </ul>
+
+        <h3>How we use information</h3>
+        <ul style="margin-left:1.25rem; list-style:disc;">
+            <li>Provide and improve our services</li>
+            <li>Communicate important updates</li>
+            <li>Maintain security and prevent abuse</li>
+        </ul>
+
+        <p style="margin-top:1rem; color:#555;">
+            For questions, please see our <a th:href="@{/contact}">Contact</a> page.
+        </p>
+    </div>
+</main>
+
+<footer>
+    <div class="container">
+        <p>© <span th:text="${#temporals.format(#temporals.createNow(), 'yyyy')}">2025</span>
+            <span th:text="${banner.companyName}">FitHub</span>. All rights reserved.
+        </p>
+    </div>
+</footer>
+
+</body>
+</html>
