@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Login - FitHub</title>
+    <title th:text="'Login - ' + ${banner.companyName}">Login</title>
     <link rel="stylesheet" href="/styles.css"/>
     <style>
         .login-container {
@@ -66,7 +66,7 @@
 </head>
 <body>
 <div class="login-container">
-    <div class="login-title">Sign in to FitHub</div>
+    <div th:text="'Sign in to ' + ${banner.companyName}" class="login-title">Sign in</div>
 
     <div th:if="${param.error}" class="msg error">Invalid username or password.</div>
     <div th:if="${param.verified}" class="msg info">Your account has been activated. You can now sign in with your new password.</div>
