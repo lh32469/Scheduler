@@ -15,4 +15,13 @@ public class VerificationToken {
   private String token;     // random UUID string
   private Instant expiresAt; // expiry timestamp
   private boolean used;     // set true once consumed
+  /**
+   * Token purpose. Defaults to SIGNUP when null for backward compatibility with older tokens.
+   */
+  private VerificationToken.TokenType type = TokenType.SIGNUP;
+
+  public enum TokenType {
+    SIGNUP,
+    PASSWORD_RESET
+  }
 }

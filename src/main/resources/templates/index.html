@@ -36,6 +36,10 @@
                     <li sec:authorize="hasRole('INSTRUCTOR')">
                         <a th:href="@{/instructor/classes}">My Classes</a>
                     </li>
+                    <!-- Authenticated: Reset Password -->
+                    <li sec:authorize="isAuthenticated()">
+                        <a th:href="@{/account/password}">Reset Password</a>
+                    </li>
                     <li sec:authorize="!isAuthenticated()">
                         <a th:href="@{/login}">Login</a>
                     </li>
