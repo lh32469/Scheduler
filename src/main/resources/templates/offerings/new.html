@@ -27,7 +27,6 @@
     <form th:action="${isEdit} ? @{/offerings/{id}(id=${schedule.id})} : @{/offerings}"
           method="post" th:object="${schedule}" class="form"
           style="display: grid; gap: 1rem; max-width: 640px;">
-        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
 
         <label>
             Class Name

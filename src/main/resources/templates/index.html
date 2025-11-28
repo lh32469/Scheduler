@@ -57,7 +57,7 @@
 
     /**
      * Sets the active filter button based on the 'filter' parameter in the URL.
-     * Removes the 'active' class from all filter buttons and applies it to the button
+     * Removes the 'active' clazz from all filter buttons and applies it to the button
      * matching the current filter parameter value. If no filter parameter is present,
      * defaults to activating the 'All Classes' button.
      *
@@ -131,32 +131,32 @@
 
         <div class="schedule-grid" id="scheduleGrid">
             <div class="class-card" style="animation-delay: 0s"
-                 th:each="class : ${classes}"
-                 th:attr="data-type=${class.classType}">
+                 th:each="clazz : ${classes}"
+                 th:attr="data-type=${clazz.classType}">
 
                 <div class="class-header">
                     <div>
-                        <div class="class-name" th:text="${class.className}">Class Name</div>
+                        <div class="class-name" th:text="${clazz.className}">Class Name</div>
                     </div>
-                    <div class="class-type" th:text="${class.classType}">type</div>
+                    <div class="class-type" th:text="${clazz.classType}">type</div>
                 </div>
 
                 <div class="class-details">
                     <div class="detail-item">
                         <i class="fas fa-clock"></i>
-                        <span th:text="${#temporals.format(class.start, 'EEE, MMM d')}">Day</span>
+                        <span th:text="${#temporals.format(clazz.start, 'EEE, MMM d')}">Day</span>
                     </div>
                     <div class="detail-item">
                         <i class="fas fa-clock"></i>
-                        <span th:text="${#temporals.format(class.start, 'h:mm a')}">Time</span>
+                        <span th:text="${#temporals.format(clazz.start, 'h:mm a')}">Time</span>
                     </div>
                     <div class="detail-item">
                         <i class="fas fa-hourglass-half"></i>
-                        <span th:text="${class.duration} + ' min'">60 min</span>
+                        <span th:text="${clazz.duration} + ' min'">60 min</span>
                     </div>
                     <div class="detail-item">
                         <i class="fas fa-signal"></i>
-                        <span th:text="${class.level}">All Levels</span>
+                        <span th:text="${clazz.level}">All Levels</span>
                     </div>
                     <div class="detail-item">
                         <i class="fas fa-signal"></i>
@@ -164,7 +164,7 @@
                     </div>
                     <div class="detail-item">
                         <i class="fas fa-signal"></i>
-                        <span th:text="${class.location}">Location</span>
+                        <span th:text="${clazz.location}">Location</span>
                     </div>
                     <div class="detail-item">
                         <i class="fas fa-signal"></i>
@@ -172,8 +172,8 @@
                     </div>
                     <div class="detail-item">
                         <i class="fas fa-signal"></i>
-                        <span th:text="${class.instructorAccount != null
-                        ? class.instructorAccount.name : ''}">Instructor</span>
+                        <span th:text="${clazz.instructorAccount != null
+                        ? clazz.instructorAccount.name : ''}">Instructor</span>
                     </div>
                 </div>
 
@@ -182,24 +182,24 @@
                         <i class="fas fa-user"></i>
                         <span>Description</span>
                     </div>
-                    <div class="instructor-bio" th:text="${class.classDescription}">Bio</div>
+                    <div class="instructor-bio" th:text="${clazz.classDescription}">Bio</div>
                 </div>
 
                 <div class="detail-item" style="color: #28a745; font-weight: 500;"
-                     th:if="${class.slots} != -1">
+                     th:if="${clazz.slots != -1}">
                     <i class="fas fa-users"></i>
-                    <span th:text="${class.slots} + ' spots available'"></span>
+                    <span th:text="${clazz.slots} + ' spots available'"></span>
                 </div>
 
-                <form th:if="${class.slots} != -1"
+                <form th:if="${clazz.slots != -1}"
                       th:action="@{/bookings}"
                       method="post" class="form">
-                    <input type="hidden" name="id" th:value="${class.id}"/>
-                    <input type="hidden" name="className" th:value="${class.className}"/>
-                    <input type="hidden" name="classType" th:value="${class.classType}"/>
-                    <input type="hidden" name="level" th:value="${class.level}"/>
-                    <input type="hidden" name="start" th:value="${class.start}"/>
-                    <input type="hidden" name="slots" th:value="${class.slots}"/>
+                    <input type="hidden" name="id" th:value="${clazz.id}"/>
+                    <input type="hidden" name="className" th:value="${clazz.className}"/>
+                    <input type="hidden" name="classType" th:value="${clazz.classType}"/>
+                    <input type="hidden" name="level" th:value="${clazz.level}"/>
+                    <input type="hidden" name="start" th:value="${clazz.start}"/>
+                    <input type="hidden" name="slots" th:value="${clazz.slots}"/>
                     <button class="book-btn" type="submit">Book</button>
                 </form>
 
