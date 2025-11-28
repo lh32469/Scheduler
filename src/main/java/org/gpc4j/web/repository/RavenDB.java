@@ -50,7 +50,7 @@ public class RavenDB {
     final String hostname = request.getHeader("X-Forwarded-Host");
 
     if (Objects.isNull(hostname)) {
-      log.warn("X-Forwarded-Host header not found in request");
+      log.info("X-Forwarded-Host header not found in request");
     } else {
       this.databaseName = hostname;
     }

@@ -29,7 +29,7 @@ public class GlobalModelAttributes {
       return;
     }
 
-    log.info(request.getRequestURL() + " " + request.getServerPort());
+    log.debug(request.getRequestURL() + " " + request.getServerPort());
 
     if (log.isTraceEnabled()) {
       log.trace(request.getRequestURL() + " " + request.getMethod());
