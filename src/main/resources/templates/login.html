@@ -69,6 +69,7 @@
     <div class="login-title">Sign in to FitHub</div>
 
     <div th:if="${param.error}" class="msg error">Invalid username or password.</div>
+    <div th:if="${param.verified}" class="msg info">Your account has been activated. You can now sign in with your new password.</div>
     <div th:if="${param.logout}" class="msg info">You have been logged out.</div>
 
     <form class="login-form" th:action="@{/login}" method="post">

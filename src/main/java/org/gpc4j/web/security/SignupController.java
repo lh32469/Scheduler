@@ -127,19 +127,92 @@ public class SignupController {
       return "verify";
     }
 
-    // Enable the user
+    // Token is valid — render the set password form
+    SetPasswordForm form = new SetPasswordForm();
+    form.setToken(tokenValue);
+    model.addAttribute("setPassword", form);
+
     UserAccount user = userRepository.findById(token.getUserId());
-    if (user != null && !user.isEnabled()) {
-      user.setEnabled(true);
-      userRepository.save(user);
+    if (user != null) {
+      model.addAttribute("email", user.getUsername());
+      model.addAttribute("name", user.getName());
+    }
+    return "set_password";
+  }
+
+  /**
+   * Handles the submission of a new password using a valid verification token.
+   * On success, sets the password hash, enables the account, consumes the token,
+   * and redirects to login with a confirmation flag.
+   */
+  @PostMapping("/verify")
+  public String setInitialPassword(SetPasswordForm form, Model model) {
+    String tokenValue = form != null ? form.getToken() : null;
+    if (!StringUtils.hasText(tokenValue)) {
+      model.addAttribute("status", "invalid");
+      return "verify";
     }
 
-    // Mark token used (delete to keep things tidy)
+    VerificationToken token = tokenRepository.findByToken(tokenValue);
+    if (token == null) {
+      model.addAttribute("status", "invalid");
+      return "verify";
+    }
+    if (token.isUsed() || token.getExpiresAt() == null || token.getExpiresAt().isBefore(Instant.now())) {
+      model.addAttribute("status", token.isUsed() ? "used" : "expired");
+      return "verify";
+    }
+
+    // Validate password
+    String pwd = form.getPassword();
+    String confirm = form.getConfirmPassword();
+    String validationError = validatePassword(pwd, confirm);
+    if (validationError != null) {
+      // Re-render the form with error
+      model.addAttribute("setPassword", form);
+      UserAccount user = userRepository.findById(token.getUserId());
+      if (user != null) {
+        model.addAttribute("email", user.getUsername());
+        model.addAttribute("name", user.getName());
+      }
+      model.addAttribute("error", validationError);
+      return "set_password";
+    }
+
+    // Persist password and enable account
+    UserAccount user = userRepository.findById(token.getUserId());
+    if (user == null) {
+      model.addAttribute("status", "invalid");
+      return "verify";
+    }
+    user.setPasswordHash(passwordEncoder.encode(pwd));
+    user.setEnabled(true);
+    userRepository.save(user);
+
+    // Consume token
     token.setUsed(true);
     tokenRepository.delete(token.getId());
 
-    model.addAttribute("status", "success");
-    return "verify";
+    return "redirect:/login?verified";
+  }
+
+  private String validatePassword(String password, String confirm) {
+    if (!StringUtils.hasText(password) || !StringUtils.hasText(confirm)) {
+      return "Password and confirmation are required.";
+    }
+    if (!password.equals(confirm)) {
+      return "Passwords do not match.";
+    }
+    if (password.length() < 8) {
+      return "Password must be at least 8 characters long.";
+    }
+    // Basic complexity: at least 1 letter and 1 digit
+    boolean hasLetter = password.chars().anyMatch(Character::isLetter);
+    boolean hasDigit = password.chars().anyMatch(Character::isDigit);
+    if (!(hasLetter && hasDigit)) {
+      return "Password must include at least one letter and one number.";
+    }
+    return null;
   }
 
   private String buildVerificationUrl(HttpServletRequest request, String tokenValue) {
