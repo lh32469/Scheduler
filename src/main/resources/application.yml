@@ -42,13 +42,24 @@ spring:
     host: smtp.gmail.com
     port: 587
     username: permits.pdx@gmail.com
-    password: 
+    # Encrypted via jasypt-spring-boot. Generate your own ciphertext with the provided tool
+    # (see org.gpc4j.web.util.JasyptEncryptorTool) and set JASYPT_ENCRYPTOR_PASSWORD at runtime.
+    # Example placeholder below — replace with your actual ENC(...) value.
+    password: "ENC(7xNjZsdFz5icZIHmnRxIBZYGwZhuqLaTdu0pDoUicS9SHOQ9TzWnJO0olhSVZpZ4D+1WsNZ+8o8idaXdqctoSg==)"
     properties:
       mail:
         smtp:
           auth: true
           starttls:
             enable: true
+
+# Jasypt (property encryption) configuration. The decrypt password is provided via
+# environment variable JASYPT_ENCRYPTOR_PASSWORD (recommended) or system property of the same name.
+# The algorithm below requires JCE unlimited strength (Java 9+ includes it by default).
+jasypt:
+  encryptor:
+    algorithm: PBEWITHHMACSHA512ANDAES_256
+    iv-generator-classname: org.jasypt.iv.RandomIvGenerator
 
 info:
   app:
