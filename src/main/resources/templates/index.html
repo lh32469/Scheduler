@@ -17,9 +17,6 @@
             <nav>
                 <ul>
                     <li>
-                        <a href="#" onclick="window.scrollTo({top:0,behavior:'smooth'})">Home</a>
-                    </li>
-                    <li>
                         <a href="#schedule">Schedule</a>
                     </li>
                     <li>
@@ -36,9 +33,9 @@
                     <li sec:authorize="hasRole('INSTRUCTOR')">
                         <a th:href="@{/instructor/classes}">My Classes</a>
                     </li>
-                    <!-- Authenticated: Reset Password -->
+                    <!-- Authenticated: My Account/Profile -->
                     <li sec:authorize="isAuthenticated()">
-                        <a th:href="@{/account/password}">Reset Password</a>
+                        <a th:href="@{/account/profile}">My Account</a>
                     </li>
                     <li sec:authorize="!isAuthenticated()">
                         <a th:href="@{/login}">Login</a>
