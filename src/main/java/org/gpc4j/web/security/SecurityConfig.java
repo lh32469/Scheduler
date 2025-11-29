@@ -56,7 +56,7 @@ public class SecurityConfig {
         )
         .formLogin(login -> login
             .loginPage("/login").permitAll()
-            .defaultSuccessUrl("/", true)
+            .successHandler(roleBasedSessionTimeoutSuccessHandler())
             .failureUrl("/login?error")
         )
         .logout(logout -> logout
@@ -73,6 +73,11 @@ public class SecurityConfig {
   public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws
       Exception {
     return authenticationConfiguration.getAuthenticationManager();
+  }
+
+  @Bean
+  public RoleBasedSessionTimeoutSuccessHandler roleBasedSessionTimeoutSuccessHandler() {
+    return new RoleBasedSessionTimeoutSuccessHandler();
   }
 
 }
