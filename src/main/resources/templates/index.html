@@ -28,9 +28,9 @@
                     <li>
                         <a href="#contact">Contacts</a>
                     </li>
-                    <!-- Admin-only: Create User -->
+                    <!-- Admin-only: Admin Dashboard -->
                     <li sec:authorize="hasRole('ADMIN')">
-                        <a th:href="@{/admin/users/new}">Create User</a>
+                        <a th:href="@{/admin}">Admin</a>
                     </li>
                     <!-- Instructor-only: My Classes -->
                     <li sec:authorize="hasRole('INSTRUCTOR')">

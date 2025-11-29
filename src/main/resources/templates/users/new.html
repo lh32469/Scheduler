@@ -85,7 +85,8 @@
     <div class="card">
         <h2 style="margin-top:0">Create User</h2>
 
-        <form method="post" th:action="@{/admin/users}" th:object="${userForm}">
+        <form method="post" th:action="@{/admin/users/new}" th:object="${userForm}">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
             <div class="form-grid">
                 <div>
                     <label for="name">Full Name</label>

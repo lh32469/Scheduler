@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/head :: head}"></head>
+<body>
+
+<header>
+    <div class="container">
+        <div class="header-content">
+            <div class="logo">Admin · Users</div>
+            <nav>
+                <ul>
+                    <li><a th:href="@{/}">Home</a></li>
+                    <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/admin/banner}">Banner</a></li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</header>
+
+<main class="container" style="padding-top: 2rem; padding-bottom: 3rem;">
+    <h1>Manage Users</h1>
+
+    <div th:if="${message}" th:classappend="${messageType} == 'error' ? ' error' : ' info'"
+         style="margin: 1rem 0; padding: 1rem; border-radius: 8px; background: #e6f4ff; color: #084298;">
+        <span th:text="${message}"></span>
+    </div>
+
+    <form th:action="@{/admin/users}" method="post" th:object="${form}">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+        <div class="class-card" style="overflow-x:auto;">
+            <table style="width:100%; border-collapse: collapse;">
+                <thead>
+                <tr>
+                    <th style="text-align:left; padding:.5rem; border-bottom:1px solid #eee;">Name</th>
+                    <th style="text-align:left; padding:.5rem; border-bottom:1px solid #eee;">Username</th>
+                    <th style="text-align:left; padding:.5rem; border-bottom:1px solid #eee;">Enabled</th>
+                    <th style="text-align:left; padding:.5rem; border-bottom:1px solid #eee;">Roles</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="u,iter : *{users}">
+                    <td style="padding:.5rem; border-bottom:1px solid #f1f3f5;">
+                        <input type="hidden" th:field="*{users[__${iter.index}__].id}"/>
+                        <input type="text" th:field="*{users[__${iter.index}__].name}" style="width:100%; padding:.35rem .5rem; border:1px solid #ddd; border-radius:6px;"/>
+                    </td>
+                    <td style="padding:.5rem; border-bottom:1px solid #f1f3f5;">
+                        <input type="text" th:field="*{users[__${iter.index}__].username}" readonly style="width:100%; padding:.35rem .5rem; border:1px solid #ddd; border-radius:6px; background:#f8f9fa;"/>
+                    </td>
+                    <td style="padding:.5rem; border-bottom:1px solid #f1f3f5;">
+                        <input type="checkbox" th:field="*{users[__${iter.index}__].enabled}"/>
+                    </td>
+                    <td style="padding:.5rem; border-bottom:1px solid #f1f3f5;">
+                        <label style="margin-right:.5rem;">
+                            <input type="checkbox" th:name="${'users[' + iter.index + '].roles'}" value="USER"
+                                   th:checked="${#lists.contains(u.roles, 'USER')}"/> USER
+                        </label>
+                        <label style="margin-right:.5rem;">
+                            <input type="checkbox" th:name="${'users[' + iter.index + '].roles'}" value="INSTRUCTOR"
+                                   th:checked="${#lists.contains(u.roles, 'INSTRUCTOR')}"/> INSTRUCTOR
+                        </label>
+                        <label>
+                            <input type="checkbox" th:name="${'users[' + iter.index + '].roles'}" value="ADMIN"
+                                   th:checked="${#lists.contains(u.roles, 'ADMIN')}"/> ADMIN
+                        </label>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="actions" style="margin-top:1rem; display:flex; gap:.5rem;">
+            <button class="book-btn" type="submit">Save Changes</button>
+            <a class="book-btn" style="background:#6c757d;" th:href="@{/}">Cancel</a>
+        </div>
+    </form>
+
+    <div style="margin-top:1.5rem;">
+        <a class="filter-btn" th:href="@{/admin/banner}">Go to Banner Settings</a>
+    </div>
+</main>
+
+</body>
+</html>

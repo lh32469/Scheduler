@@ -18,7 +18,11 @@ import java.util.List;
 @Slf4j
 @Controller
 @RequiredArgsConstructor
-@RequestMapping("/admin")
+/**
+ * Legacy controller kept for reference. Mappings moved under AdminDashboardController.
+ * The base path is changed to avoid route conflicts.
+ */
+@RequestMapping("/admin-legacy")
 public class AdminUserController {
 
   private final RavenUserRepository userRepository;
@@ -42,7 +46,7 @@ public class AdminUserController {
    * @return a URL string indicating the redirection path, typically redirecting the
    * client to the "new user" form
    */
-  @PostMapping("/users")
+  @PostMapping("/users/new")
   public String createUser(UserAccount user,
                            RedirectAttributes redirectAttributes) {
 
