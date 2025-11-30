@@ -1,7 +1,15 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
 <head th:replace="~{fragments/head :: head}"></head>
-<body>
+<body class="account-profile">
+
+<style>
+    /* Increase base font size on desktop for the Account/Profile page only */
+    @media (min-width: 992px) {
+        :root { font-size: 112.5%; } /* 18px if browser default is 16px */
+    }
+    /* No change for tablets/phones */
+</style>
 
 <header>
     <div class="container">
