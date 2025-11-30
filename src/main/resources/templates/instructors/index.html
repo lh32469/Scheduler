@@ -22,10 +22,11 @@
     <!-- Filter by Class Type -->
     <form th:action="@{/instructors}" method="get" style="margin: 1rem 0;">
         <fieldset style="border:none; padding:0;">
-            <legend style="font-weight:400; color:#666; margin-bottom:.5rem; font-size:1.1rem;">Filter by class type:
+            <legend style="font-weight:400; color:#302f2b; margin-bottom:.5rem; font-size:1.1rem;">
+                Filter by class type:
             </legend>
             <div style="display:flex; flex-wrap:wrap; gap:1rem; align-items:center;">
-                <label style="display:flex; align-items:center; gap:.4rem; cursor:pointer; font-size:1.05rem; color:#555;">
+                <label style="display:flex; align-items:center; gap:.4rem; cursor:pointer; font-size:1.05rem; color:#d68c6d;">
                     <input type="radio" name="classType" value=""
                            th:checked="${selectedClassType == null}"
                            onchange="this.form.submit()"
@@ -37,6 +38,33 @@
                     <input type="radio" name="classType"
                            th:value="${t}"
                            th:checked="${selectedClassType == t}"
+                           onchange="this.form.submit()"
+                           style="width:18px; height:18px; cursor:pointer;">
+                    <span th:text="${#strings.capitalize(t.name())}">Type</span>
+                </label>
+            </div>
+        </fieldset>
+    </form>
+
+    <!-- Filter by Service Type -->
+    <form th:action="@{/instructors}" method="get" style="margin: 1rem 0;">
+        <fieldset style="border:none; padding:0;">
+            <legend style="font-weight:400; color:#302f2b; margin-bottom:.5rem; font-size:1.1rem;">
+                Filter by service type:
+            </legend>
+            <div style="display:flex; flex-wrap:wrap; gap:1rem; align-items:center;">
+                <label style="display:flex; align-items:center; gap:.4rem; cursor:pointer; font-size:1.05rem; color:#d68c6d;">
+                    <input type="radio" name="serviceType" value=""
+                           th:checked="${selectedServiceType == null}"
+                           onchange="this.form.submit()"
+                           style="width:18px; height:18px; cursor:pointer;">
+                    <span>All</span>
+                </label>
+                <label th:each="t : ${allServiceTypes}"
+                       style="display:flex; align-items:center; gap:.4rem; cursor:pointer; font-size:1.05rem; color:#74d57e;">
+                    <input type="radio" name="serviceType"
+                           th:value="${t}"
+                           th:checked="${selectedServiceType == t}"
                            onchange="this.form.submit()"
                            style="width:18px; height:18px; cursor:pointer;">
                     <span th:text="${#strings.capitalize(t.name())}">Type</span>
@@ -61,6 +89,7 @@
 
             <div class="instructor">
                 <div class="instructor-bio" th:text="${inst.profile}">Profile</div>
+
                 <!-- Instructor Class Types (aggregated across schedules) -->
                 <div class="instructor-class-types"
                      th:with="types=${instructorClassTypes[inst.id]}"
@@ -78,6 +107,26 @@
                          style="margin:.25rem 0 .75rem 0; color:#888; font-size:.9rem;">
                         <span style="font-weight:600; color:#555;">Teaches:</span>
                         None currently scheduled.
+                    </div>
+                </div>
+
+                <!-- Instructor Service Types (from UserAccount.serviceTypes) -->
+                <div class="instructor-service-types"
+                     th:with="svcs=${inst.serviceTypes}"
+                     style="margin-top:.5rem;">
+                    <div th:if="${svcs != null and !#lists.isEmpty(svcs)}"
+                         style="display:flex; flex-wrap:wrap; gap:.5rem; align-items:center;">
+                        <span style="font-weight:600; color:#555;">Services:</span>
+                        <span th:each="s : ${svcs}"
+                              th:text="${#strings.capitalize(s.name())}"
+                              style="display:inline-block; padding:.2rem .5rem; border-radius:999px; background:#eefaf1; color:#198754; font-size:.85rem;">
+                            ServiceType
+                        </span>
+                    </div>
+                    <div th:if="${svcs == null or #lists.isEmpty(svcs)}"
+                         style="margin:.25rem 0 .25rem 0; color:#888; font-size:.9rem;">
+                        <span style="font-weight:600; color:#555;">Offers:</span>
+                        None at this time.
                     </div>
                 </div>
 

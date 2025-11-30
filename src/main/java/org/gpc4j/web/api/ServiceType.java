@@ -6,8 +6,6 @@ public enum ServiceType {
   training,
   strength,
   swim,
-  pilates,
-  spin,
-  meditation,
+  pilates
 
 }

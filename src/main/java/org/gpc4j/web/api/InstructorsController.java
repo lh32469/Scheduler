@@ -17,6 +17,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -33,11 +34,14 @@ public class InstructorsController {
 
   @GetMapping
   public String listInstructors(Model model,
-                                @RequestParam(name = "classType", required = false) ClassType selectedClassType) {
+                                @RequestParam(name = "classType", required = false) ClassType selectedClassType,
+                                @RequestParam(name = "serviceType", required = false) ServiceType selectedServiceType) {
+
     List<UserAccount> instructors = userRepository.findAllInstructors();
 
     // Map of instructorId -> distinct ClassTypes taught based on current ClassSchedules
     Map<String, Set<ClassType>> instructorClassTypes = new HashMap<>();
+    Map<String, Set<ServiceType>> instructorServiceTypes = new HashMap<>();
 
     try (IDocumentSession session = ravenDB.openSession()) {
 
@@ -65,7 +69,16 @@ public class InstructorsController {
       }
     }
 
+    instructors.stream()
+               .filter(instructor -> Objects.nonNull(instructor.getServiceTypes()))
+               .forEach(instructor -> instructorServiceTypes
+                   .computeIfAbsent(instructor.getId(), k ->
+                       EnumSet.noneOf(ServiceType.class))
+                   .addAll(instructor.getServiceTypes())
+               );
+
     log.debug("instructorClassTypes " + instructorClassTypes);
+    log.debug("instructorServiceTypes " + instructorServiceTypes);
 
     // If a class type filter is provided, filter the instructors list accordingly
     if (selectedClassType != null) {
@@ -81,10 +94,40 @@ public class InstructorsController {
     model.addAttribute("title", selectedClassType == null ? "Instructors"
         : ("Instructors — " + selectedClassType.name()))
     ;
+
+    // If a Service type filter is provided, filter the instructors list accordingly
+    if (selectedServiceType != null) {
+      instructors = instructors.stream()
+                               .filter(i -> {
+                                 Set<ServiceType> types =
+                                     instructorServiceTypes.get(i.getId());
+                                 return types != null && types.contains(
+                                     selectedServiceType);
+                               })
+                               .toList();
+    }
+
+    model.addAttribute("title", selectedClassType == null ? "Instructors"
+        : ("Instructors — " + selectedClassType.name()))
+    ;
+
     model.addAttribute("instructors", instructors);
     model.addAttribute("instructorClassTypes", instructorClassTypes);
     model.addAttribute("selectedClassType", selectedClassType);
-    model.addAttribute("allClassTypes", ClassType.values());
+    model.addAttribute("allClassTypes",
+                       instructorClassTypes.values()
+                                           .stream()
+                                           .flatMap(Set::stream)
+                                           .distinct()
+                                           .toList());
+    model.addAttribute("selectedServiceType", selectedServiceType);
+    // Only show distinct service types available to instructors
+    model.addAttribute("allServiceTypes",
+                       instructorServiceTypes.values()
+                                             .stream()
+                                             .flatMap(Set::stream)
+                                             .distinct()
+                                             .toList());
     return "instructors/index";
   }
 

@@ -98,6 +98,8 @@ logging:
     org:
       gpc4j:
         web:
+          api:
+            InstructorsController: INFO
           repository: WARN
   pattern:
     dateformat: MM-dd HH:mm:ss.SSSS,America/Los_Angeles
