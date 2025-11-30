@@ -11,14 +11,12 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -34,7 +32,8 @@ public class InstructorsController {
   private final RavenDB ravenDB;
 
   @GetMapping
-  public String listInstructors(Model model) {
+  public String listInstructors(Model model,
+                                @RequestParam(name = "classType", required = false) ClassType selectedClassType) {
     List<UserAccount> instructors = userRepository.findAllInstructors();
 
     // Map of instructorId -> distinct ClassTypes taught based on current ClassSchedules
@@ -68,9 +67,24 @@ public class InstructorsController {
 
     log.debug("instructorClassTypes " + instructorClassTypes);
 
-    model.addAttribute("title", "Instructors");
+    // If a class type filter is provided, filter the instructors list accordingly
+    if (selectedClassType != null) {
+      instructors = instructors.stream()
+                               .filter(i -> {
+                                 Set<ClassType> types =
+                                     instructorClassTypes.get(i.getId());
+                                 return types != null && types.contains(selectedClassType);
+                               })
+                               .toList();
+    }
+
+    model.addAttribute("title", selectedClassType == null ? "Instructors"
+        : ("Instructors — " + selectedClassType.name()))
+    ;
     model.addAttribute("instructors", instructors);
     model.addAttribute("instructorClassTypes", instructorClassTypes);
+    model.addAttribute("selectedClassType", selectedClassType);
+    model.addAttribute("allClassTypes", ClassType.values());
     return "instructors/index";
   }
 
