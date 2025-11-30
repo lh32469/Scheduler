@@ -19,8 +19,36 @@
 <main class="container" style="padding-top: 2rem; padding-bottom: 3rem;">
     <h1 th:text="${title}">Instructors</h1>
 
+    <!-- Filter by Class Type -->
+    <form th:action="@{/instructors}" method="get" style="margin: 1rem 0;">
+        <fieldset style="border:none; padding:0;">
+            <legend style="font-weight:400; color:#666; margin-bottom:.5rem; font-size:1.1rem;">Filter by class type:
+            </legend>
+            <div style="display:flex; flex-wrap:wrap; gap:1rem; align-items:center;">
+                <label style="display:flex; align-items:center; gap:.4rem; cursor:pointer; font-size:1.05rem; color:#555;">
+                    <input type="radio" name="classType" value=""
+                           th:checked="${selectedClassType == null}"
+                           onchange="this.form.submit()"
+                           style="width:18px; height:18px; cursor:pointer;">
+                    <span>All</span>
+                </label>
+                <label th:each="t : ${allClassTypes}"
+                       style="display:flex; align-items:center; gap:.4rem; cursor:pointer; font-size:1.05rem; color:#74d57e;">
+                    <input type="radio" name="classType"
+                           th:value="${t}"
+                           th:checked="${selectedClassType == t}"
+                           onchange="this.form.submit()"
+                           style="width:18px; height:18px; cursor:pointer;">
+                    <span th:text="${#strings.capitalize(t.name())}">Type</span>
+                </label>
+            </div>
+        </fieldset>
+    </form>
+
     <div th:if="${#lists.isEmpty(instructors)}" style="margin-top: 1rem;">
-        <p>No instructors found.</p>
+        <p th:if="${selectedClassType == null}">No instructors found.</p>
+        <p th:if="${selectedClassType != null}">No instructors found for <span
+                th:text="${#strings.capitalize(selectedClassType.name())}">Type</span>.</p>
     </div>
 
     <div class="schedule-grid" th:if="${!#lists.isEmpty(instructors)}">
@@ -54,8 +82,8 @@
                 </div>
 
                 <!-- Link to view only this instructor's classes on the main page -->
-                <div  th:if="${instructorClassTypes[inst.id] != null}"
-                      class="instructor-actions" style="margin-top:.75rem;">
+                <div th:if="${instructorClassTypes[inst.id] != null}"
+                     class="instructor-actions" style="margin-top:.75rem;">
                     <a class="filter-btn" th:href="@{/(instructor=${inst.id})}"
                        style="text-decoration:none;">
                         View classes by <span th:text="${inst.name}">this instructor</span>
