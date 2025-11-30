@@ -36,6 +36,7 @@ public class HomeController {
       @RequestParam(name = "page", required = false, defaultValue = "1") int page,
       @RequestParam(name = "size", required = false, defaultValue = "100") int size,
       @RequestParam(name = "filter", required = false) String filter,
+      @RequestParam(name = "month", required = false) String monthParam,
       @RequestParam(name = "instructor", required = false) String instructorId,
       Authentication authentication,
       Model model
@@ -51,7 +52,7 @@ public class HomeController {
     List<ScheduledClass> classes =
         classesService.getScheduledClasses(sunday, fourWeeksFromNow);
 
-    if (filter != null) {
+    if (filter != null && !filter.isBlank()) {
       String f = filter.trim();
       classes = classes.stream()
                        .filter(c -> c.getClassType()
@@ -77,6 +78,75 @@ public class HomeController {
                                      .orElse(null);
       model.addAttribute("instructorName", instructorName);
     }
+
+    // Build Month Calendar data (selected month or current month)
+    java.time.YearMonth ym;
+    try {
+      if (monthParam != null && !monthParam.isBlank()) {
+        ym = java.time.YearMonth.parse(monthParam);
+      } else {
+        ym = java.time.YearMonth.now();
+      }
+    } catch (Exception e) {
+      // Fallback to current month if parsing fails
+      ym = java.time.YearMonth.now();
+    }
+
+    LocalDate firstOfMonth = ym.atDay(1);
+    LocalDate firstOfNextMonth = ym.plusMonths(1).atDay(1);
+    List<ScheduledClass> monthClasses = classesService.getScheduledClasses(firstOfMonth, firstOfNextMonth);
+
+    // Apply the same filters to the calendar data
+    if (filter != null && !filter.isBlank()) {
+      String f = filter.trim();
+      monthClasses = monthClasses.stream()
+          .filter(c -> c.getClassType() != null && c.getClassType().name().equalsIgnoreCase(f))
+          .toList();
+    }
+    if (instructorId != null && !instructorId.isBlank()) {
+      String target = instructorId.trim();
+      monthClasses = monthClasses.stream()
+          .filter(c -> c.getInstructorAccount() != null && target.equals(c.getInstructorAccount().getId()))
+          .toList();
+    }
+
+    // Transform into a lightweight event map for the client (ISO date + display fields)
+    java.time.format.DateTimeFormatter isoDate = java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
+    java.time.format.DateTimeFormatter time24 = java.time.format.DateTimeFormatter.ofPattern("HH:mm");
+    java.time.format.DateTimeFormatter time12 = java.time.format.DateTimeFormatter.ofPattern("h:mm a");
+    java.util.List<java.util.Map<String, Object>> calendarEvents = monthClasses.stream().map(sc -> {
+      java.util.Map<String, Object> m = new java.util.HashMap<>();
+      java.time.LocalDateTime start = sc.getStart();
+      m.put("date", start.toLocalDate().format(isoDate));
+      m.put("time", start.toLocalTime().format(time24));
+      m.put("timeDisplay", start.toLocalTime().format(time12));
+      m.put("title", sc.getClassName());
+      m.put("type", sc.getClassType() != null ? sc.getClassType().name() : "");
+      m.put("location", sc.getLocation());
+      m.put("instructor", sc.getInstructorAccount() != null ? sc.getInstructorAccount().getName() : "");
+      // Extra details for calendar hover popup
+      m.put("level", sc.getLevel());
+      m.put("duration", sc.getDuration());
+      m.put("slots", sc.getSlots());
+      m.put("description", sc.getClassDescription());
+      m.put("id", sc.getId());
+      return m;
+    }).toList();
+
+    java.time.format.DateTimeFormatter monthFmt = java.time.format.DateTimeFormatter.ofPattern("MMMM yyyy");
+
+    model.addAttribute("calendarMonthLabel", firstOfMonth.format(monthFmt));
+    model.addAttribute("calendarMonthStart", firstOfMonth);
+    model.addAttribute("calendarMonthEnd", firstOfNextMonth.minusDays(1));
+    model.addAttribute("calendarEvents", calendarEvents);
+
+    // Month navigation params for UI
+    String currentMonthParam = ym.toString(); // yyyy-MM
+    String prevMonthParam = ym.minusMonths(1).toString();
+    String nextMonthParam = ym.plusMonths(1).toString();
+    model.addAttribute("monthParam", currentMonthParam);
+    model.addAttribute("prevMonthParam", prevMonthParam);
+    model.addAttribute("nextMonthParam", nextMonthParam);
 
     model.addAttribute("classes", classes);
     model.addAttribute("page", safePage);

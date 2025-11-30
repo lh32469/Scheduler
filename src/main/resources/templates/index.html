@@ -121,10 +121,11 @@
     <section class="container" id="schedule">
         <div class="filters">
             <div class="filter-controls">
-                <a class="filter-btn" th:href="@{/}">All Classes</a>
+                <a class="filter-btn"
+                   th:href="@{/(month=${monthParam}, instructor=${param.instructor})}">All Classes</a>
                 <a class="filter-btn"
                    th:each="ct : ${T(org.gpc4j.web.api.ClassType).values()}"
-                   th:href="@{/(filter=${ct.name()})}"
+                   th:href="@{/(filter=${ct.name()}, month=${monthParam}, instructor=${param.instructor})}"
                    th:text="${#strings.capitalize(ct.name())}">Type</a>
             </div>
         </div>
@@ -135,6 +136,248 @@
              style="margin: 1rem 0; padding: 1rem; border-radius: 8px; background: #fdecea; color: #611a15;">
             <span th:text="${message}"/>
         </div>
+
+        <!-- Month Calendar (between filters and schedule grid) -->
+        <section class="month-calendar" aria-label="Calendar of available classes this month">
+            <div class="calendar-header" style="display:flex; align-items:center; justify-content:space-between; gap:.5rem;">
+                <a class="filter-btn" style="width:auto; padding:.35rem .75rem;"
+                   aria-label="Previous month"
+                   th:href="@{/(month=${prevMonthParam}, filter=${param.filter}, instructor=${param.instructor})}">‹ Prev</a>
+                <h2 th:text="${calendarMonthLabel}">November 2025</h2>
+                <a class="filter-btn" style="width:auto; padding:.35rem .75rem;"
+                   aria-label="Next month"
+                   th:href="@{/(month=${nextMonthParam}, filter=${param.filter}, instructor=${param.instructor})}">Next ›</a>
+            </div>
+            <div class="calendar-weekdays" aria-hidden="true">
+                <div>Sun</div>
+                <div>Mon</div>
+                <div>Tue</div>
+                <div>Wed</div>
+                <div>Thu</div>
+                <div>Fri</div>
+                <div>Sat</div>
+            </div>
+            <div class="calendar-grid" id="calendarGrid"></div>
+            <div class="calendar-empty" id="calendarEmpty" style="display:none;">No classes scheduled this month.</div>
+        </section>
+
+        <!-- Calendar data and renderer -->
+        <script th:inline="javascript">
+            const CAL_MONTH_START = /*[[${#temporals.format(calendarMonthStart, 'yyyy-MM-dd')}]]*/ '2025-11-01';
+            const CAL_MONTH_END = /*[[${#temporals.format(calendarMonthEnd, 'yyyy-MM-dd')}]]*/ '2025-11-30';
+            const CAL_EVENTS = /*[[${calendarEvents}]]*/ [];
+
+            function buildMonthGrid(container, startISO, endISO, events) {
+                if (!container) return;
+                // Parse dates
+                const start = new Date(startISO + 'T00:00:00');
+                const end = new Date(endISO + 'T00:00:00');
+
+                // Determine the first cell date (previous Sunday before month start)
+                const firstCell = new Date(start);
+                firstCell.setDate(firstCell.getDate() - firstCell.getDay()); // back to Sunday
+
+                // Determine the last cell date (Saturday after month end)
+                const lastCell = new Date(end);
+                lastCell.setDate(lastCell.getDate() + (6 - lastCell.getDay()));
+
+                // Group events by ISO date for quick lookup
+                const map = new Map();
+                (events || []).forEach(ev => {
+                    const d = ev.date; // yyyy-MM-dd
+                    if (!map.has(d)) map.set(d, []);
+                    map.get(d).push(ev);
+                });
+
+                // Build cells from firstCell to lastCell inclusive
+                const todayISO = new Date().toISOString().slice(0,10);
+                const frag = document.createDocumentFragment();
+                for (let d = new Date(firstCell); d <= lastCell; d.setDate(d.getDate() + 1)) {
+                    const cell = document.createElement('div');
+                    cell.className = 'day-cell';
+
+                    const iso = d.toISOString().slice(0,10);
+                    const inMonth = (d.getMonth() === start.getMonth());
+                    if (!inMonth) cell.classList.add('muted');
+                    if (iso === todayISO) cell.classList.add('today');
+
+                    const dayNum = document.createElement('div');
+                    dayNum.className = 'date-num';
+                    dayNum.textContent = String(d.getDate());
+                    cell.appendChild(dayNum);
+
+                    const evts = map.get(iso) || [];
+                    if (evts.length) {
+                        evts.sort((a,b) => a.time.localeCompare(b.time));
+                        evts.forEach(e => {
+                            const chip = document.createElement('div');
+                            chip.className = 'event-chip';
+                            // chip.setAttribute('title', (e.title ? e.title + ' — ' : '') + e.timeDisplay + (e.location ? ' @ ' + e.location : ''));
+                            chip.setAttribute('role', 'button');
+                            chip.setAttribute('tabindex', '0');
+                            chip.dataset.date = iso;
+                            chip.dataset.time = e.time;
+                            chip.dataset.title = e.title || '';
+                            const t = document.createElement('span');
+                            t.className = 'event-time';
+                            t.textContent = e.timeDisplay;
+                            const name = document.createElement('span');
+                            name.className = 'event-name';
+                            name.textContent = e.title || '';
+                            chip.appendChild(t);
+                            chip.appendChild(name);
+                            cell.appendChild(chip);
+                        });
+                    }
+                    frag.appendChild(cell);
+                }
+                container.innerHTML = '';
+                container.appendChild(frag);
+
+                // Empty state toggle
+                const any = (events && events.length > 0);
+                const empty = document.getElementById('calendarEmpty');
+                if (empty) empty.style.display = any ? 'none' : '';
+
+                // Initialize hover popovers after chips are in the DOM
+                initCalendarPopovers(events);
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                const cont = document.getElementById('calendarGrid');
+                buildMonthGrid(cont, CAL_MONTH_START, CAL_MONTH_END, CAL_EVENTS);
+            });
+
+            // Calendar hover popover logic
+            function initCalendarPopovers(events) {
+                if (!events || events.length === 0) return;
+
+                // Skip on touch devices to avoid interference with taps
+                const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+                if (isTouch) return;
+
+                let pop = document.getElementById('calendarPopover');
+                if (!pop) {
+                    pop = document.createElement('div');
+                    pop.id = 'calendarPopover';
+                    pop.className = 'calendar-popover';
+                    pop.setAttribute('role', 'tooltip');
+                    document.body.appendChild(pop);
+                }
+
+                const chips = document.querySelectorAll('.event-chip');
+                chips.forEach(chip => {
+                    chip.addEventListener('mouseenter', (e) => {
+                        const ev = findEventForChip(chip, events);
+                        if (!ev) return;
+                        renderPopover(pop, ev);
+                        positionPopover(pop, chip);
+                        pop.classList.add('show');
+                    });
+                    chip.addEventListener('mouseleave', () => {
+                        hidePopover(pop);
+                    });
+                    chip.addEventListener('focus', () => {
+                        const ev = findEventForChip(chip, events);
+                        if (!ev) return;
+                        renderPopover(pop, ev);
+                        positionPopover(pop, chip);
+                        pop.classList.add('show');
+                    });
+                    chip.addEventListener('blur', () => hidePopover(pop));
+                });
+
+                window.addEventListener('scroll', () => hidePopover(pop), { passive: true });
+                window.addEventListener('resize', () => hidePopover(pop));
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') hidePopover(pop);
+                });
+            }
+
+            function hidePopover(pop) {
+                if (pop) pop.classList.remove('show');
+            }
+
+            function findEventForChip(chip, events) {
+                const date = chip.dataset.date;
+                const time = chip.dataset.time; // HH:mm
+                const title = chip.dataset.title || '';
+                // Prefer exact match on date+time+title; fall back to date+time
+                let ev = events.find(e => e.date === date && e.time === time && (e.title || '') === title);
+                if (!ev) ev = events.find(e => e.date === date && e.time === time);
+                return ev;
+            }
+
+            function renderPopover(pop, ev) {
+                // Clear and rebuild content using textContent to avoid HTML injection
+                pop.innerHTML = '';
+                const title = document.createElement('div');
+                title.className = 'cp-title';
+                title.textContent = ev.title || 'Class';
+                pop.appendChild(title);
+
+                const line = (label, value) => {
+                    if (value == null || value === '') return;
+                    const row = document.createElement('div');
+                    row.className = 'cp-line';
+                    const l = document.createElement('span');
+                    l.className = 'cp-label';
+                    l.textContent = label;
+                    const v = document.createElement('span');
+                    v.textContent = value;
+                    row.appendChild(l);
+                    row.appendChild(v);
+                    pop.appendChild(row);
+                };
+
+                line('Time:', ev.timeDisplay);
+                if (ev.instructor) line('Instructor:', ev.instructor);
+                if (ev.type) line('Type:', capitalize(ev.type));
+                if (ev.level) line('Level:', ev.level);
+                if (ev.duration) line('Duration:', ev.duration + ' min');
+                if (ev.location) line('Location:', ev.location);
+
+                if (typeof ev.slots === 'number') {
+                    const cap = (ev.slots < 0) ? 'Unlimited' : (ev.slots + ' spots');
+                    line('Capacity:', cap);
+                }
+
+                if (ev.description) {
+                    const desc = document.createElement('div');
+                    desc.className = 'cp-desc';
+                    desc.textContent = ev.description;
+                    pop.appendChild(desc);
+                }
+            }
+
+            function positionPopover(pop, anchor) {
+                const rect = anchor.getBoundingClientRect();
+                pop.style.left = '0px'; // reset before measuring
+                pop.style.top = '0px';
+                pop.classList.add('show'); // ensure measurable
+                const pw = pop.offsetWidth;
+                const ph = pop.offsetHeight;
+                pop.classList.remove('show');
+
+                const margin = 8;
+                const vw = window.innerWidth;
+                const vh = window.innerHeight;
+                let left = Math.min(rect.left + window.scrollX, vw - pw - margin) + Math.max(0, window.scrollX);
+                if (left < margin + window.scrollX) left = window.scrollX + margin;
+                let top = rect.bottom + window.scrollY + margin;
+                if (top + ph > window.scrollY + vh) {
+                    // Show above if bottom would overflow
+                    top = rect.top + window.scrollY - ph - margin;
+                }
+                pop.style.left = left + 'px';
+                pop.style.top = top + 'px';
+            }
+
+            function capitalize(s) {
+                if (!s) return s;
+                return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+            }
+        </script>
 
         <div class="schedule-grid" id="scheduleGrid">
             <div class="class-card" style="animation-delay: 0s"

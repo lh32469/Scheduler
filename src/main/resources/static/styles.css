@@ -141,6 +141,112 @@ nav a:hover {
     padding: 2rem 0;
 }
 
+/* Month Calendar */
+.month-calendar {
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    padding: 1rem 1rem 1.25rem;
+    margin: 1rem 0 2rem;
+}
+.calendar-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: .5rem;
+}
+.calendar-header h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: #333;
+}
+.calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    padding: 0 .25rem;
+    color: #6c757d;
+    font-weight: 600;
+    margin: .25rem 0 .25rem;
+}
+.calendar-weekdays > div { text-align: center; font-size: .9rem; }
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+}
+.day-cell {
+    min-height: 110px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: .5rem;
+    display: flex;
+    flex-direction: column;
+    gap: .25rem;
+}
+.day-cell .date-num { font-weight: 700; color: #333; }
+.day-cell.muted { opacity: .55; }
+.day-cell.today { outline: 2px solid #667eea; outline-offset: -2px; background: #eef2ff; }
+.event-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    padding: .15rem .4rem;
+    border-radius: 999px;
+    background: #eef6ff;
+    color: #0b5ed7;
+    font-size: .78rem;
+    line-height: 1.2;
+    max-width: 100%;
+}
+.event-chip .event-time { font-weight: 700; white-space: nowrap; }
+.event-chip .event-name { font-weight: 600; color: #0b5ed7; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.calendar-empty {
+    text-align: center;
+    color: #6c757d;
+    margin-top: .75rem;
+}
+
+/* Calendar hover popover */
+.calendar-popover {
+    position: absolute;
+    z-index: 1000;
+    min-width: 260px;
+    max-width: 340px;
+    background: #fff;
+    color: #333;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.15);
+    padding: .75rem .85rem;
+    border: 1px solid #eef2f7;
+    pointer-events: none; /* Do not capture mouse so leaving the chip hides it */
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity .12s ease, transform .12s ease;
+}
+.calendar-popover.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+.calendar-popover .cp-title {
+    font-weight: 700;
+    margin-bottom: .25rem;
+}
+.calendar-popover .cp-line {
+    display: flex;
+    align-items: baseline;
+    gap: .35rem;
+    font-size: .92rem;
+    color: #555;
+    margin: .15rem 0;
+}
+.calendar-popover .cp-label { font-weight: 600; color: #445; }
+.calendar-popover .cp-desc {
+    margin-top: .35rem;
+    font-size: .9rem;
+    color: #555;
+}
+
 .class-card {
     background: white;
     border-radius: 15px;
