@@ -41,10 +41,16 @@ public class AccountController {
       AccountProfileForm form = new AccountProfileForm();
       form.setName(user.getName());
       form.setProfile(user.getProfile());
+      // Pre-populate service types only for instructors
+      if (hasRole(user, "ROLE_INSTRUCTOR")) {
+        form.setServiceTypes(user.getServiceTypes());
+      }
       model.addAttribute("form", form);
     }
     model.addAttribute("title", "My Account");
     model.addAttribute("username", user.getUsername());
+    // Flag for conditional UI rendering
+    model.addAttribute("isInstructor", hasRole(user, "ROLE_INSTRUCTOR"));
     return "account/profile";
   }
 
@@ -80,6 +86,11 @@ public class AccountController {
     // Apply changes to current user's own account
     user.setName(name);
     user.setProfile(profile);
+    // Only instructors can edit their service types; ignore otherwise
+    if (hasRole(user, "ROLE_INSTRUCTOR") && form != null) {
+      // Null-safe: allow clearing selection by setting empty list
+      user.setServiceTypes(form.getServiceTypes());
+    }
     userRepository.save(user);
 
     redirect.addFlashAttribute("message", "Your profile has been updated.");
@@ -89,5 +100,20 @@ public class AccountController {
 
   private String safeTrim(String s) {
     return s == null ? null : s.trim();
+  }
+
+  private boolean hasRole(UserAccount user, String roleWithPrefix) {
+    if (user == null || user.getRoles() == null) return false;
+    // Accept entries with or without ROLE_ prefix in storage
+    String target = roleWithPrefix;
+    String alt = roleWithPrefix.startsWith("ROLE_") ? roleWithPrefix.substring(5) : ("ROLE_" + roleWithPrefix);
+    for (String r : user.getRoles()) {
+      if (r == null) continue;
+      String rr = r.trim().toUpperCase(Locale.ENGLISH);
+      if (rr.equalsIgnoreCase(target) || rr.equalsIgnoreCase(alt)) {
+        return true;
+      }
+    }
+    return false;
   }
 }

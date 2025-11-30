@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head th:replace="~{fragments/head :: head}"></head>
 <body class="account-profile">
 
@@ -55,6 +55,24 @@
                 <textarea th:field="*{profile}" rows="6" placeholder="Tell others about yourself (optional)"
                           style="width:100%; resize:vertical;"></textarea>
             </label>
+
+            <!-- Instructor-only: Service Types -->
+            <div th:if="${isInstructor}">
+                <div style="font-weight:600; margin-bottom:.25rem;">Service Types</div>
+                <div style="color:#6c757d; font-size:.9rem; margin-bottom:.5rem;">
+                    Select the services you offer. This is shown on the Instructors page and may be used for filtering.
+                </div>
+                <style>
+                    .svc-grid { display:flex; flex-wrap:wrap; gap:.5rem 1rem; }
+                    .svc-grid label { display:inline-flex; align-items:center; gap:.4rem; font-weight:600; color:#0b5ed7; }
+                </style>
+                <div class="svc-grid">
+                    <label th:each="t : ${T(org.gpc4j.web.api.ServiceType).values()}">
+                        <input type="checkbox" th:field="*{serviceTypes}" th:value="${t}"/>
+                        <span th:text="${#strings.capitalize(t.name())}">Type</span>
+                    </label>
+                </div>
+            </div>
 
             <div class="actions" style="display:flex; gap:.5rem;">
                 <button class="book-btn" type="submit">Save Changes</button>
