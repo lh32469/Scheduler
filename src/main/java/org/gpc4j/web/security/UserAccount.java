@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.gpc4j.web.api.ServiceType;
 
 import java.util.List;
 
@@ -24,6 +25,8 @@ public class UserAccount {
   /**
    * For Instructors
    */
+  private List<ServiceType> serviceTypes;
+
   private String profile;
 
   @ToString.Exclude
