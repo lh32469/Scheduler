@@ -9,16 +9,18 @@
 <header>
     <div class="container">
         <div class="header-content">
-            <div class="logo" th:text="${banner.companyName}">FitHub</div>
+            <a th:href="@{/}"
+               class="logo"
+               th:text="${banner.companyName}"
+               style="text-decoration: none; color: inherit;">
+                TBD
+            </a>
             <div class="snippet"
                  sec:authorize="isAuthenticated()"
-                 sec:authentication="name" style="color: forestgreen">FitHub
+                 sec:authentication="name" style="color: forestgreen">TBD
             </div>
             <nav>
                 <ul>
-                    <li>
-                        <a href="#schedule">Schedule</a>
-                    </li>
                     <li>
                         <a th:href="@{/instructors}">Instructors</a>
                     </li>
