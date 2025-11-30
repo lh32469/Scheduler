@@ -33,6 +33,10 @@
                     <li sec:authorize="hasRole('INSTRUCTOR')">
                         <a th:href="@{/instructor/classes}">My Classes</a>
                     </li>
+                    <!-- User-only: My Classes (booked classes) -->
+                    <li sec:authorize="hasRole('USER')">
+                        <a th:href="@{/bookings}">My Classes</a>
+                    </li>
                     <!-- Authenticated: My Account/Profile -->
                     <li sec:authorize="isAuthenticated()">
                         <a th:href="@{/account/profile}">My Account</a>
