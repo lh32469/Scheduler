@@ -13,6 +13,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.TextStyle;
+import java.time.temporal.TemporalAdjusters;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
@@ -81,6 +82,9 @@ public class ClassSchedule {
   public List<ScheduledClass> getScheduledClasses(LocalDate startDate,
                                                   LocalDate endDate) {
 
+    // Whatever date is provided find the corresponding Sunday of that week
+    startWeek = startWeek.with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY));
+
     List<ScheduledClass> classes = new LinkedList<>();
 
     log.debug(className);
@@ -88,6 +92,7 @@ public class ClassSchedule {
     log.debug("Number of weeks: {}", numberOfWeeks);
     log.debug("Start week: {}", startWeek);
 
+    // For recurring classes
     if (numberOfWeeks == 0) {
       numberOfWeeks = 5;
     }
@@ -95,9 +100,7 @@ public class ClassSchedule {
     for (int i = 0; i < numberOfWeeks; i++) {
 
       LocalDate week = startWeek.plusWeeks(i);
-      log.debug("Checking for classes in week {}: {}", i, week);
-
-      if ((week.isAfter(startDate) || week.equals(startDate))
+      if ((week.isAfter(startWeek) || week.equals(startWeek))
           && (week.isBefore(endDate))) {
         // Generate classes for this week
         for (DayOfWeek dayOfWeek : daysOfWeek) {
@@ -112,9 +115,10 @@ public class ClassSchedule {
           scheduledClass.setClassDescription(classDescription);
           scheduledClass.setClassType(classType);
           scheduledClass.setLevel(level);
-
           classes.add(scheduledClass);
         }
+      } else {
+        log.debug("No classes in week " + week);
       }
     }
 
