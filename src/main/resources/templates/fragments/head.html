@@ -6,6 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title th:text="${banner.tabTitle}"></title>
     <link rel="stylesheet" th:href="@{/styles.css}" href="/styles.css"/>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            document.cookie = `userTimezone=${timezone}; path=/; max-age=31536000`;
+        });
+    </script>
+
 </head>
 
 </html>
