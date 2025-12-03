@@ -73,7 +73,7 @@ pipeline {
             // NotSerializableException
             def secretsFile = readFile "secrets.yml"
 
-            withCredentials([string(credentialsId: 'health-data-jasyp', variable: 'SECRET')]) {
+            withCredentials([string(credentialsId: 'JASYPT-b28dca2e', variable: 'SECRET')]) {
 
               def binding = [
                   secret: SECRET
