@@ -4,7 +4,7 @@ spring:
       client:
         url: http://sba.sba-java25:8085
         username: admin
-        password: Temp01!
+        password: ENC(YF5nbwQbVtJBzr5EvLyQK5WfLaRtbTefao3v8zncUZkkNLMsZISEs+6ELmnV3UH6)
         auto-registration: true
         auto-deregistration: true
         instance:
