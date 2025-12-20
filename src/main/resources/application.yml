@@ -22,7 +22,7 @@ management:
 
 spring:
   application:
-    name: WebTemplate
+    name: Scheduler
   devtools:
     restart:
       # Trigger full restart on any changes under src/main/resources/static
@@ -45,7 +45,7 @@ spring:
     # Encrypted via jasypt-spring-boot. Generate your own ciphertext with the provided tool
     # (see org.gpc4j.web.util.JasyptEncryptorTool) and set JASYPT_ENCRYPTOR_PASSWORD at runtime.
     # Example placeholder below — replace with your actual ENC(...) value.
-    password: "ENC(7xNjZsdFz5icZIHmnRxIBZYGwZhuqLaTdu0pDoUicS9SHOQ9TzWnJO0olhSVZpZ4D+1WsNZ+8o8idaXdqctoSg==)"
+    password: "ENC(YF5nbwQbVtJBzr5EvLyQK5WfLaRtbTefao3v8zncUZkkNLMsZISEs+6ELmnV3UH6)"
     properties:
       mail:
         smtp:
@@ -64,8 +64,8 @@ jasypt:
 info:
   app:
     name: ${spring.application.name}
-    description: WebTemplate Spring Boot application
-    version: ${project.version:2.0}
+    description: Class & Service Scheduling Application
+    version: ${project.version:3.0}
 
 #management:
 #  endpoints:
@@ -88,6 +88,7 @@ info:
 
 # RavenDB Configuration
 ravendb:
+#  database: v3.scheduler.mcquarrie.cc
   database: v2.fithub.mcquarrie.cc
   url: http://raven.dell.mcquarrie.cc
 
