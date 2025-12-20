@@ -4,6 +4,7 @@ def dockerHost = "tcp://dind.container-registry:2375"
 project = ""
 branch = ""
 secretsYml = ""
+github = "https://github.com/lh32469/"
 
 pipeline {
 
@@ -37,7 +38,7 @@ pipeline {
             )
             project = origin.trim()
                 .toLowerCase()
-                .split("/")[1]
+                .replaceAll(github, "")
                 .replaceAll(".git", "")
             branch = env.BRANCH_NAME.toLowerCase()
             println "Project/Branch = " + project + "/" + branch
