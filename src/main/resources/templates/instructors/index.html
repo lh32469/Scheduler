@@ -125,15 +125,16 @@
                     </div>
                     <div th:if="${svcs == null or #lists.isEmpty(svcs)}"
                          style="margin:.25rem 0 .25rem 0; color:#888; font-size:.9rem;">
-                        <span style="font-weight:600; color:#555;">Offers:</span>
+                        <span style="font-weight:600; color:#555;">Services:</span>
                         None at this time.
                     </div>
                 </div>
 
                 <!-- Link to view only this instructor's classes on the main page -->
                 <div th:if="${instructorClassTypes[inst.id] != null}"
+                     th:with="cleanId=${inst.id.replace('UserAccounts/', '')}"
                      class="instructor-actions" style="margin-top:.75rem;">
-                    <a class="filter-btn" th:href="@{/(instructor=${inst.id})}"
+                    <a class="filter-btn" th:href="@{/(instructor=${cleanId})}"
                        style="text-decoration:none;">
                         View classes by <span th:text="${inst.name}">this instructor</span>
                     </a>
