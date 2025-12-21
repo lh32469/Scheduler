@@ -10,7 +10,7 @@
             <nav>
                 <ul>
                     <li><a th:href="@{/}">Home</a></li>
-                    <li sec:authorize="hasAnyRole('ADMIN','INSTRUCTOR')"><a th:href="@{/offerings/new}">Schedule New
+                    <li sec:authorize="hasAnyRole('ADMIN','INSTRUCTOR')"><a th:href="@{/schedules/new}">Schedule New
                         Class</a></li>
                 </ul>
             </nav>
@@ -29,7 +29,7 @@
         <p>You don't have any classes scheduled yet.</p>
         <p>
             <a class="book-btn" style="display: inline-block; width: auto; padding: 0.6rem 1rem; margin-top: 0.5rem;"
-               th:href="@{/offerings/new}">Create One</a>
+               th:href="@{/schedules/new}">Create One</a>
         </p>
     </div>
 
@@ -117,7 +117,7 @@
             <!-- Actions -->
             <div style="display:flex; gap:.5rem; justify-content:flex-end; margin-top:.75rem;">
                 <a class="class-type" style="width:auto; background:#e48760;"
-                   th:href="@{/offerings/{id}/edit(id=${sch.id})}">
+                   th:href="@{/schedules/{id}/edit(id=${sch.id})}">
                     Edit
                 </a>
             </div>

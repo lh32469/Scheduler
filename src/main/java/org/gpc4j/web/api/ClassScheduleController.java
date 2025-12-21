@@ -24,14 +24,15 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 
 /**
- * MVC controller to create new ClassSchedule documents via Thymeleaf form,
- * keeping the existing /offerings/new endpoint and POST /offerings action.
+ * Controller for handling class schedule management tasks such as creating,
+ * editing, and updating class schedules. Provides endpoints only accessible
+ * to users with roles 'ADMIN' and 'INSTRUCTOR'.
  */
 @Slf4j
 @Controller
-@RequestMapping("/offerings")
+@RequestMapping("/schedules")
 @RequiredArgsConstructor
-public class ClassOfferingFormController {
+public class ClassScheduleController {
 
   private final RavenDB ravenDB;
   private final RavenUserRepository userRepository;
@@ -56,7 +57,7 @@ public class ClassOfferingFormController {
     }
     model.addAttribute("title", "Schedule New Class");
     model.addAttribute("isEdit", false);
-    return "offerings/new";
+    return "schedules/new";
   }
 
   @PreAuthorize("hasAnyRole('ADMIN','INSTRUCTOR')")
@@ -74,7 +75,7 @@ public class ClassOfferingFormController {
       if (bindingResult.hasErrors()) {
         redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.schedule", bindingResult);
         redirectAttributes.addFlashAttribute("schedule", schedule);
-        return "redirect:/offerings/new";
+        return "redirect:/schedules/new";
       }
 
       // Set the instructor to the current user
@@ -84,7 +85,7 @@ public class ClassOfferingFormController {
         bindingResult.reject("user.notfound", "Authenticated user not found");
         redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.schedule", bindingResult);
         redirectAttributes.addFlashAttribute("schedule", schedule);
-        return "redirect:/offerings/new";
+        return "redirect:/schedules/new";
       }
 
       schedule.setInstructorId(user.getId());
@@ -103,7 +104,7 @@ public class ClassOfferingFormController {
       log.error("Failed to create ClassSchedule", e);
       redirectAttributes.addFlashAttribute("message", "Failed to create schedule: " + e.getMessage());
       redirectAttributes.addFlashAttribute("messageType", "error");
-      return "redirect:/offerings/new";
+      return "redirect:/schedules/new";
     }
   }
 
@@ -142,7 +143,7 @@ public class ClassOfferingFormController {
       model.addAttribute("schedule", schedule);
       model.addAttribute("title", "Edit Class");
       model.addAttribute("isEdit", true);
-      return "offerings/new"; // reuse the same template with edit mode
+      return "schedules/new"; // reuse the same template with edit mode
     }
   }
 
@@ -186,7 +187,7 @@ public class ClassOfferingFormController {
         redirectAttributes.addFlashAttribute("messageType", "error");
         redirectAttributes.addFlashAttribute("schedule", form);
         redirectAttributes.addFlashAttribute("isEdit", true);
-        return "redirect:/offerings/" + id + "/edit";
+        return "redirect:/schedules/" + id + "/edit";
       }
 
       // Copy mutable fields from form to loaded entity

@@ -24,7 +24,7 @@
         <span th:text="${message}"></span>
     </div>
 
-    <form th:action="${isEdit} ? @{/offerings/{id}(id=${schedule.id})} : @{/offerings}"
+    <form th:action="${isEdit} ? @{/schedules/{id}(id=${schedule.id})} : @{/schedules}"
           method="post" th:object="${schedule}" class="form"
           style="display: grid; gap: 1rem; max-width: 640px;">
 
