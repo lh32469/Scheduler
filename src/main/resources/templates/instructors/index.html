@@ -1,12 +1,23 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
 <head th:replace="~{fragments/head :: head}"></head>
 <body>
 
 <header>
     <div class="container">
         <div class="header-content">
-            <div class="logo" th:text="${banner.companyName}">FitHub</div>
+            <a th:href="@{/}"
+               class="logo"
+               th:text="${banner.companyName}"
+               style="text-decoration: none; color: inherit;">
+                TBD
+            </a>
+            <div class="snippet"
+                 sec:authorize="isAuthenticated()"
+                 sec:authentication="name" style="color: forestgreen">TBD
+            </div>
             <nav>
                 <ul>
                     <li><a th:href="@{/}">Home</a></li>
