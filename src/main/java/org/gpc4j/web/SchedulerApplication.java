@@ -12,10 +12,10 @@ import java.util.concurrent.TimeUnit;
 
 @SpringBootApplication
 @EnableCaching
-public class WebTemplateApplication {
+public class SchedulerApplication {
 
   public static void main(String[] args) {
-    SpringApplication.run(WebTemplateApplication.class, args);
+    SpringApplication.run(SchedulerApplication.class, args);
   }
 
   @Bean
