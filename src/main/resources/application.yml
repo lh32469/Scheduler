@@ -45,7 +45,7 @@ spring:
     # Encrypted via jasypt-spring-boot. Generate your own ciphertext with the provided tool
     # (see org.gpc4j.web.util.JasyptEncryptorTool) and set JASYPT_ENCRYPTOR_PASSWORD at runtime.
     # Example placeholder below — replace with your actual ENC(...) value.
-    password: "ENC(YF5nbwQbVtJBzr5EvLyQK5WfLaRtbTefao3v8zncUZkkNLMsZISEs+6ELmnV3UH6)"
+    password: "ENC(PsOp12NNssxsKMZ9bBJAIiZRwSfQkexswXXFPOLQPBY9EMDPXEn6tGloqSp8N1ob3TMSFEDGwpLFxWSx29U7fg==)"
     properties:
       mail:
         smtp:
@@ -88,8 +88,7 @@ info:
 
 # RavenDB Configuration
 ravendb:
-#  database: v3.scheduler.mcquarrie.cc
-  database: v2.fithub.mcquarrie.cc
+  database: v3.scheduler.mcquarrie.cc
   url: http://raven.dell.mcquarrie.cc
 
 logging:
