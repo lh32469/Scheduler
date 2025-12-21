@@ -11,7 +11,7 @@ import java.util.List;
 @Slf4j
 @Repository
 @RequiredArgsConstructor
-public class RavenUserRepository {
+public class UserRepository {
 
   private final RavenDB ravenDB;
 

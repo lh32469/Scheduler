@@ -1,7 +1,7 @@
 package org.gpc4j.web.security;
 
 import lombok.RequiredArgsConstructor;
-import org.gpc4j.web.repository.RavenUserRepository;
+import org.gpc4j.web.repository.UserRepository;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class RavenUserDetailsService implements UserDetailsService {
 
-  private final RavenUserRepository userRepository;
+  private final UserRepository userRepository;
 
   @Override
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {

@@ -2,7 +2,7 @@ package org.gpc4j.web.security;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.gpc4j.web.repository.RavenUserRepository;
+import org.gpc4j.web.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -16,7 +16,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SecurityDataInitializer implements ApplicationRunner {
 
-  private final RavenUserRepository userRepository;
+  private final UserRepository userRepository;
   private final PasswordEncoder passwordEncoder;
 
   @Value("${app.security.seed.username:admin}")

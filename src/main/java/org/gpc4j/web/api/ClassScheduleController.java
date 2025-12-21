@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.ravendb.client.documents.session.IDocumentSession;
 import org.gpc4j.web.dto.ClassSchedule;
 import org.gpc4j.web.repository.RavenDB;
-import org.gpc4j.web.repository.RavenUserRepository;
+import org.gpc4j.web.repository.UserRepository;
 import org.gpc4j.web.security.UserAccount;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -35,7 +35,7 @@ import java.time.LocalDate;
 public class ClassScheduleController {
 
   private final RavenDB ravenDB;
-  private final RavenUserRepository userRepository;
+  private final UserRepository userRepository;
 
   @PreAuthorize("hasAnyRole('ADMIN','INSTRUCTOR')")
   @GetMapping("/new")

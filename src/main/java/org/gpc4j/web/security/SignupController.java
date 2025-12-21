@@ -3,7 +3,7 @@ package org.gpc4j.web.security;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.gpc4j.web.repository.RavenUserRepository;
+import org.gpc4j.web.repository.UserRepository;
 import org.gpc4j.web.repository.RavenVerificationTokenRepository;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -29,7 +29,7 @@ import java.util.UUID;
 @RequestMapping
 public class SignupController {
 
-  private final RavenUserRepository userRepository;
+  private final UserRepository userRepository;
   private final RavenVerificationTokenRepository tokenRepository;
   private final JavaMailSender mailSender;
   private final PasswordEncoder passwordEncoder;

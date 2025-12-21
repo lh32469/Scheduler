@@ -6,7 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.ravendb.client.documents.session.IDocumentSession;
 import org.gpc4j.web.dto.Banner;
 import org.gpc4j.web.repository.RavenDB;
-import org.gpc4j.web.repository.RavenUserRepository;
+import org.gpc4j.web.repository.UserRepository;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
 public class AdminDashboardController {
 
   private final RavenDB ravenDB;
-  private final RavenUserRepository userRepository;
+  private final UserRepository userRepository;
   private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
   @GetMapping

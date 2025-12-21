@@ -2,7 +2,7 @@ package org.gpc4j.web.security;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.gpc4j.web.repository.RavenUserRepository;
+import org.gpc4j.web.repository.UserRepository;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -21,7 +21,7 @@ import java.util.Locale;
 @RequiredArgsConstructor
 public class AccountController {
 
-  private final RavenUserRepository userRepository;
+  private final UserRepository userRepository;
 
   @PreAuthorize("isAuthenticated()")
   @GetMapping("/profile")

@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.ravendb.client.documents.session.IDocumentSession;
 import org.gpc4j.web.dto.ClassSchedule;
 import org.gpc4j.web.repository.RavenDB;
-import org.gpc4j.web.repository.RavenUserRepository;
+import org.gpc4j.web.repository.UserRepository;
 import org.gpc4j.web.security.UserAccount;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -29,7 +29,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class InstructorsController {
 
-  private final RavenUserRepository userRepository;
+  private final UserRepository userRepository;
   private final RavenDB ravenDB;
 
   @GetMapping

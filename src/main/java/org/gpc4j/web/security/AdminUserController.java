@@ -2,7 +2,7 @@ package org.gpc4j.web.security;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.gpc4j.web.repository.RavenUserRepository;
+import org.gpc4j.web.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,7 +25,7 @@ import java.util.List;
 @RequestMapping("/admin-legacy")
 public class AdminUserController {
 
-  private final RavenUserRepository userRepository;
+  private final UserRepository userRepository;
   private final PasswordEncoder passwordEncoder;
 
   @GetMapping("/users/new")
