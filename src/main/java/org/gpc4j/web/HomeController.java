@@ -2,13 +2,9 @@ package org.gpc4j.web;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.gpc4j.web.api.ClassOffering;
-import org.gpc4j.web.api.ClassType;
 import org.gpc4j.web.dto.ScheduledClass;
+import org.gpc4j.web.repository.ClassScheduleRepository;
 import org.gpc4j.web.security.UserAccount;
-import org.gpc4j.web.repository.ClassOfferingRepository;
-import org.gpc4j.web.repository.RavenDB;
-import org.gpc4j.web.services.ScheduleClassesService;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -20,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 /**
  * MVC controller that renders the home page using Thymeleaf.
@@ -31,9 +26,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class HomeController {
 
-  private final ClassOfferingRepository classOfferingRepository;
-
-  private final ScheduleClassesService classesService;
+  private final ClassScheduleRepository classScheduleRepository;
 
   @GetMapping({"/"})
   public String home(
@@ -53,17 +46,12 @@ public class HomeController {
     log.debug("Authentication: " + authentication);
     log.debug("Timezone: " + timezone);
 
-    if (StringUtils.hasText(instructorId)) {
-      instructorId = "UserAccounts/" + instructorId;
-    }
-    log.info("InstructorId: " + instructorId);
-
     LocalDate sunday = getSunday();
     LocalDate fourWeeksFromNow = sunday.plusWeeks(4);
     List<ScheduledClass> classes;
 
-    classes = classesService.getScheduledClasses(sunday, fourWeeksFromNow,
-                                                 classType, instructorId);
+    classes = classScheduleRepository.listClassesForPeriod(sunday, fourWeeksFromNow,
+                                                           classType, instructorId);
 
     // Try to determine the instructor's display name from the resulting classes
     String instructorName = classes.stream()
@@ -73,7 +61,9 @@ public class HomeController {
                                    .findFirst()
                                    .orElse(null);
 
-    model.addAttribute("instructorName", instructorName);
+    if (StringUtils.hasText(instructorId)) {
+      model.addAttribute("instructorName", instructorName);
+    }
 
     // Build Month Calendar data (selected month or current month)
     java.time.YearMonth ym;

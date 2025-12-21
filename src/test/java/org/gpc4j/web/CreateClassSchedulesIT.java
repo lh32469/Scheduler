@@ -1,11 +1,11 @@
 package org.gpc4j.web;
 
 import lombok.extern.slf4j.Slf4j;
+import net.ravendb.client.Constants;
 import net.ravendb.client.documents.session.IDocumentSession;
 import org.gpc4j.web.api.ClassType;
-import org.gpc4j.web.dto.Banner;
 import org.gpc4j.web.dto.ClassSchedule;
-import org.gpc4j.web.dto.ScheduledClass;
+import org.gpc4j.web.repository.ClassScheduleRepository;
 import org.gpc4j.web.repository.RavenDocumentStoreCache;
 import org.gpc4j.web.security.UserAccount;
 import org.junit.jupiter.api.AfterEach;
@@ -19,8 +19,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.ZoneOffset;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @SpringBootTest
@@ -31,6 +34,9 @@ public class CreateClassSchedulesIT {
 
   @Autowired
   RavenDocumentStoreCache cache;
+
+  @Autowired
+  ClassScheduleRepository classScheduleRepository;
 
   @Autowired
   PasswordEncoder passwordEncoder;
@@ -267,7 +273,7 @@ public class CreateClassSchedulesIT {
     schedule.setDuration(45);
     schedule.setSlots(-1);
     schedule.setLocation(getRandomLocation());
-    session.store(schedule, "ClassSchedules/6-A");
+    classScheduleRepository.store(schedule, "ClassSchedules/6-A");
   }
 
   @Test
@@ -297,8 +303,8 @@ public class CreateClassSchedulesIT {
         "Guided mindfulness and breathing for relaxation and focus.");
     schedule.setClassType(ClassType.meditation);
     schedule.setLevel("All Levels");
-    schedule.setStartWeek(LocalDate.of(2025, 12, 1));
-    schedule.setNumberOfWeeks(12);
+    schedule.setStartWeek(LocalDate.now().plusWeeks(2));
+    schedule.setNumberOfWeeks(2);
     schedule.setDaysOfWeek(Set.of(DayOfWeek.MONDAY,
                                   DayOfWeek.WEDNESDAY,
                                   DayOfWeek.FRIDAY));
@@ -308,6 +314,19 @@ public class CreateClassSchedulesIT {
     schedule.setSlots(-1);
     schedule.setLocation(getRandomLocation());
     session.store(schedule, "ClassSchedules/8-A");
+//    session.store(schedule, "ClassSchedules/" + schedule.getStartWeek());
+
+    var metadata = session.advanced().getMetadataFor(schedule);
+    Date expiresAt = new Date(
+        System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(5));
+
+    LocalDate ends = schedule
+        .getStartWeek()
+        .plusWeeks(schedule.getNumberOfWeeks());
+
+    Date date = Date.from(ends.atStartOfDay().toInstant(ZoneOffset.UTC));
+
+    metadata.put(Constants.Documents.Metadata.EXPIRES, date);
   }
 
   @Test
