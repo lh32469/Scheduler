@@ -108,11 +108,16 @@
                     <div th:if="${types != null}"
                          style="display:flex; flex-wrap:wrap; gap:.5rem; align-items:center;">
                         <span style="font-weight:600; color:#555;">Teaches:</span>
-                        <span th:each="t : ${types}"
-                              th:text="${#strings.capitalize(t.name())}"
-                              style="display:inline-block; padding:.2rem .5rem; border-radius:999px; background:#eef6ff; color:#0b5ed7; font-size:.85rem;">
+                        <a th:each="type : ${types}"
+                           th:href="@{/(type=${type.name()},
+                           instructor=${inst.id.replace('UserAccounts/', '')})}"
+                           th:title="|Show current ${#strings.capitalize(type.name())} classes by this instructor|"
+                           th:text="${#strings.capitalize(type.name())}"
+                           style="display:inline-block; padding:.2rem .5rem; border-radius:999px; background:#eef6ff; color:#0b5ed7; font-size:.85rem; text-decoration:none; cursor:pointer;"
+                           onmouseover="this.style.background='#d0e7ff'"
+                           onmouseout="this.style.background='#eef6ff'">
                             ClassType
-                        </span>
+                        </a>
                     </div>
                     <div th:if="${types == null}"
                          style="margin:.25rem 0 .75rem 0; color:#888; font-size:.9rem;">
