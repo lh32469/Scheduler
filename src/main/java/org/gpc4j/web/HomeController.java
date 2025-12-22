@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.gpc4j.web.dto.ScheduledClass;
 import org.gpc4j.web.repository.ClassScheduleRepository;
+import org.gpc4j.web.repository.RavenDB;
 import org.gpc4j.web.security.UserAccount;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -15,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * MVC controller that renders the home page using Thymeleaf.
@@ -28,13 +28,14 @@ public class HomeController {
 
   private final ClassScheduleRepository classScheduleRepository;
 
+  private final RavenDB ravenDB;
+
   @GetMapping({"/"})
   public String home(
       @CookieValue(name = "userTimezone", defaultValue = "UTC") String timezone,
       @RequestParam(name = "page", required = false, defaultValue = "1") int page,
       @RequestParam(name = "size", required = false, defaultValue = "100") int size,
-      // filter is actually classType
-      @RequestParam(name = "filter", required = false) String classType,
+      @RequestParam(name = "type", required = false) String classType,
       @RequestParam(name = "month", required = false) String monthParam,
       @RequestParam(name = "instructor", required = false) String instructorId,
       Authentication authentication,
@@ -45,6 +46,7 @@ public class HomeController {
 
     log.debug("Authentication: " + authentication);
     log.debug("Timezone: " + timezone);
+    log.debug("instructorId: " + instructorId);
 
     LocalDate sunday = getSunday();
     LocalDate fourWeeksFromNow = sunday.plusWeeks(4);
@@ -53,16 +55,10 @@ public class HomeController {
     classes = classScheduleRepository.listClassesForPeriod(sunday, fourWeeksFromNow,
                                                            classType, instructorId);
 
-    // Try to determine the instructor's display name from the resulting classes
-    String instructorName = classes.stream()
-                                   .map(ScheduledClass::getInstructorAccount)
-                                   .filter(Objects::nonNull)
-                                   .map(UserAccount::getName)
-                                   .findFirst()
-                                   .orElse(null);
-
     if (StringUtils.hasText(instructorId)) {
-      model.addAttribute("instructorName", instructorName);
+      ravenDB.getRepository(UserAccount.class)
+             .findById("UserAccounts/" + instructorId)
+             .ifPresent(acct -> model.addAttribute("instructorName", acct.getName()));
     }
 
     // Build Month Calendar data (selected month or current month)

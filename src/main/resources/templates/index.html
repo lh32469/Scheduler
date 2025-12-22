@@ -63,22 +63,22 @@
 <script>
 
     /**
-     * Sets the active filter button based on the 'filter' parameter in the URL.
+     * Sets the active filter button based on the 'type' parameter in the URL.
      * Removes the 'active' clazz from all filter buttons and applies it to the button
-     * matching the current filter parameter value. If no filter parameter is present,
+     * matching the current type parameter value. If no type parameter is present,
      * defaults to activating the 'All Classes' button.
      *
      * @return {void} This function does not return a value.
      */
     function setActiveFilterFromUrl() {
         const urlParams = new URLSearchParams(window.location.search);
-        const filterParam = urlParams.get('filter');
+        const typeParam = urlParams.get('type');
 
         document.querySelectorAll('.filter-btn').forEach(btn => {
             btn.classList.remove('active');
-            if (!filterParam && btn.innerText.toLowerCase() === 'all classes') {
+            if (!typeParam && btn.innerText.toLowerCase() === 'all classes') {
                 btn.classList.add('active');
-            } else if (filterParam && btn.innerText.toLowerCase() === filterParam.toLowerCase()) {
+            } else if (typeParam && btn.innerText.toLowerCase() === typeParam.toLowerCase()) {
                 btn.classList.add('active');
             }
         });
@@ -124,9 +124,11 @@
                 <a class="filter-btn"
                    th:href="@{/(month=${monthParam}, instructor=${param.instructor})}">All Classes</a>
                 <a class="filter-btn"
-                   th:each="ct : ${T(org.gpc4j.web.api.ClassType).values()}"
-                   th:href="@{/(filter=${ct.name()}, month=${monthParam}, instructor=${param.instructor})}"
-                   th:text="${#strings.capitalize(ct.name())}">Type</a>
+                   th:each="classType : ${T(org.gpc4j.web.api.ClassType).values()}"
+                   th:href="@{/(type=${classType.name()},
+                   month=${monthParam},
+                   instructor=${param.instructor})}"
+                   th:text="${#strings.capitalize(classType.name())}">Type</a>
             </div>
         </div>
 
@@ -142,11 +144,11 @@
             <div class="calendar-header" style="display:flex; align-items:center; justify-content:space-between; gap:.5rem;">
                 <a class="filter-btn" style="width:auto; padding:.35rem .75rem;"
                    aria-label="Previous month"
-                   th:href="@{/(month=${prevMonthParam}, filter=${param.filter}, instructor=${param.instructor})}">‹ Prev</a>
+                   th:href="@{/(month=${prevMonthParam}, type=${param.type}, instructor=${param.instructor})}">‹ Prev</a>
                 <h2 th:text="${calendarMonthLabel}">November 2025</h2>
                 <a class="filter-btn" style="width:auto; padding:.35rem .75rem;"
                    aria-label="Next month"
-                   th:href="@{/(month=${nextMonthParam}, filter=${param.filter}, instructor=${param.instructor})}">Next ›</a>
+                   th:href="@{/(month=${nextMonthParam}, type=${param.type}, instructor=${param.instructor})}">Next ›</a>
             </div>
             <div class="calendar-weekdays" aria-hidden="true">
                 <div>Sun</div>
