@@ -42,7 +42,7 @@ public class RavenDB {
 
     // Ignore calls from Spring Boot Admin
     if (request.getRequestURI().startsWith("/actuator")) {
-      log.info(request.getRequestURL() + " " + request.getServerPort());
+      log.debug(request.getRequestURL() + " " + request.getServerPort());
       return;
     }
 
@@ -50,7 +50,7 @@ public class RavenDB {
     final String hostname = request.getHeader("X-Forwarded-Host");
 
     if (Objects.isNull(hostname)) {
-      log.info("X-Forwarded-Host header not found in request");
+      log.debug("X-Forwarded-Host header not found in request");
     } else {
       this.databaseName = hostname;
     }
@@ -62,6 +62,13 @@ public class RavenDB {
 
   public IDocumentSession openSession() {
     return getDocumentStore().openSession();
+  }
+
+  /**
+   * Get a generic RavenRepository for the Class provided.
+   */
+  public <T> RavenRepository<T> getRepository(Class<T> clazz) {
+    return new RavenRepository<>(this, clazz);
   }
 
 }
