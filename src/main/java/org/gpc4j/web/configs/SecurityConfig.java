@@ -1,6 +1,8 @@
-package org.gpc4j.web.security;
+package org.gpc4j.web.configs;
 
 import lombok.RequiredArgsConstructor;
+import org.gpc4j.web.security.RavenUserDetailsService;
+import org.gpc4j.web.security.RoleBasedSessionTimeoutSuccessHandler;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
