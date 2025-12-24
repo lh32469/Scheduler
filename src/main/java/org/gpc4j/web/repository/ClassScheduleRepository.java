@@ -1,5 +1,6 @@
 package org.gpc4j.web.repository;
 
+import io.micrometer.core.instrument.binder.logging.LogbackMetrics;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.ravendb.client.Constants;
@@ -10,6 +11,7 @@ import net.ravendb.client.documents.session.IMetadataDictionary;
 import org.gpc4j.web.dto.ClassSchedule;
 import org.gpc4j.web.dto.ScheduledClass;
 import org.gpc4j.web.security.UserAccount;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
@@ -29,10 +31,9 @@ public class ClassScheduleRepository {
 
   private final RavenDB ravenDB;
 
+  @Cacheable(value = "classList", keyGenerator = "customKeyGenerator")
   public List<ScheduledClass> listClassesForPeriod(LocalDate startDate,
-                                                   LocalDate endDate,
-                                                   @Nullable String classType,
-                                                   @Nullable String instructorId) {
+                                                   LocalDate endDate) {
 
     List<ScheduledClass> classes = new LinkedList<>();
 
@@ -42,19 +43,6 @@ public class ClassScheduleRepository {
       IDocumentQuery<ClassSchedule> query =
           session.query(ClassSchedule.class)
                  .include("instructorId");
-
-      if (StringUtils.hasText(classType)) {
-        log.debug("Filtering classes by class type " + classType);
-        query.whereEquals("classType", classType.trim());
-      }
-
-      if (StringUtils.hasText(instructorId)) {
-        if (!instructorId.startsWith("UserAccounts")) {
-          instructorId = "UserAccounts/" + instructorId;
-        }
-        log.debug("Filtering classes by instructorId " + instructorId);
-        query.whereEquals("instructorId", instructorId.trim());
-      }
 
       List<ClassSchedule> schedules = query.toList();
 
@@ -84,9 +72,7 @@ public class ClassScheduleRepository {
 
     classes.sort(Comparator.comparing(ScheduledClass::getStart));
     log.info("Found " + classes.size() + " classes for "
-                 + startDate + " to " + endDate
-                 + " for classType " + classType
-                 + " and instructorId " + instructorId);
+                 + startDate + " to " + endDate);
 
     return classes;
   }
