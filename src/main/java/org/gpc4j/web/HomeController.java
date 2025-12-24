@@ -1,11 +1,13 @@
 package org.gpc4j.web;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.gpc4j.web.dto.ScheduledClass;
 import org.gpc4j.web.repository.ClassScheduleRepository;
 import org.gpc4j.web.repository.RavenDB;
 import org.gpc4j.web.security.UserAccount;
+import org.springframework.http.CacheControl;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -14,8 +16,13 @@ import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Map;
 
 /**
  * MVC controller that renders the home page using Thymeleaf.
@@ -35,12 +42,18 @@ public class HomeController {
       @CookieValue(name = "userTimezone", defaultValue = "UTC") String timezone,
       @RequestParam(name = "page", required = false, defaultValue = "1") int page,
       @RequestParam(name = "size", required = false, defaultValue = "100") int size,
-      @RequestParam(name = "type", required = false) String classType,
       @RequestParam(name = "month", required = false) String monthParam,
       @RequestParam(name = "instructor", required = false) String instructorId,
       Authentication authentication,
-      Model model
+      Model model,
+      HttpServletResponse response
   ) {
+
+    CacheControl cacheControl = CacheControl
+        .maxAge(Duration.of(5, ChronoUnit.MINUTES));
+
+    response.setHeader("Cache-Control", cacheControl.getHeaderValue());
+
     int safePage = Math.max(1, page);
     int safeSize = Math.min(Math.max(1, size), 500);
 
@@ -52,10 +65,15 @@ public class HomeController {
     LocalDate fourWeeksFromNow = sunday.plusWeeks(4);
     List<ScheduledClass> classes;
 
-    classes = classScheduleRepository.listClassesForPeriod(sunday, fourWeeksFromNow,
-                                                           classType, instructorId);
+    classes = classScheduleRepository.listClassesForPeriod(sunday, fourWeeksFromNow);
 
     if (StringUtils.hasText(instructorId)) {
+
+      // Remove all other Instructors
+      classes.removeIf(clss -> !instructorId.equals(
+          clss.getInstructorAccount().getId())
+      );
+
       ravenDB.getRepository(UserAccount.class)
              .findById("UserAccounts/" + instructorId)
              .ifPresent(acct -> model.addAttribute("instructorName", acct.getName()));
@@ -78,16 +96,14 @@ public class HomeController {
     LocalDate firstOfNextMonth = ym.plusMonths(1).atDay(1);
 
     // Transform into a lightweight event map for the client (ISO date + display fields)
-    java.time.format.DateTimeFormatter isoDate =
-        java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
-    java.time.format.DateTimeFormatter time24 =
-        java.time.format.DateTimeFormatter.ofPattern("HH:mm");
-    java.time.format.DateTimeFormatter time12 =
-        java.time.format.DateTimeFormatter.ofPattern("h:mm a");
-    java.util.List<java.util.Map<String, Object>> calendarEvents =
+    DateTimeFormatter isoDate = java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
+    DateTimeFormatter time24 = java.time.format.DateTimeFormatter.ofPattern("HH:mm");
+    DateTimeFormatter time12 = java.time.format.DateTimeFormatter.ofPattern("h:mm a");
+
+    List<Map<String, Object>> calendarEvents =
         classes.stream().map(sc -> {
-          java.util.Map<String, Object> m = new java.util.HashMap<>();
-          java.time.LocalDateTime start = sc.getStart();
+          Map<String, Object> m = new java.util.HashMap<>();
+          LocalDateTime start = sc.getStart();
           m.put("date", start.toLocalDate().format(isoDate));
           m.put("time", start.toLocalTime().format(time24));
           m.put("timeDisplay", start.toLocalTime().format(time12));

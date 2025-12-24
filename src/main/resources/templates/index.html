@@ -61,32 +61,135 @@
 </header>
 
 <script>
+    const FILTER_STORAGE_KEY = 'classTypeFilter';
 
     /**
-     * Sets the active filter button based on the 'type' parameter in the URL.
-     * Removes the 'active' clazz from all filter buttons and applies it to the button
-     * matching the current type parameter value. If no type parameter is present,
-     * defaults to activating the 'All Classes' button.
-     *
-     * @return {void} This function does not return a value.
+     * Gets the currently selected filter type from localStorage.
+     * @return {string|null} The stored filter type, or null if not set.
      */
-    function setActiveFilterFromUrl() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const typeParam = urlParams.get('type');
+    function getStoredFilter() {
+        type = sessionStorage.getItem(FILTER_STORAGE_KEY);
+        console.info("getStoredFilter = " + type);
+        return type;
+    }
 
-        document.querySelectorAll('.filter-btn').forEach(btn => {
+    /**
+     * Saves the selected filter type to localStorage.
+     * @param {string} filterType - The filter type to store (e.g., 'yoga',
+     * 'pilates', or null for 'all').
+     */
+    function setStoredFilter(filterType) {
+        console.warn("setStoredFilter = " + filterType);
+        if (filterType) {
+            sessionStorage.setItem(FILTER_STORAGE_KEY, filterType);
+        } else {
+            sessionStorage.removeItem(FILTER_STORAGE_KEY);
+        }
+    }
+
+    /**
+     * Applies the active state to the filter button that matches the stored filter type.
+     * If no filter is stored, activates the 'All Classes' button.
+     */
+    function applyStoredFilterToButtons() {
+        const storedType = getStoredFilter();
+
+        document.querySelectorAll('.filters .filter-btn').forEach(btn => {
             btn.classList.remove('active');
-            if (!typeParam && btn.innerText.toLowerCase() === 'all classes') {
+            const btnText = btn.innerText.toLowerCase();
+
+            if (!storedType && btnText === 'all classes') {
                 btn.classList.add('active');
-            } else if (typeParam && btn.innerText.toLowerCase() === typeParam.toLowerCase()) {
+            } else if (storedType && btnText === storedType.toLowerCase()) {
                 btn.classList.add('active');
             }
         });
     }
 
+    /**
+     * Filters the visible class cards based on the stored filter type.
+     * Shows all cards if no filter is set, otherwise shows only matching types.
+     */
+    function filterClassCards() {
+        const storedType = getStoredFilter();
+        const cards = document.querySelectorAll('.class-card');
+
+        cards.forEach(card => {
+            if (!storedType) {
+                // Show all cards
+                card.style.display = '';
+            } else {
+                // Show only cards matching the filter
+                const cardType = card.getAttribute('data-type');
+                if (cardType && cardType.toLowerCase() === storedType.toLowerCase()) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            }
+        });
+    }
+
+    function filterCalendarEvents() {
+        const storedType = getStoredFilter();
+        const chips = document.querySelectorAll('.event-chip');
+
+        chips.forEach(chip => {
+            if (!storedType) {
+                // Show all chips
+                chip.style.display = '';
+            } else {
+                // Show only chips matching the filter
+                const cardType = chip.getAttribute('type');
+                if (cardType && cardType.toLowerCase() === storedType.toLowerCase()) {
+                    chip.style.display = '';
+                } else {
+                    chip.style.display = 'none';
+                }
+            }
+        });
+    }
+
+    /**
+     * Sets up click handlers for filter buttons to store selection and apply filter.
+     */
+    function initializeFilterButtons() {
+        document.querySelectorAll('.filters .filter-btn').forEach(btn => {
+            btn.addEventListener('click', function (e) {
+                e.preventDefault();
+
+                const btnText = this.innerText.toLowerCase();
+
+                // Determine filter type to store
+                let filterType = null;
+                if (btnText !== 'all classes') {
+                    filterType = btnText;
+                }
+
+                // Store the filter
+                setStoredFilter(filterType);
+
+                // Update UI
+                applyStoredFilterToButtons();
+                filterClassCards();
+                filterCalendarEvents();
+
+                // // Scroll to schedule
+                // const scheduleSection = document.getElementById('schedule');
+                // if (scheduleSection) {
+                //     scheduleSection.scrollIntoView({ behavior: 'smooth' });
+                // }
+            });
+        });
+    }
+
     // Initialize the page
     document.addEventListener('DOMContentLoaded', async () => {
-        setActiveFilterFromUrl();
+        // Apply stored filter on page load
+        applyStoredFilterToButtons();
+
+        // Initialize filter button handlers
+        initializeFilterButtons();
 
         // Add smooth scrolling to navigation links
         document.querySelectorAll('nav a[href^="#"]').forEach(anchor => {
@@ -100,6 +203,8 @@
                 }
             });
         });
+
+        filterClassCards();
     });
 
 </script>
@@ -121,13 +226,11 @@
     <section class="container" id="schedule">
         <div class="filters">
             <div class="filter-controls">
-                <a class="filter-btn"
-                   th:href="@{/(month=${monthParam}, instructor=${param.instructor})}">All Classes</a>
+                <a class="filter-btn" href="#" data-filter="all">All Classes</a>
                 <a class="filter-btn"
                    th:each="classType : ${T(org.gpc4j.web.api.ClassType).values()}"
-                   th:href="@{/(type=${classType.name()},
-                   month=${monthParam},
-                   instructor=${param.instructor})}"
+                   href="#"
+                   th:attr="data-filter=${classType.name()}"
                    th:text="${#strings.capitalize(classType.name())}">Type</a>
             </div>
         </div>
@@ -141,14 +244,15 @@
 
         <!-- Month Calendar (between filters and schedule grid) -->
         <section class="month-calendar" aria-label="Calendar of available classes this month">
-            <div class="calendar-header" style="display:flex; align-items:center; justify-content:space-between; gap:.5rem;">
+            <div class="calendar-header"
+                 style="display:flex; align-items:center; justify-content:space-between; gap:.5rem;">
                 <a class="filter-btn" style="width:auto; padding:.35rem .75rem;"
                    aria-label="Previous month"
-                   th:href="@{/(month=${prevMonthParam}, type=${param.type}, instructor=${param.instructor})}">‹ Prev</a>
+                   th:href="@{/(month=${prevMonthParam}, instructor=${param.instructor})}">‹ Prev</a>
                 <h2 th:text="${calendarMonthLabel}">November 2025</h2>
                 <a class="filter-btn" style="width:auto; padding:.35rem .75rem;"
                    aria-label="Next month"
-                   th:href="@{/(month=${nextMonthParam}, type=${param.type}, instructor=${param.instructor})}">Next ›</a>
+                   th:href="@{/(month=${nextMonthParam}, instructor=${param.instructor})}">Next ›</a>
             </div>
             <div class="calendar-weekdays" aria-hidden="true">
                 <div>Sun</div>
@@ -192,13 +296,13 @@
                 });
 
                 // Build cells from firstCell to lastCell inclusive
-                const todayISO = new Date().toISOString().slice(0,10);
+                const todayISO = new Date().toISOString().slice(0, 10);
                 const frag = document.createDocumentFragment();
                 for (let d = new Date(firstCell); d <= lastCell; d.setDate(d.getDate() + 1)) {
                     const cell = document.createElement('div');
                     cell.className = 'day-cell';
 
-                    const iso = d.toISOString().slice(0,10);
+                    const iso = d.toISOString().slice(0, 10);
                     const inMonth = (d.getMonth() === start.getMonth());
                     if (!inMonth) cell.classList.add('muted');
                     if (iso === todayISO) cell.classList.add('today');
@@ -210,13 +314,13 @@
 
                     const evts = map.get(iso) || [];
                     if (evts.length) {
-                        evts.sort((a,b) => a.time.localeCompare(b.time));
+                        evts.sort((a, b) => a.time.localeCompare(b.time));
                         evts.forEach(e => {
                             const chip = document.createElement('div');
                             chip.className = 'event-chip';
-                            // chip.setAttribute('title', (e.title ? e.title + ' — ' : '') + e.timeDisplay + (e.location ? ' @ ' + e.location : ''));
                             chip.setAttribute('role', 'button');
                             chip.setAttribute('tabindex', '0');
+                            chip.setAttribute('type', e.type);
                             chip.dataset.date = iso;
                             chip.dataset.time = e.time;
                             chip.dataset.title = e.title || '';
@@ -245,9 +349,10 @@
                 initCalendarPopovers(events);
             }
 
-            document.addEventListener('DOMContentLoaded', function() {
+            document.addEventListener('DOMContentLoaded', function () {
                 const cont = document.getElementById('calendarGrid');
                 buildMonthGrid(cont, CAL_MONTH_START, CAL_MONTH_END, CAL_EVENTS);
+                filterCalendarEvents();
             });
 
             // Calendar hover popover logic
@@ -289,7 +394,7 @@
                     chip.addEventListener('blur', () => hidePopover(pop));
                 });
 
-                window.addEventListener('scroll', () => hidePopover(pop), { passive: true });
+                window.addEventListener('scroll', () => hidePopover(pop), {passive: true});
                 window.addEventListener('resize', () => hidePopover(pop));
                 document.addEventListener('keydown', (e) => {
                     if (e.key === 'Escape') hidePopover(pop);
@@ -458,12 +563,13 @@
             </div>
         </div>
     </section>
-    
+
     <!-- Contact/Legal section -->
     <section class="container" id="contact" style="margin-bottom: 3rem;">
         <div class="class-card" style="animation: none; opacity: 1; transform: none;">
             <h2 style="margin-top:0;">Get in Touch</h2>
-            <p style="color:#555; margin:.25rem 0 1rem;">Questions, feedback, or need assistance? Reach out or review our policies.</p>
+            <p style="color:#555; margin:.25rem 0 1rem;">Questions, feedback, or need assistance? Reach out or review
+                our policies.</p>
             <div style="display:flex; gap:.5rem; flex-wrap:wrap;">
                 <a class="filter-btn" th:href="@{/contact}" style="text-decoration:none;">Contact Us</a>
                 <a class="filter-btn" th:href="@{/privacy}" style="text-decoration:none;">Privacy Notice</a>
