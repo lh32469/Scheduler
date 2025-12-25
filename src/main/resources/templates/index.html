@@ -61,15 +61,13 @@
 </header>
 
 <script>
-    const FILTER_STORAGE_KEY = 'classTypeFilter';
-
     /**
      * Gets the currently selected filter type from localStorage.
      * @return {string|null} The stored filter type, or null if not set.
      */
     function getStoredFilter() {
-        type = sessionStorage.getItem(FILTER_STORAGE_KEY);
-        console.info("getStoredFilter = " + type);
+        type = sessionStorage.getItem(SELECTED_CLASS_TYPE);
+        console.info(SELECTED_CLASS_TYPE + " = " + type);
         return type;
     }
 
@@ -79,13 +77,14 @@
      * 'pilates', or null for 'all').
      */
     function setStoredFilter(filterType) {
-        console.warn("setStoredFilter = " + filterType);
+        console.warn(SELECTED_CLASS_TYPE + " = " + filterType);
         if (filterType) {
-            sessionStorage.setItem(FILTER_STORAGE_KEY, filterType);
+            sessionStorage.setItem(SELECTED_CLASS_TYPE, filterType);
         } else {
-            sessionStorage.removeItem(FILTER_STORAGE_KEY);
+            sessionStorage.removeItem(SELECTED_CLASS_TYPE);
         }
     }
+
 
     /**
      * Applies the active state to the filter button that matches the stored filter type.
@@ -131,22 +130,31 @@
     }
 
     function filterCalendarEvents() {
-        const storedType = getStoredFilter();
+
         const chips = document.querySelectorAll('.event-chip');
 
+        const instructorName = sessionStorage.getItem(SELECTED_INSTRUCTOR);
+        const classType = sessionStorage.getItem(SELECTED_CLASS_TYPE);
+
+        console.info(SELECTED_CLASS_TYPE + " " + classType);
+        console.info(SELECTED_INSTRUCTOR + " " + instructorName);
+
         chips.forEach(chip => {
-            if (!storedType) {
-                // Show all chips
-                chip.style.display = '';
-            } else {
-                // Show only chips matching the filter
-                const cardType = chip.getAttribute('type');
-                if (cardType && cardType.toLowerCase() === storedType.toLowerCase()) {
-                    chip.style.display = '';
-                } else {
-                    chip.style.display = 'none';
-                }
+
+            // Show only chips matching the filters if set
+            const chipType = chip.getAttribute('type');
+            const chipInstructor = chip.getAttribute('instructor');
+
+            // Default is to show all chips
+            chip.style.display = '';
+
+            if (instructorName && chipInstructor !== instructorName) {
+                chip.style.display = 'none';
             }
+            if (classType && chipType !== classType) {
+                chip.style.display = 'none';
+            }
+
         });
     }
 
@@ -205,20 +213,31 @@
         });
 
         filterClassCards();
+
+        // Get the instructor name from sessionStorage
+        const instructorName = sessionStorage.getItem(SELECTED_INSTRUCTOR);
+        console.info(SELECTED_INSTRUCTOR + " " + instructorName);
+
+        if (instructorName) {
+            // Show the paragraph and update the instructor name
+            document.getElementById('instructorContext').style.display = 'block';
+            document.getElementById('instructorName').textContent = instructorName;
+        }
     });
 
 </script>
 
 <main>
+
     <section class="hero">
         <div id="heading" class="container">
             <h1 th:text="${banner.title}">Title</h1>
             <p th:text="${banner.subTitle}">Subtitle</p>
             <!-- Show selected instructor context when filtering by instructor -->
-            <p th:if="${instructorName != null}"
-               style="margin-top:.5rem; font-size:1rem; color:#97b4da;">
+            <p id="instructorContext"
+               style="margin-top:.5rem; font-size:1rem; color:#97b4da; display:none;">
                 Viewing classes by
-                <strong th:text="${instructorName}">Instructor</strong>
+                <strong id="instructorName">Instructor</strong>
             </p>
         </div>
     </section>
@@ -321,6 +340,7 @@
                             chip.setAttribute('role', 'button');
                             chip.setAttribute('tabindex', '0');
                             chip.setAttribute('type', e.type);
+                            chip.setAttribute('instructor', e.instructor)
                             chip.dataset.date = iso;
                             chip.dataset.time = e.time;
                             chip.dataset.title = e.title || '';

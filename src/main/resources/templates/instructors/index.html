@@ -27,6 +27,38 @@
     </div>
 </header>
 
+<script th:inline="javascript">
+
+    document.addEventListener('DOMContentLoaded', function () {
+
+        const typeLinks = document.querySelectorAll('.type-filter-link');
+
+        typeLinks.forEach(link => {
+            link.addEventListener('click', function (e) {
+                const typeName = this.getAttribute('data-type');
+                const instructorName = this.getAttribute('data-instructor-name');
+
+                sessionStorage.setItem(SELECTED_CLASS_TYPE, typeName);
+                sessionStorage.setItem(SELECTED_INSTRUCTOR, instructorName);
+                console.warn("setStoredFilter = " + typeName);
+            });
+        });
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const instructorLinks = document.querySelectorAll('.instructor-actions .filter-btn');
+
+        instructorLinks.forEach(link => {
+            link.addEventListener('click', function (e) {
+                const instructorName = this.getAttribute('data-instructor-name');
+                sessionStorage.setItem(SELECTED_INSTRUCTOR, instructorName);
+            });
+        });
+
+    });
+
+</script>
+
 <main class="container" style="padding-top: 2rem; padding-bottom: 3rem;">
     <h1 th:text="${title}">Instructors</h1>
 
@@ -105,20 +137,24 @@
                 <div class="instructor-class-types"
                      th:with="types=${instructorClassTypes[inst.id]}"
                      style="margin-top:.5rem;">
+
                     <div th:if="${types != null}"
                          style="display:flex; flex-wrap:wrap; gap:.5rem; align-items:center;">
                         <span style="font-weight:600; color:#555;">Teaches:</span>
                         <a th:each="type : ${types}"
-                           th:href="@{/(type=${type.name()},
-                           instructor=${inst.id.replace('UserAccounts/', '')})}"
+                           th:href="@{/}"
+                           th:data-type="${type.name()}"
+                           th:data-instructor-name="${inst.name}"
                            th:title="|Show current ${#strings.capitalize(type.name())} classes by this instructor|"
                            th:text="${#strings.capitalize(type.name())}"
+                           class="type-filter-link"
                            style="display:inline-block; padding:.2rem .5rem; border-radius:999px; background:#eef6ff; color:#0b5ed7; font-size:.85rem; text-decoration:none; cursor:pointer;"
                            onmouseover="this.style.background='#d0e7ff'"
                            onmouseout="this.style.background='#eef6ff'">
                             ClassType
                         </a>
                     </div>
+
                     <div th:if="${types == null}"
                          style="margin:.25rem 0 .75rem 0; color:#888; font-size:.9rem;">
                         <span style="font-weight:600; color:#555;">Teaches:</span>
@@ -148,9 +184,10 @@
 
                 <!-- Link to view only this instructor's classes on the main page -->
                 <div th:if="${instructorClassTypes[inst.id] != null}"
-                     th:with="cleanId=${inst.id.replace('UserAccounts/', '')}"
                      class="instructor-actions" style="margin-top:.75rem;">
-                    <a class="filter-btn" th:href="@{/(instructor=${cleanId})}"
+                    <a class="filter-btn"
+                       th:href="@{/}"
+                       th:data-instructor-name="${inst.name}"
                        style="text-decoration:none;">
                         View classes by <span th:text="${inst.name}">this instructor</span>
                     </a>
