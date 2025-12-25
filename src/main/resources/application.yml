@@ -95,6 +95,7 @@ logging:
     org:
       gpc4j:
         web:
+          HomeController: INFO
           api:
             InstructorsController: INFO
           repository: INFO
