@@ -6,12 +6,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.gpc4j.web.dto.ScheduledClass;
 import org.gpc4j.web.repository.ClassScheduleRepository;
 import org.gpc4j.web.repository.RavenDB;
-import org.gpc4j.web.security.UserAccount;
 import org.springframework.http.CacheControl;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -43,7 +41,6 @@ public class HomeController {
       @RequestParam(name = "page", required = false, defaultValue = "1") int page,
       @RequestParam(name = "size", required = false, defaultValue = "100") int size,
       @RequestParam(name = "month", required = false) String monthParam,
-      @RequestParam(name = "instructor", required = false) String instructorId,
       Authentication authentication,
       Model model,
       HttpServletResponse response
@@ -59,25 +56,12 @@ public class HomeController {
 
     log.debug("Authentication: " + authentication);
     log.debug("Timezone: " + timezone);
-    log.debug("instructorId: " + instructorId);
 
     LocalDate sunday = getSunday();
     LocalDate fourWeeksFromNow = sunday.plusWeeks(4);
     List<ScheduledClass> classes;
 
     classes = classScheduleRepository.listClassesForPeriod(sunday, fourWeeksFromNow);
-
-    if (StringUtils.hasText(instructorId)) {
-
-      // Remove all other Instructors
-      classes.removeIf(clss -> !instructorId.equals(
-          clss.getInstructorAccount().getId())
-      );
-
-      ravenDB.getRepository(UserAccount.class)
-             .findById("UserAccounts/" + instructorId)
-             .ifPresent(acct -> model.addAttribute("instructorName", acct.getName()));
-    }
 
     // Build Month Calendar data (selected month or current month)
     java.time.YearMonth ym;
