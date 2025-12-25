@@ -12,6 +12,24 @@
             const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
             document.cookie = `userTimezone=${timezone}; path=/; max-age=31536000`;
         });
+
+        const SELECTED_CLASS_TYPE = 'selectedClassType';
+        const SELECTED_INSTRUCTOR = 'selectedInstructor';
+
+        // CLear all filters
+        document.addEventListener('DOMContentLoaded', function () {
+
+            const logoLink = document.querySelector('.logo');
+
+            if (logoLink) {
+                logoLink.addEventListener('click', function (e) {
+                    sessionStorage.removeItem(SELECTED_CLASS_TYPE);
+                    sessionStorage.removeItem(SELECTED_INSTRUCTOR);
+                });
+            }
+
+        });
+
     </script>
 
 </head>
