@@ -65,6 +65,12 @@ public class RavenConfig {
       databaseName = hostname;
     }
 
+    // Ignore calls from Spring Boot Admin
+    if (request.getRequestURI().startsWith("/actuator")) {
+      log.debug(request.getRequestURL() + " " + request.getServerPort());
+      return store.openSession();
+    }
+
     log.info("For DB: " + databaseName);
 
     IDocumentSession session = store.openSession(databaseName);
