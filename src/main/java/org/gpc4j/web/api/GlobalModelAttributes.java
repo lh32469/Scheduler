@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
 @Slf4j
-@ControllerAdvice(basePackages = {"org.gpc4j.web.controllers", "org.gpc4j.web.api"})
+@ControllerAdvice(basePackages = {"org.gpc4j.web"})
 @RequiredArgsConstructor
 public class GlobalModelAttributes {
 
