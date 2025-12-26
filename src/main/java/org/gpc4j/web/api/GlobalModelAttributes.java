@@ -23,12 +23,17 @@ public class GlobalModelAttributes {
   @ModelAttribute
   public void addRequestToModel(HttpServletRequest request, Model model) {
 
+    log.info(request.getRequestURL() + " " + request.getServerPort());
+
+    if(model.asMap().isEmpty()) {
+      log.info("Empty model");
+      return;
+    }
+
     // Ignore calls to management port
     if (managementPort == request.getServerPort()) {
       return;
     }
-
-    log.debug(request.getRequestURL() + " " + request.getServerPort());
 
     if (log.isTraceEnabled()) {
       log.trace(request.getRequestURL() + " " + request.getMethod());
