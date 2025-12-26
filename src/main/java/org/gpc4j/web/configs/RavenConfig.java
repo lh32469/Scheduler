@@ -13,8 +13,6 @@ import org.springframework.web.context.annotation.RequestScope;
 
 import java.util.Objects;
 
-import static org.mockito.Mockito.mock;
-
 @Slf4j
 @Configuration
 public class RavenConfig {
