@@ -58,7 +58,8 @@ public class RavenConfig {
   public IDocumentSession session(DocumentStore store,
                                   HttpServletRequest request) {
 
-    log.info(request.getRequestURL() + " " + request.getServerPort());
+    final String url = request.getRequestURL().toString();
+    log.info("Request URL " + url);
 
     // Get the Ingress hostname forwarded from nginx front-end.
     final String hostname = request.getHeader("X-Forwarded-Host");
@@ -70,7 +71,7 @@ public class RavenConfig {
     }
 
     // Ignore calls from Spring Boot Admin
-    if (request.getRequestURI().startsWith("/actuator")) {
+    if (url.toLowerCase().contains("/actuator")) {
       log.info(request.getRequestURL() + " " + request.getServerPort());
       return mock(IDocumentSession.class);
     }

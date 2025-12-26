@@ -23,30 +23,27 @@ public class GlobalModelAttributes {
   @ModelAttribute
   public void addRequestToModel(HttpServletRequest request, Model model) {
 
-    log.info(request.getRequestURL() + " " + request.getServerPort());
-
-    if(model.asMap().isEmpty()) {
-      log.info("Empty model");
-      return;
-    }
-
-    // Ignore calls to management port
-    if (managementPort == request.getServerPort()) {
-      return;
-    }
+    final String url = request.getRequestURL().toString();
+    log.info("Request URL " + url);
 
     if (log.isTraceEnabled()) {
-      log.trace(request.getRequestURL() + " " + request.getMethod());
+      log.trace(request.getRemoteAddr() + " "
+                    + request.getRequestURL() + " "
+                    + request.getMethod());
       log.trace("Model = " + model);
     }
-    model.addAttribute("request", request);
-    log.debug("Domain name: " + request.getLocalName());
 
-    Banner banner = session
-        .query(Banner.class)
-        .firstOrDefault();
+    if (!url.toLowerCase().contains("/actuator")) {
 
-    model.addAttribute("banner", banner);
+      Banner banner = session
+          .query(Banner.class)
+          .firstOrDefault();
+
+      model.addAttribute("banner", banner);
+      model.addAttribute("request", request);
+      log.debug("Domain name: " + request.getLocalName());
+    }
+
   }
 
 }
