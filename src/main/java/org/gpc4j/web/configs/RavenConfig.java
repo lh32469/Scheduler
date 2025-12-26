@@ -13,6 +13,8 @@ import org.springframework.web.context.annotation.RequestScope;
 
 import java.util.Objects;
 
+import static org.mockito.Mockito.mock;
+
 @Slf4j
 @Configuration
 public class RavenConfig {
@@ -56,6 +58,8 @@ public class RavenConfig {
   public IDocumentSession session(DocumentStore store,
                                   HttpServletRequest request) {
 
+    log.info(request.getRequestURL() + " " + request.getServerPort());
+
     // Get the Ingress hostname forwarded from nginx front-end.
     final String hostname = request.getHeader("X-Forwarded-Host");
 
@@ -68,7 +72,7 @@ public class RavenConfig {
     // Ignore calls from Spring Boot Admin
     if (request.getRequestURI().startsWith("/actuator")) {
       log.info(request.getRequestURL() + " " + request.getServerPort());
-      databaseName = "Sample";
+      return mock(IDocumentSession.class);
     }
 
     log.info("For DB: " + databaseName);
