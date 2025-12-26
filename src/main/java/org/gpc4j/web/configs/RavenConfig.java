@@ -67,8 +67,8 @@ public class RavenConfig {
 
     // Ignore calls from Spring Boot Admin
     if (request.getRequestURI().startsWith("/actuator")) {
-      log.debug(request.getRequestURL() + " " + request.getServerPort());
-      return store.openSession();
+      log.info(request.getRequestURL() + " " + request.getServerPort());
+      return null;
     }
 
     log.info("For DB: " + databaseName);
