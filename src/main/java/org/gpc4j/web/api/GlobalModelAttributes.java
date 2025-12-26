@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
 @Slf4j
-@ControllerAdvice
+@ControllerAdvice(basePackages = {"org.gpc4j.web.controllers", "org.gpc4j.web.api"})
 @RequiredArgsConstructor
 public class GlobalModelAttributes {
 
@@ -33,16 +33,13 @@ public class GlobalModelAttributes {
       log.trace("Model = " + model);
     }
 
-    if (!url.toLowerCase().contains("/actuator")) {
+    Banner banner = session
+        .query(Banner.class)
+        .firstOrDefault();
 
-      Banner banner = session
-          .query(Banner.class)
-          .firstOrDefault();
-
-      model.addAttribute("banner", banner);
-      model.addAttribute("request", request);
-      log.debug("Domain name: " + request.getLocalName());
-    }
+    model.addAttribute("banner", banner);
+    model.addAttribute("request", request);
+    log.debug("Domain name: " + request.getLocalName());
 
   }
 
