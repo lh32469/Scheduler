@@ -1,9 +1,9 @@
+
 package org.gpc4j.web.api;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.ravendb.client.documents.session.IDocumentSession;
-import org.gpc4j.web.repository.RavenDB;
 import org.gpc4j.web.dto.ClassSchedule;
 import org.gpc4j.web.repository.UserRepository;
 import org.gpc4j.web.security.UserAccount;
@@ -26,7 +26,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class InstructorClassesController {
 
-  private final RavenDB ravenDB;
+  private final IDocumentSession session;
   private final UserRepository userRepository;
 
   @PreAuthorize("hasRole('INSTRUCTOR')")
@@ -49,29 +49,27 @@ public class InstructorClassesController {
       return "redirect:/login";
     }
 
-    try (IDocumentSession session = ravenDB.openSession()) {
-      List<ClassSchedule> schedules = session.query(ClassSchedule.class)
-          .whereEquals("instructorId", user.getId())
-          .orderBy("startWeek")
-          .skip(skip)
-          .take(safeSize + 1)
-          .toList();
+    List<ClassSchedule> schedules = session.query(ClassSchedule.class)
+                                           .whereEquals("instructorId", user.getId())
+                                           .orderBy("startWeek")
+                                           .skip(skip)
+                                           .take(safeSize + 1)
+                                           .toList();
 
-      boolean hasNext = schedules.size() > safeSize;
-      if (hasNext) {
-        schedules = schedules.subList(0, safeSize);
-      }
-
-      model.addAttribute("title", "My Classes");
-      model.addAttribute("schedules", schedules);
-      model.addAttribute("page", safePage);
-      model.addAttribute("size", safeSize);
-      model.addAttribute("hasNext", hasNext);
-
-      log.info("Instructor {} has {} schedules.", username, schedules.size());
+    boolean hasNext = schedules.size() > safeSize;
+    if (hasNext) {
+      schedules = schedules.subList(0, safeSize);
     }
 
+    model.addAttribute("title", "My Classes");
+    model.addAttribute("schedules", schedules);
+    model.addAttribute("page", safePage);
+    model.addAttribute("size", safeSize);
+    model.addAttribute("hasNext", hasNext);
+
+    log.info("Instructor {} has {} schedules.", username, schedules.size());
 
     return "instructor/classes";
   }
+
 }

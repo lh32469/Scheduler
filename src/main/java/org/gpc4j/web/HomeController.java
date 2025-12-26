@@ -61,7 +61,7 @@ public class HomeController {
     LocalDate fourWeeksFromNow = sunday.plusWeeks(4);
     List<ScheduledClass> classes;
 
-    classes = classScheduleRepository.listClassesForPeriod(sunday, fourWeeksFromNow);
+    classes = classScheduleRepository.getClassesDuring(sunday, fourWeeksFromNow);
 
     // Build Month Calendar data (selected month or current month)
     java.time.YearMonth ym;

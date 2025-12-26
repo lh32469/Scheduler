@@ -1,6 +1,5 @@
 package org.gpc4j.web.repository;
 
-import io.micrometer.core.instrument.binder.logging.LogbackMetrics;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.ravendb.client.Constants;
@@ -8,6 +7,8 @@ import net.ravendb.client.documents.session.IAdvancedSessionOperations;
 import net.ravendb.client.documents.session.IDocumentQuery;
 import net.ravendb.client.documents.session.IDocumentSession;
 import net.ravendb.client.documents.session.IMetadataDictionary;
+import net.ravendb.client.documents.session.QueryStatistics;
+import net.ravendb.client.primitives.Reference;
 import org.gpc4j.web.dto.ClassSchedule;
 import org.gpc4j.web.dto.ScheduledClass;
 import org.gpc4j.web.security.UserAccount;
@@ -24,46 +25,57 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 
+import static org.gpc4j.web.configs.CacheConfig.CLASS_LIST;
+
 @Slf4j
 @Repository
 @RequiredArgsConstructor
 public class ClassScheduleRepository {
 
-  private final RavenDB ravenDB;
+  private final IDocumentSession session;
 
-  @Cacheable(value = "classList", keyGenerator = "customKeyGenerator")
-  public List<ScheduledClass> listClassesForPeriod(LocalDate startDate,
-                                                   LocalDate endDate) {
+  @Cacheable(value = CLASS_LIST, keyGenerator = "customKeyGenerator")
+  public List<ScheduledClass> getClassesDuring(LocalDate startDate,
+                                               LocalDate endDate) {
 
     List<ScheduledClass> classes = new LinkedList<>();
 
-    try (IDocumentSession session = ravenDB.openSession()) {
+    Reference<QueryStatistics> statsRef = new Reference<>();
 
-      // Start the Query
-      IDocumentQuery<ClassSchedule> query =
-          session.query(ClassSchedule.class)
-                 .include("instructorId");
+    // Start the Query
+    IDocumentQuery<ClassSchedule> query =
+        session.query(ClassSchedule.class)
+               .statistics(statsRef)
+               .include("instructorId");
 
-      List<ClassSchedule> schedules = query.toList();
+    List<ClassSchedule> schedules = query.toList();
 
-      schedules.forEach(schedule -> {
-        List<ScheduledClass> scheduledClasses =
-            schedule.getScheduledClasses(startDate, endDate);
+    QueryStatistics value = statsRef.value;
+    log.info("Stale:" + value.isStale());
 
-        // Already loaded into session via include above.
-        // No request sent to DB.
-        UserAccount instructor =
-            session.load(UserAccount.class, schedule.getInstructorId());
-
-        scheduledClasses.forEach(clazz -> {
-          if (Objects.nonNull(instructor)) {
-            clazz.setInstructorAccount(instructor);
-            classes.add(clazz);
-          }
-        });
-      });
-
+    if (value.getDurationInMs() == -1) {
+      log.info("Query served from cache");
+    } else {
+      log.info("Query fetched from server (took {}ms)",
+               statsRef.value.getDurationInMs());
     }
+
+    schedules.forEach(schedule -> {
+      List<ScheduledClass> scheduledClasses =
+          schedule.getScheduledClasses(startDate, endDate);
+
+      // Already loaded into session via include above.
+      // No request sent to DB.
+      UserAccount instructor =
+          session.load(UserAccount.class, schedule.getInstructorId());
+
+      scheduledClasses.forEach(clazz -> {
+        if (Objects.nonNull(instructor)) {
+          clazz.setInstructorAccount(instructor);
+          classes.add(clazz);
+        }
+      });
+    });
 
     // Filter classes in the past
     classes.removeIf(c -> c.getStart()
@@ -78,49 +90,36 @@ public class ClassScheduleRepository {
   }
 
   public ClassSchedule findById(String id) {
-    try (IDocumentSession session = ravenDB.openSession()) {
-      ClassSchedule found = session.load(ClassSchedule.class, id);
-      if (found == null) {
-        log.info("ClassSchedule not found for id={}", id);
-      }
-      return found;
-    } catch (Exception e) {
-      throw new IllegalStateException(
-          "Failed to load ClassSchedule id=" +
-              id + ": " + e.getMessage(), e);
+    ClassSchedule found = session.load(ClassSchedule.class, id);
+    if (found == null) {
+      log.info("ClassSchedule not found for id={}", id);
     }
+    return found;
   }
 
   public String store(ClassSchedule schedule, @Nullable String id) {
 
-    try (IDocumentSession session = ravenDB.openSession()) {
+    IAdvancedSessionOperations advanced = session.advanced();
 
-      IAdvancedSessionOperations advanced = session.advanced();
-
-      if (StringUtils.hasText(id)) {
-        session.store(schedule, id);
-      } else {
-        session.store(schedule);
-        id = advanced.getDocumentId(schedule);
-      }
-
-      LocalDate ends = schedule
-          .getStartWeek()
-          .plusWeeks(schedule.getNumberOfWeeks());
-
-      Date date = Date.from(ends.atStartOfDay().toInstant(ZoneOffset.UTC));
-
-      IMetadataDictionary metadata = advanced.getMetadataFor(schedule);
-      metadata.put(Constants.Documents.Metadata.EXPIRES, date);
-
-      session.saveChanges();
-      log.info("Stored ClassSchedule in RavenDB with id={}", id);
-      return id;
-    } catch (Exception e) {
-      throw new IllegalStateException(
-          "Failed to store ClassSchedule via DocumentStore:"
-              + " " + e.getMessage(), e);
+    if (StringUtils.hasText(id)) {
+      session.store(schedule, id);
+    } else {
+      session.store(schedule);
+      id = advanced.getDocumentId(schedule);
     }
+
+    LocalDate ends = schedule
+        .getStartWeek()
+        .plusWeeks(schedule.getNumberOfWeeks());
+
+    Date date = Date.from(ends.atStartOfDay().toInstant(ZoneOffset.UTC));
+
+    IMetadataDictionary metadata = advanced.getMetadataFor(schedule);
+    metadata.put(Constants.Documents.Metadata.EXPIRES, date);
+
+    session.saveChanges();
+    log.info("Stored ClassSchedule in RavenDB with id={}", id);
+    return id;
   }
 
   public String store(ClassSchedule schedule) {

@@ -2,45 +2,29 @@ package org.gpc4j.web;
 
 import lombok.extern.slf4j.Slf4j;
 import net.ravendb.client.documents.session.IDocumentSession;
-import org.gpc4j.web.api.ClassType;
-import org.gpc4j.web.dto.Banner;
-import org.gpc4j.web.dto.ClassSchedule;
-import org.gpc4j.web.dto.ScheduledClass;
-import org.gpc4j.web.repository.RavenDocumentStoreCache;
+import org.gpc4j.web.api.ServiceType;
 import org.gpc4j.web.security.UserAccount;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.List;
-import java.util.Set;
 
 @Slf4j
 @SpringBootTest
 public class CreateInstructorsIT {
 
-  @Value("${ravendb.database}")
-  private String databaseName;
-
   @Autowired
-  RavenDocumentStoreCache cache;
+  IDocumentSession session;
 
   @Autowired
   PasswordEncoder passwordEncoder;
 
-  IDocumentSession session;
-
   @BeforeEach
   void setUp() {
-    session = cache.getDocumentStore(databaseName)
-                   .openSession();
   }
 
   @AfterEach
@@ -61,6 +45,7 @@ public class CreateInstructorsIT {
     account.setEnabled(true);
     account.setAccountNonLocked(true);
     account.setRoles(List.of("ROLE_INSTRUCTOR"));
+    account.setServiceTypes(List.of(ServiceType.training, ServiceType.strength));
     session.store(account, "UserAccounts/3-A");
   }
 
@@ -75,6 +60,7 @@ public class CreateInstructorsIT {
     account.setEnabled(true);
     account.setAccountNonLocked(true);
     account.setRoles(List.of("ROLE_INSTRUCTOR"));
+    account.setServiceTypes(List.of(ServiceType.training, ServiceType.pilates));
     session.store(account, "UserAccounts/4-A");
   }
 

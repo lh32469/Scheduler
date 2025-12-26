@@ -1,74 +1,22 @@
 package org.gpc4j.web.repository;
 
-import jakarta.annotation.PostConstruct;
-import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.ravendb.client.documents.IDocumentStore;
 import net.ravendb.client.documents.session.IDocumentSession;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.annotation.RequestScope;
-
-import java.util.Objects;
 
 @Slf4j
 @Component
 @RequestScope
+@RequiredArgsConstructor
 public class RavenDB {
 
-  private final RavenDocumentStoreCache cache;
-  private final HttpServletRequest request;
+  private final IDocumentSession session;
 
-  @Value("${ravendb.database}")
-  private String databaseName;
-
-  @Value("${management.server.port}")
-  int managementPort;
-
-  public RavenDB(HttpServletRequest request,
-                 RavenDocumentStoreCache cache) {
-
-    this.cache = cache;
-    this.request = request;
-  }
-
-  @PostConstruct
-  public void postConstruct() {
-
-    // Ignore calls to management port
-    if (managementPort == request.getServerPort()) {
-      return;
-    }
-
-    // Ignore calls from Spring Boot Admin
-    if (request.getRequestURI().startsWith("/actuator")) {
-      log.debug(request.getRequestURL() + " " + request.getServerPort());
-      return;
-    }
-
-    // Get the Ingress hostname forwarded from nginx front-end.
-    final String hostname = request.getHeader("X-Forwarded-Host");
-
-    if (Objects.isNull(hostname)) {
-      log.debug("X-Forwarded-Host header not found in request");
-    } else {
-      this.databaseName = hostname;
-    }
-  }
-
-  public IDocumentStore getDocumentStore() {
-    return cache.getDocumentStore(databaseName);
-  }
-
+  @Deprecated
   public IDocumentSession openSession() {
-    return getDocumentStore().openSession();
-  }
-
-  /**
-   * Get a generic RavenRepository for the Class provided.
-   */
-  public <T> RavenRepository<T> getRepository(Class<T> clazz) {
-    return new RavenRepository<>(this, clazz);
+    return session;
   }
 
 }

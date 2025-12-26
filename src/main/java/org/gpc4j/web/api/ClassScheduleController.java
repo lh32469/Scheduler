@@ -7,6 +7,8 @@ import org.gpc4j.web.dto.ClassSchedule;
 import org.gpc4j.web.repository.RavenDB;
 import org.gpc4j.web.repository.UserRepository;
 import org.gpc4j.web.security.UserAccount;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -23,6 +25,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 
+import static org.gpc4j.web.configs.CacheConfig.CLASS_LIST;
+
 /**
  * Controller for handling class schedule management tasks such as creating,
  * editing, and updating class schedules. Provides endpoints only accessible
@@ -35,7 +39,9 @@ import java.time.LocalDate;
 public class ClassScheduleController {
 
   private final RavenDB ravenDB;
+  private final IDocumentSession session;
   private final UserRepository userRepository;
+  private final CacheManager cacheManager;
 
   @PreAuthorize("hasAnyRole('ADMIN','INSTRUCTOR')")
   @GetMapping("/new")
@@ -90,12 +96,16 @@ public class ClassScheduleController {
 
       schedule.setInstructorId(user.getId());
 
-      String id;
-      try (IDocumentSession session = ravenDB.openSession()) {
-        session.store(schedule);
-        session.saveChanges();
-        id = schedule.getId();
+      session.store(schedule);
+      session.saveChanges();
+      String id = schedule.getId();
+
+      Cache cache = cacheManager.getCache(CLASS_LIST);
+      if (cache != null) {
+        cache.clear();
       }
+
+
 
       redirectAttributes.addFlashAttribute("message", "Created schedule with id=" + id);
       redirectAttributes.addFlashAttribute("messageType", "info");

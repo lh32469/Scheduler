@@ -6,7 +6,6 @@ import org.gpc4j.web.api.ClassType;
 import org.gpc4j.web.dto.Banner;
 import org.gpc4j.web.dto.ClassSchedule;
 import org.gpc4j.web.dto.ScheduledClass;
-import org.gpc4j.web.repository.RavenDocumentStoreCache;
 import org.gpc4j.web.security.UserAccount;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,9 +25,6 @@ import java.util.Set;
 @SpringBootTest
 public class UtilitiesIT {
 
-  @Value("${ravendb.database}")
-  private String databaseName;
-
   @Value("${spring.application.name}")
   private String applicationName;
 
@@ -39,17 +35,13 @@ public class UtilitiesIT {
   private String version;
 
   @Autowired
-  RavenDocumentStoreCache cache;
+  IDocumentSession session;
 
   @Autowired
   PasswordEncoder passwordEncoder;
 
-  IDocumentSession session;
-
   @BeforeEach
   void setUp() {
-    session = cache.getDocumentStore(databaseName)
-                   .openSession();
   }
 
   @AfterEach
@@ -75,7 +67,7 @@ public class UtilitiesIT {
     UserAccount admin = new UserAccount();
     admin.setUsername("admin");
     admin.setName("Administrator");
-    admin.setPasswordHash(passwordEncoder.encode("admin"));
+    admin.setPasswordHash(passwordEncoder.encode("shizzle"));
     admin.setEnabled(true);
     admin.setAccountNonLocked(true);
     admin.setRoles(List.of("ROLE_ADMIN"));

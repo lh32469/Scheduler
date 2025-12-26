@@ -4,9 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.ravendb.client.documents.session.IDocumentSession;
 import net.ravendb.client.exceptions.ConcurrencyException;
-import org.gpc4j.web.dto.ClassSchedule;
 import org.gpc4j.web.dto.ScheduledClass;
-import org.gpc4j.web.repository.RavenDB;
 import org.gpc4j.web.security.UserAccount;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -36,7 +34,7 @@ import java.util.Objects;
 @RequestMapping(path = "/bookings")
 public class BookingController {
 
-  private final RavenDB ravenDB;
+  private final IDocumentSession session;
 
   @GetMapping
   public String listUserBookings(@RequestParam(name = "page", defaultValue = "1") int page,
@@ -54,39 +52,37 @@ public class BookingController {
 
     String username = authentication.getName();
 
-    try (IDocumentSession session = ravenDB.openSession()) {
-      // Fetch bookings for current user, newest first
-      List<Booking> bookings = session.query(Booking.class)
-                                      .whereEquals("username", username)
-                                      .orderByDescending("dateBooked")
-                                      .skip(skip)
-                                      .take(safeSize + 1) // over-fetch by one to
-                                      // detect if a next page exists
-                                      .toList();
+    // Fetch bookings for current user, newest first
+    List<Booking> bookings = session.query(Booking.class)
+                                    .whereEquals("username", username)
+                                    .orderByDescending("dateBooked")
+                                    .skip(skip)
+                                    .take(safeSize + 1) // over-fetch by one to
+                                    // detect if a next page exists
+                                    .toList();
 
-      boolean hasNext = bookings.size() > safeSize;
-      if (hasNext) {
-        bookings = bookings.subList(0, safeSize);
-      }
+    boolean hasNext = bookings.size() > safeSize;
+    if (hasNext) {
+      bookings = bookings.subList(0, safeSize);
+    }
 
-      // Preload and map related ClassOffering docs for display
-      Map<String, ClassOffering> offeringsById = new HashMap<>();
-      for (Booking b : bookings) {
-        if (b.getClassId() != null && !offeringsById.containsKey(b.getClassId())) {
-          ClassOffering off = session.load(ClassOffering.class, b.getClassId());
-          if (off != null) {
-            offeringsById.put(b.getClassId(), off);
-          }
+    // Preload and map related ClassOffering docs for display
+    Map<String, ClassOffering> offeringsById = new HashMap<>();
+    for (Booking b : bookings) {
+      if (b.getClassId() != null && !offeringsById.containsKey(b.getClassId())) {
+        ClassOffering off = session.load(ClassOffering.class, b.getClassId());
+        if (off != null) {
+          offeringsById.put(b.getClassId(), off);
         }
       }
-
-      model.addAttribute("title", "My Bookings");
-      model.addAttribute("bookings", bookings);
-      model.addAttribute("offeringsById", offeringsById);
-      model.addAttribute("page", safePage);
-      model.addAttribute("size", safeSize);
-      model.addAttribute("hasNext", hasNext);
     }
+
+    model.addAttribute("title", "My Bookings");
+    model.addAttribute("bookings", bookings);
+    model.addAttribute("offeringsById", offeringsById);
+    model.addAttribute("page", safePage);
+    model.addAttribute("size", safeSize);
+    model.addAttribute("hasNext", hasNext);
 
     return "bookings/index";
   }
@@ -101,8 +97,7 @@ public class BookingController {
     log.info("className = " + sClass.getClassName());
     log.info("Start:  + " + sClass.getStart());
 
-    try (IDocumentSession session = ravenDB.getDocumentStore().openSession()) {
-      session.advanced().setUseOptimisticConcurrency(true);
+    try {
 
       String username = authentication.getName();
 
@@ -183,8 +178,7 @@ public class BookingController {
 
     String username = authentication.getName();
 
-    try (IDocumentSession session = ravenDB.openSession()) {
-      session.advanced().setUseOptimisticConcurrency(true);
+    try {
 
       Booking booking = session.load(Booking.class, bookingId);
       if (booking == null) {

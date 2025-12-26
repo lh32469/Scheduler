@@ -6,13 +6,11 @@ import net.ravendb.client.documents.session.IDocumentSession;
 import org.gpc4j.web.api.ClassType;
 import org.gpc4j.web.dto.ClassSchedule;
 import org.gpc4j.web.repository.ClassScheduleRepository;
-import org.gpc4j.web.repository.RavenDocumentStoreCache;
 import org.gpc4j.web.security.UserAccount;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -29,18 +27,13 @@ import java.util.concurrent.TimeUnit;
 @SpringBootTest
 public class CreateClassSchedulesIT {
 
-  @Value("${ravendb.database}")
-  private String databaseName;
-
-  @Autowired
-  RavenDocumentStoreCache cache;
-
   @Autowired
   ClassScheduleRepository classScheduleRepository;
 
   @Autowired
   PasswordEncoder passwordEncoder;
 
+  @Autowired
   IDocumentSession session;
 
   private List<UserAccount> instructors;
@@ -143,8 +136,7 @@ public class CreateClassSchedulesIT {
 
   @BeforeEach
   void setUp() {
-    session = cache.getDocumentStore(databaseName)
-                   .openSession();
+//    session = store.openSession(databaseName);
 
     instructors = session.query(UserAccount.class)
                          .whereEquals("roles", "ROLE_INSTRUCTOR")

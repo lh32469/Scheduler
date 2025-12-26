@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.ravendb.client.documents.session.IDocumentSession;
 import org.gpc4j.web.dto.ClassSchedule;
-import org.gpc4j.web.repository.RavenDB;
 import org.gpc4j.web.repository.UserRepository;
 import org.gpc4j.web.security.UserAccount;
 import org.springframework.stereotype.Controller;
@@ -30,7 +29,7 @@ import java.util.Set;
 public class InstructorsController {
 
   private final UserRepository userRepository;
-  private final RavenDB ravenDB;
+  private final IDocumentSession session;
 
   @GetMapping
   public String listInstructors(Model model,
@@ -43,29 +42,26 @@ public class InstructorsController {
     Map<String, Set<ClassType>> instructorClassTypes = new HashMap<>();
     Map<String, Set<ServiceType>> instructorServiceTypes = new HashMap<>();
 
-    try (IDocumentSession session = ravenDB.openSession()) {
+    // Collect instructor IDs
+    List<String> instructorIds = instructors.stream()
+                                            .map(UserAccount::getId)
+                                            .toList();
 
-      // Collect instructor IDs
-      List<String> instructorIds = instructors.stream()
-                                              .map(UserAccount::getId)
-                                              .toList();
+    log.debug("instructorIds " + instructorIds);
 
-      log.debug("instructorIds " + instructorIds);
+    if (!instructorIds.isEmpty()) {
+      List<ClassSchedule> schedules = session.query(ClassSchedule.class)
+                                             .whereIn("instructorId", instructorIds)
+                                             .toList();
 
-      if (!instructorIds.isEmpty()) {
-        List<ClassSchedule> schedules = session.query(ClassSchedule.class)
-                                               .whereIn("instructorId", instructorIds)
-                                               .toList();
-
-        for (ClassSchedule cs : schedules) {
-          if (cs.getInstructorId() == null || cs.getClassType() == null) {
-            continue;
-          }
-          instructorClassTypes
-              .computeIfAbsent(cs.getInstructorId(), k ->
-                  EnumSet.noneOf(ClassType.class))
-              .add(cs.getClassType());
+      for (ClassSchedule cs : schedules) {
+        if (cs.getInstructorId() == null || cs.getClassType() == null) {
+          continue;
         }
+        instructorClassTypes
+            .computeIfAbsent(cs.getInstructorId(), k ->
+                EnumSet.noneOf(ClassType.class))
+            .add(cs.getClassType());
       }
     }
 
