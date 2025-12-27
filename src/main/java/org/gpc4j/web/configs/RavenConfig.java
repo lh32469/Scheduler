@@ -57,7 +57,7 @@ public class RavenConfig {
                                   HttpServletRequest request) {
 
     final String url = request.getRequestURL().toString();
-    log.info("Request URL " + url);
+    log.debug("Request URL " + url);
 
     // Get the Ingress hostname forwarded from nginx front-end.
     final String hostname = request.getHeader("X-Forwarded-Host");
@@ -67,8 +67,6 @@ public class RavenConfig {
     } else {
       databaseName = hostname;
     }
-
-    log.info("For DB: " + databaseName);
 
     IDocumentSession session = store.openSession(databaseName);
 
