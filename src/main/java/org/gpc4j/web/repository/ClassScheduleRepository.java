@@ -12,8 +12,8 @@ import net.ravendb.client.primitives.Reference;
 import org.gpc4j.web.dto.ClassSchedule;
 import org.gpc4j.web.dto.ScheduledClass;
 import org.gpc4j.web.security.UserAccount;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.StopWatch;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Nullable;
@@ -25,8 +25,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 
-import static org.gpc4j.web.configs.CacheConfig.CLASS_LIST;
-
 @Slf4j
 @Repository
 @RequiredArgsConstructor
@@ -34,9 +32,11 @@ public class ClassScheduleRepository {
 
   private final IDocumentSession session;
 
-  @Cacheable(value = CLASS_LIST, keyGenerator = "customKeyGenerator")
+  //  @Cacheable(value = CLASS_LIST, keyGenerator = "customKeyGenerator")
   public List<ScheduledClass> getClassesDuring(LocalDate startDate,
                                                LocalDate endDate) {
+    StopWatch stopWatch = new StopWatch();
+    stopWatch.start();
 
     List<ScheduledClass> classes = new LinkedList<>();
 
@@ -52,6 +52,7 @@ public class ClassScheduleRepository {
 
     QueryStatistics value = statsRef.value;
     log.info("Stale:" + value.isStale());
+    log.info("Query ETag: " + value.getResultEtag());
 
     if (value.getDurationInMs() == -1) {
       log.info("Query served from cache");
@@ -83,8 +84,11 @@ public class ClassScheduleRepository {
                            .isBefore(LocalDate.now(ZoneOffset.UTC)));
 
     classes.sort(Comparator.comparing(ScheduledClass::getStart));
+
+    stopWatch.stop();
     log.info("Found " + classes.size() + " classes for "
-                 + startDate + " to " + endDate);
+                 + startDate + " to " + endDate
+                 + " in " + stopWatch.getTotalTimeMillis() + " ms");
 
     return classes;
   }

@@ -1,11 +1,11 @@
 package org.gpc4j.web;
 
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.gpc4j.web.dto.ScheduledClass;
 import org.gpc4j.web.repository.ClassScheduleRepository;
-import org.gpc4j.web.repository.RavenDB;
 import org.springframework.http.CacheControl;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -13,6 +13,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -21,6 +22,8 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
+
+import static org.gpc4j.web.Utils.generateETag;
 
 /**
  * MVC controller that renders the home page using Thymeleaf.
@@ -33,7 +36,16 @@ public class HomeController {
 
   private final ClassScheduleRepository classScheduleRepository;
 
-  private final RavenDB ravenDB;
+  @GetMapping("/etag")
+  @ResponseBody
+  public String getETag() {
+    LocalDate sunday = getSunday();
+    List<ScheduledClass> classes =
+        classScheduleRepository.getClassesDuring(sunday, sunday.plusWeeks(4));
+    String eta = generateETag(classes);
+    log.info("ETag: {}", eta);
+    return eta;
+  }
 
   @GetMapping({"/"})
   public String home(
@@ -58,10 +70,14 @@ public class HomeController {
     log.debug("Timezone: " + timezone);
 
     LocalDate sunday = getSunday();
-    LocalDate fourWeeksFromNow = sunday.plusWeeks(4);
-    List<ScheduledClass> classes;
 
-    classes = classScheduleRepository.getClassesDuring(sunday, fourWeeksFromNow);
+    List<ScheduledClass> classes =
+        classScheduleRepository.getClassesDuring(sunday, sunday.plusWeeks(4));
+
+    final String currentETag = generateETag(classes);
+    log.info("currentETag: " + currentETag);
+
+    log.debug("ETag mismatch or missing - returning full response");
 
     // Build Month Calendar data (selected month or current month)
     java.time.YearMonth ym;
@@ -124,6 +140,7 @@ public class HomeController {
     model.addAttribute("nextMonthParam", nextMonthParam);
 
     model.addAttribute("classes", classes);
+    model.addAttribute("classesETag", currentETag);
     model.addAttribute("page", safePage);
     model.addAttribute("size", safeSize);
 

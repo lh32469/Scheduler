@@ -291,6 +291,44 @@
             const CAL_MONTH_START = /*[[${#temporals.format(calendarMonthStart, 'yyyy-MM-dd')}]]*/ '2025-11-01';
             const CAL_MONTH_END = /*[[${#temporals.format(calendarMonthEnd, 'yyyy-MM-dd')}]]*/ '2025-11-30';
             const CAL_EVENTS = /*[[${calendarEvents}]]*/ [];
+            const CLASSES_ETAG = /*[[${classesETag}]]*/ '';
+
+            if (CLASSES_ETAG) {
+                localStorage.setItem('classesETag', CLASSES_ETAG);
+            }
+
+            function checkETag() {
+                if (document.visibilityState !== 'visible') {
+                    return;
+                }
+                fetch('/etag')
+                    .then(response => {
+                        if (response.ok) {
+                            return response.text();
+                        }
+                        throw new Error('Network response was not ok.');
+                    })
+                    .then(latestETag => {
+                        const storedETag = localStorage.getItem('classesETag');
+                        if (storedETag && latestETag && storedETag !== latestETag) {
+                            console.info('ETag changed, reloading page...');
+                            window.location.reload();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error checking ETag:', error);
+                    });
+            }
+
+            // Check every 30 seconds
+            setInterval(checkETag, 30000);
+
+            // Also check immediately when the window becomes visible
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible') {
+                    checkETag();
+                }
+            });
 
             function buildMonthGrid(container, startISO, endISO, events) {
                 if (!container) return;
