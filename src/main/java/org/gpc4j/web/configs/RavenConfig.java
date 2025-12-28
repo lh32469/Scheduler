@@ -17,6 +17,8 @@ import java.util.Objects;
 @Configuration
 public class RavenConfig {
 
+  public static final String DB_NAME = "RavenDB";
+
   @Value("${ravendb.url}")
   private String url;
 
@@ -68,6 +70,8 @@ public class RavenConfig {
       databaseName = hostname;
     }
 
+    log.debug("Database Name " + databaseName);
+    request.setAttribute(DB_NAME, databaseName);
     IDocumentSession session = store.openSession(databaseName);
 
     // For transactions
