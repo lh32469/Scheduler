@@ -24,7 +24,7 @@ public class GlobalModelAttributes {
   public void addRequestToModel(HttpServletRequest request, Model model) {
 
     final String url = request.getRequestURL().toString();
-    log.info("Request URL " + url);
+    log.debug("Request URL " + url);
 
     if (log.isTraceEnabled()) {
       log.trace(request.getRemoteAddr() + " "
