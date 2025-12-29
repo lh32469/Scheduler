@@ -267,11 +267,11 @@
                  style="display:flex; align-items:center; justify-content:space-between; gap:.5rem;">
                 <a class="filter-btn" style="width:auto; padding:.35rem .75rem;"
                    aria-label="Previous month"
-                   th:href="@{/(month=${prevMonthParam}, instructor=${param.instructor})}">‹ Prev</a>
+                   th:href="@{/(month=${prevMonthParam})}">‹ Prev</a>
                 <h2 th:text="${calendarMonthLabel}">November 2025</h2>
                 <a class="filter-btn" style="width:auto; padding:.35rem .75rem;"
                    aria-label="Next month"
-                   th:href="@{/(month=${nextMonthParam}, instructor=${param.instructor})}">Next ›</a>
+                   th:href="@{/(month=${nextMonthParam})}">Next ›</a>
             </div>
             <div class="calendar-weekdays" aria-hidden="true">
                 <div>Sun</div>
