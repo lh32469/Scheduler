@@ -70,8 +70,7 @@ public class EtagChangePublisher {
                                .data(etag));
 
       } catch (IOException e) {
-        log.warn("Failed to send ETag update to an emitter, removing it.");
-        log.warn(e.getMessage());
+        log.warn("Failed to send ETag update to emitter " + emitter);
       }
     }
 

@@ -12,13 +12,11 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.format.TextStyle;
 import java.time.temporal.TemporalAdjusters;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 
 @Slf4j
@@ -124,25 +122,6 @@ public class ClassSchedule {
 
     classes.sort(Comparator.comparing(ScheduledClass::getStart));
     return classes;
-  }
-
-  /**
-   * Helper for views: returns the selected days of week as a concise, human-friendly
-   * comma-separated string using standard 3-letter abbreviations with capitalization,
-   * sorted Monday through Sunday (e.g., "Mon, Wed, Fri").
-   */
-  public String getDaysOfWeekAbbrevText() {
-    if (daysOfWeek == null || daysOfWeek.isEmpty()) {
-      return "";
-    }
-    return daysOfWeek.stream()
-                     .sorted(Comparator.comparingInt(DayOfWeek::getValue))
-                     .map(d -> d.getDisplayName(TextStyle.SHORT, Locale.ENGLISH))
-                     .map(s -> s.substring(0, 1).toUpperCase(Locale.ENGLISH)
-                         + s.substring(1).toLowerCase(Locale.ENGLISH))
-                     .distinct()
-                     .reduce((a, b) -> a + ", " + b)
-                     .orElse("");
   }
 
 }

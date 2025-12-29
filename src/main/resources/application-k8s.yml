@@ -16,6 +16,9 @@ spring:
 ravendb:
   url: http://raven.raven:8080
 
+application:
+  tag-watchdog-timer: 60000
+
 logging:
   level:
     root: INFO

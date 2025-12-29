@@ -68,6 +68,9 @@ info:
     description: Class & Service Scheduling Application
     version: ${project.version:3.0}
 
+application:
+  tag-watchdog-timer: 15000
+
 #management:
 #  endpoints:
 #    web:

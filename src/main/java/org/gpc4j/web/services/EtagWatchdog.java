@@ -3,19 +3,17 @@ package org.gpc4j.web.services;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.ravendb.client.documents.DocumentStore;
+import net.ravendb.client.documents.session.IDocumentQuery;
 import net.ravendb.client.documents.session.IDocumentSession;
-import org.gpc4j.web.Utils;
-import org.gpc4j.web.dto.ScheduledClass;
-import org.gpc4j.web.repository.ClassScheduleRepository;
+import net.ravendb.client.documents.session.QueryStatistics;
+import net.ravendb.client.primitives.Reference;
+import org.gpc4j.web.dto.ClassSchedule;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static org.gpc4j.web.Utils.generateETag;
 
 @Slf4j
 @Service
@@ -30,20 +28,15 @@ public class EtagWatchdog {
    */
   private final Map<String, String> etags = new HashMap<>();
 
-  @Scheduled(fixedRate = 30000) // Check every 30 seconds
+  @Scheduled(fixedRateString = "${application.tag-watchdog-timer}")
   public void checkEtag() {
-    LocalDate sunday = Utils.getSunday();
 
+    // Topic is database name
     for (String topic : publisher.getTopics()) {
 
       try (IDocumentSession session = documentStore.openSession(topic)) {
 
-        ClassScheduleRepository repo = new ClassScheduleRepository(session);
-
-        List<ScheduledClass> classes =
-            repo.getClassesDuring(sunday, sunday.plusWeeks(4));
-        String currentEtag = generateETag(classes);
-
+        String currentEtag = getEtag(session);
         String lastEtag = etags.get(topic);
 
         if (lastEtag == null) {
@@ -62,6 +55,30 @@ public class EtagWatchdog {
       }
 
     }
+
+  }
+
+  /**
+   * Retrieves the ETag representing the current state of the query result set
+   * within the provided document session.
+   *
+   * @param session the current document session used to query the database
+   * @return the ETag of the query result set as a String
+   */
+  public String getEtag(IDocumentSession session) {
+
+    Reference<QueryStatistics> statsRef = new Reference<>();
+
+    // Start the Query
+    IDocumentQuery<ClassSchedule> query =
+        session.query(ClassSchedule.class)
+               .statistics(statsRef)
+               .include("instructorId");
+
+    List<ClassSchedule> schedules = query.toList();
+
+    QueryStatistics value = statsRef.value;
+    return String.valueOf(value.getResultEtag());
   }
 
 }

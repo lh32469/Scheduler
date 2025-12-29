@@ -18,6 +18,8 @@ import org.springframework.util.StringUtils;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.Comparator;
 import java.util.Date;
@@ -41,25 +43,12 @@ public class ClassScheduleRepository {
 
     List<ScheduledClass> classes = new LinkedList<>();
 
-    Reference<QueryStatistics> statsRef = new Reference<>();
-
     // Start the Query
     IDocumentQuery<ClassSchedule> query =
         session.query(ClassSchedule.class)
-               .statistics(statsRef)
                .include("instructorId");
 
     List<ClassSchedule> schedules = query.toList();
-
-    QueryStatistics value = statsRef.value;
-    log.debug("Query ETag: " + value.getResultEtag());
-
-    if (value.getDurationInMs() == -1) {
-      log.debug("Query served from cache");
-    } else {
-      log.debug("Query fetched from server (took {}ms)",
-               statsRef.value.getDurationInMs());
-    }
 
     schedules.forEach(schedule -> {
       List<ScheduledClass> scheduledClasses =
@@ -87,10 +76,89 @@ public class ClassScheduleRepository {
 
     stopWatch.stop();
     log.debug("Found " + classes.size() + " classes for "
-                 + startDate + " to " + endDate
+                  + startDate + " to " + endDate
+                  + " in " + stopWatch.getTotalTimeMillis() + " ms");
+
+    return classes;
+  }
+
+  public List<ScheduledClass> getClassesForMonth(YearMonth month,
+                                                 ZoneId zoneId) {
+
+    StopWatch stopWatch = new StopWatch();
+    stopWatch.start();
+    Reference<QueryStatistics> statsRef = new Reference<>();
+
+    // Start the Query
+    IDocumentQuery<ClassSchedule> query =
+        session.query(ClassSchedule.class)
+               .statistics(statsRef)
+               .include("instructorId");
+
+    List<ClassSchedule> schedules = query.toList();
+
+    LocalDate firstOfMonth = month.atDay(1);
+    LocalDate firstOfNextMonth = month.plusMonths(1).atDay(1);
+
+    List<ScheduledClass> classes =
+        schedules.stream()
+                 .map(sched -> {
+
+                        List<ScheduledClass> classList = sched.getScheduledClasses(
+                            firstOfMonth,
+                            firstOfNextMonth);
+
+                        // Already loaded into session via include above.
+                        // No request sent to DB.
+                        UserAccount instructor =
+                            session.load(UserAccount.class, sched.getInstructorId());
+
+                        classList.forEach(clazz -> {
+                          if (Objects.nonNull(instructor)) {
+                            clazz.setInstructorAccount(instructor);
+                          }
+                        });
+                        return classList;
+                      }
+                 )
+
+                 .flatMap(List::stream)
+                 .filter(cls -> cls.getStart()
+                                   .toLocalDate()
+                                   .isAfter(LocalDate.now(zoneId)))
+                 .filter(cls -> cls.getStart().toLocalDate().isAfter(firstOfMonth))
+                 .filter(cls -> cls.getStart().toLocalDate().isBefore(firstOfNextMonth))
+                 .toList();
+
+    log.info("Found " + classes.size() + " classes for " + month
                  + " in " + stopWatch.getTotalTimeMillis() + " ms");
 
     return classes;
+  }
+
+  List<ClassSchedule> getAllClassSchedules() {
+
+    StopWatch stopWatch = new StopWatch();
+    stopWatch.start();
+
+    Reference<QueryStatistics> statsRef = new Reference<>();
+
+    // Start the Query
+    IDocumentQuery<ClassSchedule> query =
+        session.query(ClassSchedule.class)
+               .statistics(statsRef)
+               .include("instructorId");
+
+    List<ClassSchedule> schedules = query.toList();
+
+    QueryStatistics value = statsRef.value;
+    log.debug("Query ETag: " + value.getResultEtag());
+
+    stopWatch.stop();
+    log.debug("Found " + schedules.size() + " ClassSchedules in "
+                  + stopWatch.getTotalTimeMillis() + " ms");
+
+    return schedules;
   }
 
   public Optional<ClassSchedule> findById(String id) {
