@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Slf4j
 @Repository
@@ -51,13 +52,12 @@ public class ClassScheduleRepository {
     List<ClassSchedule> schedules = query.toList();
 
     QueryStatistics value = statsRef.value;
-    log.info("Stale:" + value.isStale());
-    log.info("Query ETag: " + value.getResultEtag());
+    log.debug("Query ETag: " + value.getResultEtag());
 
     if (value.getDurationInMs() == -1) {
-      log.info("Query served from cache");
+      log.debug("Query served from cache");
     } else {
-      log.info("Query fetched from server (took {}ms)",
+      log.debug("Query fetched from server (took {}ms)",
                statsRef.value.getDurationInMs());
     }
 
@@ -86,19 +86,19 @@ public class ClassScheduleRepository {
     classes.sort(Comparator.comparing(ScheduledClass::getStart));
 
     stopWatch.stop();
-    log.info("Found " + classes.size() + " classes for "
+    log.debug("Found " + classes.size() + " classes for "
                  + startDate + " to " + endDate
                  + " in " + stopWatch.getTotalTimeMillis() + " ms");
 
     return classes;
   }
 
-  public ClassSchedule findById(String id) {
+  public Optional<ClassSchedule> findById(String id) {
     ClassSchedule found = session.load(ClassSchedule.class, id);
     if (found == null) {
-      log.info("ClassSchedule not found for id={}", id);
+      log.warn("ClassSchedule not found for id={}", id);
     }
-    return found;
+    return Optional.ofNullable(found);
   }
 
   public String store(ClassSchedule schedule, @Nullable String id) {

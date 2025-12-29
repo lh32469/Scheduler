@@ -1,10 +1,10 @@
 package org.gpc4j.web.api;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.ravendb.client.documents.session.IDocumentSession;
 import org.gpc4j.web.dto.ClassSchedule;
-import org.gpc4j.web.repository.RavenDB;
 import org.gpc4j.web.repository.UserRepository;
 import org.gpc4j.web.security.UserAccount;
 import org.springframework.cache.Cache;
@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import jakarta.servlet.http.HttpServletRequest;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 
@@ -38,7 +37,6 @@ import static org.gpc4j.web.configs.CacheConfig.CLASS_LIST;
 @RequiredArgsConstructor
 public class ClassScheduleController {
 
-  private final RavenDB ravenDB;
   private final IDocumentSession session;
   private final UserRepository userRepository;
   private final CacheManager cacheManager;
@@ -75,11 +73,14 @@ public class ClassScheduleController {
                                RedirectAttributes redirectAttributes) {
     try {
       if (authentication == null || authentication.getName() == null) {
-        bindingResult.reject("auth.required", "You must be logged in to create a schedule.");
+        bindingResult.reject("auth.required",
+                             "You must be logged in to create a schedule.");
       }
 
       if (bindingResult.hasErrors()) {
-        redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.schedule", bindingResult);
+        redirectAttributes.addFlashAttribute(
+            "org.springframework.validation.BindingResult.schedule",
+            bindingResult);
         redirectAttributes.addFlashAttribute("schedule", schedule);
         return "redirect:/schedules/new";
       }
@@ -89,7 +90,9 @@ public class ClassScheduleController {
       UserAccount user = userRepository.findByUsername(username);
       if (user == null) {
         bindingResult.reject("user.notfound", "Authenticated user not found");
-        redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.schedule", bindingResult);
+        redirectAttributes.addFlashAttribute(
+            "org.springframework.validation.BindingResult.schedule",
+            bindingResult);
         redirectAttributes.addFlashAttribute("schedule", schedule);
         return "redirect:/schedules/new";
       }
@@ -105,14 +108,13 @@ public class ClassScheduleController {
         cache.clear();
       }
 
-
-
       redirectAttributes.addFlashAttribute("message", "Created schedule with id=" + id);
       redirectAttributes.addFlashAttribute("messageType", "info");
       return "redirect:/instructor/classes";
     } catch (Exception e) {
       log.error("Failed to create ClassSchedule", e);
-      redirectAttributes.addFlashAttribute("message", "Failed to create schedule: " + e.getMessage());
+      redirectAttributes.addFlashAttribute("message",
+                                           "Failed to create schedule: " + e.getMessage());
       redirectAttributes.addFlashAttribute("messageType", "error");
       return "redirect:/schedules/new";
     }
@@ -131,30 +133,33 @@ public class ClassScheduleController {
     id = "ClassSchedules/" + id;
     log.info("Editing ClassSchedule with ID: " + id);
 
-    try (IDocumentSession session = ravenDB.openSession()) {
-      ClassSchedule schedule = session.load(ClassSchedule.class, id);
-      if (schedule == null) {
-        redirectAttributes.addFlashAttribute("message", "Schedule not found");
-        redirectAttributes.addFlashAttribute("messageType", "error");
-        return "redirect:/instructor/classes";
-      }
-
-      // Ownership / role check
-      String username = authentication != null ? authentication.getName() : null;
-      UserAccount user = (username != null) ? userRepository.findByUsername(username) : null;
-      boolean isAdmin = authentication != null && authentication.getAuthorities().stream()
-          .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-      if (user == null || (!isAdmin && !schedule.getInstructorId().equals(user.getId()))) {
-        redirectAttributes.addFlashAttribute("message", "You are not allowed to edit this schedule.");
-        redirectAttributes.addFlashAttribute("messageType", "error");
-        return "redirect:/instructor/classes";
-      }
-
-      model.addAttribute("schedule", schedule);
-      model.addAttribute("title", "Edit Class");
-      model.addAttribute("isEdit", true);
-      return "schedules/new"; // reuse the same template with edit mode
+    ClassSchedule schedule = session.load(ClassSchedule.class, id);
+    if (schedule == null) {
+      redirectAttributes.addFlashAttribute("message", "Schedule not found");
+      redirectAttributes.addFlashAttribute("messageType", "error");
+      return "redirect:/instructor/classes";
     }
+
+    // Ownership / role check
+    String username = authentication != null ? authentication.getName() : null;
+    UserAccount user =
+        (username != null) ? userRepository.findByUsername(username) : null;
+    boolean isAdmin = authentication != null && authentication.getAuthorities().stream()
+                                                              .anyMatch(a -> a.getAuthority()
+                                                                              .equals(
+                                                                                  "ROLE_ADMIN"));
+    if (user == null || (!isAdmin && !schedule.getInstructorId().equals(user.getId()))) {
+      redirectAttributes.addFlashAttribute("message",
+                                           "You are not allowed to edit this schedule.");
+      redirectAttributes.addFlashAttribute("messageType", "error");
+      return "redirect:/instructor/classes";
+    }
+
+    model.addAttribute("schedule", schedule);
+    model.addAttribute("title", "Edit Class");
+    model.addAttribute("isEdit", true);
+    return "schedules/new"; // reuse the same template with edit mode
+
   }
 
   /**
@@ -171,7 +176,7 @@ public class ClassScheduleController {
     id = "ClassSchedules/" + id;
     log.info("Editing ClassSchedule with ID: " + id);
 
-    try (IDocumentSession session = ravenDB.openSession()) {
+    try {
       ClassSchedule schedule = session.load(ClassSchedule.class, id);
       if (schedule == null) {
         redirectAttributes.addFlashAttribute("message", "Schedule not found");
@@ -180,11 +185,17 @@ public class ClassScheduleController {
       }
 
       String username = authentication != null ? authentication.getName() : null;
-      UserAccount user = (username != null) ? userRepository.findByUsername(username) : null;
+      UserAccount user =
+          (username != null) ? userRepository.findByUsername(username) : null;
       boolean isAdmin = authentication != null && authentication.getAuthorities().stream()
-          .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-      if (user == null || (!isAdmin && !schedule.getInstructorId().equals(user.getId()))) {
-        redirectAttributes.addFlashAttribute("message", "You are not allowed to edit this schedule.");
+                                                                .anyMatch(a -> a.getAuthority()
+                                                                                .equals(
+                                                                                    "ROLE_ADMIN"));
+      if (user == null || (!isAdmin && !schedule.getInstructorId()
+                                                .equals(user.getId()))) {
+        redirectAttributes.addFlashAttribute("message",
+                                             "You are not allowed to edit this schedule" +
+                                                 ".");
         redirectAttributes.addFlashAttribute("messageType", "error");
         return "redirect:/instructor/classes";
       }
@@ -193,7 +204,8 @@ public class ClassScheduleController {
       if (form.getStartWeek() == null || form.getClassStartTime() == null ||
           form.getDaysOfWeek() == null || form.getDaysOfWeek().isEmpty()) {
         redirectAttributes.addFlashAttribute("message",
-            "Please provide Start Week, Start Time, and select at least one day.");
+                                             "Please provide Start Week, Start Time, " +
+                                                 "and select at least one day.");
         redirectAttributes.addFlashAttribute("messageType", "error");
         redirectAttributes.addFlashAttribute("schedule", form);
         redirectAttributes.addFlashAttribute("isEdit", true);
@@ -217,13 +229,15 @@ public class ClassScheduleController {
       session.saveChanges();
 
       redirectAttributes.addFlashAttribute("message",
-          "Updated schedule for '" + schedule.getClassName() + "'.");
+                                           "Updated schedule for '" + schedule.getClassName() + "'.");
       redirectAttributes.addFlashAttribute("messageType", "info");
       return "redirect:/instructor/classes";
     } catch (Exception e) {
-      redirectAttributes.addFlashAttribute("message", "Failed to update: " + e.getMessage());
+      redirectAttributes.addFlashAttribute("message",
+                                           "Failed to update: " + e.getMessage());
       redirectAttributes.addFlashAttribute("messageType", "error");
       return "redirect:/instructor/classes";
     }
   }
+
 }

@@ -297,38 +297,53 @@
                 localStorage.setItem('classesETag', CLASSES_ETAG);
             }
 
-            function checkETag() {
-                if (document.visibilityState !== 'visible') {
-                    return;
-                }
-                fetch('/etag')
-                    .then(response => {
-                        if (response.ok) {
-                            return response.text();
-                        }
-                        throw new Error('Network response was not ok.');
-                    })
-                    .then(latestETag => {
-                        const storedETag = localStorage.getItem('classesETag');
-                        if (storedETag && latestETag && storedETag !== latestETag) {
-                            console.info('ETag changed, reloading page...');
-                            window.location.reload();
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error checking ETag:', error);
-                    });
+            let eventSource = null;
+
+            function setupEtagPush() {
+                eventSource = new EventSource('/etag-updates');
+
+                eventSource.addEventListener('etag-update', (event) => {
+                    const latestETag = event.data;
+                    const storedETag = localStorage.getItem('classesETag');
+                    if (storedETag && latestETag && storedETag !== latestETag) {
+                        console.info('ETag changed via push, reloading page...');
+                        window.location.reload();
+                    }
+                });
+
+                eventSource.onerror = (error) => {
+                    console.error('EventSource failed:', error);
+                    eventSource.close();
+                    // Optional: Reconnect logic
+                    setTimeout(setupEtagPush, 5000);
+                };
             }
 
-            // Check every 30 seconds
-            setInterval(checkETag, 30000);
+            // Start push notifications
+            setupEtagPush();
 
-            // Also check immediately when the window becomes visible
-            document.addEventListener('visibilitychange', () => {
-                if (document.visibilityState === 'visible') {
-                    checkETag();
+            // Close EventSource when the page is closed/unloaded
+            window.addEventListener('beforeunload', () => {
+                if (eventSource) {
+                    eventSource.close();
                 }
             });
+
+            // // Also check immediately when the window becomes visible
+            // document.addEventListener('visibilitychange', () => {
+            //     if (document.visibilityState === 'visible') {
+            //         // Quick check via ETag endpoint to ensure we didn't miss anything while hidden
+            //         fetch('/etag')
+            //             .then(response => response.text())
+            //             .then(latestETag => {
+            //                 const storedETag = localStorage.getItem('classesETag');
+            //                 if (storedETag && latestETag && storedETag !== latestETag) {
+            //                     window.location.reload();
+            //                 }
+            //             })
+            //             .catch(err => console.error('Visibility check failed:', err));
+            //     }
+            // });
 
             function buildMonthGrid(container, startISO, endISO, events) {
                 if (!container) return;

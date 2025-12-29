@@ -1,12 +1,16 @@
 package org.gpc4j.web;
 
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.ravendb.client.documents.session.IDocumentSession;
 import org.gpc4j.web.dto.ScheduledClass;
 import org.gpc4j.web.repository.ClassScheduleRepository;
+import org.gpc4j.web.services.EtagChangePublisher;
 import org.springframework.http.CacheControl;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -14,6 +18,7 @@ import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -24,6 +29,8 @@ import java.util.List;
 import java.util.Map;
 
 import static org.gpc4j.web.Utils.generateETag;
+import static org.gpc4j.web.Utils.getSunday;
+import static org.gpc4j.web.configs.RavenConfig.DB_NAME;
 
 /**
  * MVC controller that renders the home page using Thymeleaf.
@@ -33,8 +40,19 @@ import static org.gpc4j.web.Utils.generateETag;
 @Controller
 @RequiredArgsConstructor
 public class HomeController {
-
+  
   private final ClassScheduleRepository classScheduleRepository;
+  private final EtagChangePublisher etagChangePublisher;
+  private final IDocumentSession session;
+
+
+  @GetMapping(value = "/etag-updates", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+  public SseEmitter subscribeToEtagUpdates(HttpServletRequest request) {
+
+    String databaseName = (String) request.getAttribute(DB_NAME);
+    log.debug("Using database: {}", databaseName);
+    return etagChangePublisher.subscribe(databaseName);
+  }
 
   @GetMapping("/etag")
   @ResponseBody
@@ -59,7 +77,7 @@ public class HomeController {
   ) {
 
     CacheControl cacheControl = CacheControl
-        .maxAge(Duration.of(5, ChronoUnit.MINUTES));
+        .maxAge(Duration.of(15, ChronoUnit.MINUTES));
 
     response.setHeader("Cache-Control", cacheControl.getHeaderValue());
 
@@ -145,11 +163,6 @@ public class HomeController {
     model.addAttribute("size", safeSize);
 
     return "index"; // resolved from src/main/resources/templates/index.html
-  }
-
-  LocalDate getSunday() {
-    LocalDate today = LocalDate.now();
-    return today.minusDays(today.getDayOfWeek().getValue() - 1);
   }
 
 }
