@@ -19,14 +19,29 @@ public class RavenConfig {
 
   public static final String DB_NAME = "RavenDB";
 
-  @Value("${ravendb.url}")
-  private String url;
+  /**
+   * Represents the RavenDB server URL configuration. This is used to initialize
+   * the connection to a RavenDB instance by providing the base server URL.
+   * <p>
+   * The URL is typically provided through an external configuration, such as
+   * environment variables, property files, or application context, to enable
+   * dynamic configuration and deployment flexibility.
+   * <p>
+   * Example configurations might include domain names or IP addresses in the
+   * format "http://<hostname>:<port>" or "https://<hostname>:<port>".
+   */
+  private final String url;
 
   /**
    * Default databaseName
    */
-  @Value("${ravendb.database}")
-  private String databaseName;
+  private final String defaultDatabaseName;
+
+  public RavenConfig(@Value("${ravendb.database}") String dbName,
+                     @Value("${ravendb.url}") String url) {
+    this.defaultDatabaseName = dbName;
+    this.url = url;
+  }
 
   @Bean
   public DocumentStore documentStore() {
@@ -60,6 +75,8 @@ public class RavenConfig {
 
     final String url = request.getRequestURL().toString();
     log.debug("Request URL " + url);
+
+    String databaseName = defaultDatabaseName;
 
     // Get the Ingress hostname forwarded from nginx front-end.
     final String hostname = request.getHeader("X-Forwarded-Host");
