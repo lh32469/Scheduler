@@ -98,7 +98,7 @@ public class ClassScheduleRepository {
     List<ClassSchedule> schedules = query.toList();
 
     LocalDate firstOfMonth = month.atDay(1);
-    LocalDate firstOfNextMonth = month.plusMonths(1).atDay(1);
+    LocalDate endOfMonth = month.atEndOfMonth();
 
     List<ScheduledClass> classes =
         schedules.stream()
@@ -106,7 +106,7 @@ public class ClassScheduleRepository {
 
                         List<ScheduledClass> classList = sched.getScheduledClasses(
                             firstOfMonth,
-                            firstOfNextMonth);
+                            endOfMonth.plusDays(1));
 
                         // Already loaded into session via include above.
                         // No request sent to DB.
@@ -126,8 +126,13 @@ public class ClassScheduleRepository {
                  .filter(cls -> cls.getStart()
                                    .toLocalDate()
                                    .isAfter(LocalDate.now(zoneId)))
-                 .filter(cls -> cls.getStart().toLocalDate().isAfter(firstOfMonth))
-                 .filter(cls -> cls.getStart().toLocalDate().isBefore(firstOfNextMonth))
+                 .filter(cls -> cls.getStart()
+                                   .toLocalDate()
+                                   // To include first of month
+                                   .isAfter(firstOfMonth.minusDays(1)))
+                 .filter(cls -> cls.getStart()
+                                   .toLocalDate()
+                                   .isBefore(endOfMonth.plusDays(1)))
                  .toList();
 
     log.info("Found " + classes.size() + " classes for " + month
