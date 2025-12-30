@@ -76,9 +76,6 @@ public class HomeController {
       HttpServletResponse response
   ) {
 
-    ZoneId zoneId = ZoneId.of(timezone);
-    log.info("Setting time zone: {}", zoneId);
-
     CacheControl cacheControl = CacheControl
         .maxAge(Duration.of(15, ChronoUnit.MINUTES));
 
@@ -104,7 +101,7 @@ public class HomeController {
     }
 
     List<ScheduledClass> classes =
-        classScheduleRepository.getClassesForMonth(yearMonth, zoneId);
+        classScheduleRepository.getClassesForMonth(yearMonth, ZoneId.of(timezone));
 
     // Transform into a lightweight event map for the client (ISO date + display fields)
     DateTimeFormatter isoDate = java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
