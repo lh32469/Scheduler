@@ -10,12 +10,12 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class RavenRepository<T> {
 
-  private final RavenDB ravenDB;
+  private final IDocumentSession session;
   private final Class<T> entityClass;
 
   public Optional<T> findById(String id) {
 
-    try (IDocumentSession session = ravenDB.openSession()) {
+    try {
       return Optional.ofNullable(session.load(entityClass, id));
     } catch (Exception e) {
       log.error("Failed to load {} by id={}", entityClass.getSimpleName(), id, e);

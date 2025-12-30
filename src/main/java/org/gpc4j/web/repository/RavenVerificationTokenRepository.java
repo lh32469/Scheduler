@@ -11,17 +11,15 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class RavenVerificationTokenRepository {
 
-  private final RavenDB ravenDB;
+  private final IDocumentSession session;
 
   public void save(VerificationToken token) {
-    try (IDocumentSession session = ravenDB.openSession()) {
-      session.store(token);
-      session.saveChanges();
-    }
+    session.store(token);
+    session.saveChanges();
   }
 
   public VerificationToken findByToken(String tokenValue) {
-    try (IDocumentSession session = ravenDB.openSession()) {
+    try {
       return session.query(VerificationToken.class)
                     .whereEquals("token", tokenValue)
                     .firstOrDefault();
@@ -32,12 +30,11 @@ public class RavenVerificationTokenRepository {
   }
 
   public void delete(String id) {
-    try (IDocumentSession session = ravenDB.openSession()) {
-      VerificationToken vt = session.load(VerificationToken.class, id);
-      if (vt != null) {
-        session.delete(vt);
-        session.saveChanges();
-      }
+    VerificationToken vt = session.load(VerificationToken.class, id);
+    if (vt != null) {
+      session.delete(vt);
+      session.saveChanges();
     }
   }
+
 }

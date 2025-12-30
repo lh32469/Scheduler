@@ -11,11 +11,11 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class RavenBookingRepository implements BookingRepository {
 
-  private final RavenDB ravenDB;
+  private final IDocumentSession session;
 
   @Override
   public String save(Booking doc) {
-    try (IDocumentSession session = ravenDB.openSession()) {
+    try {
       session.advanced().setUseOptimisticConcurrency(true);
       session.store(doc);
       session.saveChanges();

@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.ravendb.client.documents.session.IDocumentSession;
 import org.gpc4j.web.dto.Banner;
-import org.gpc4j.web.repository.RavenDB;
 import org.gpc4j.web.repository.UserRepository;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -34,9 +33,10 @@ import java.util.stream.Collectors;
 @RequestMapping("/admin")
 public class AdminDashboardController {
 
-  private final RavenDB ravenDB;
+  private final IDocumentSession session;
   private final UserRepository userRepository;
-  private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+  private final org.springframework.security.crypto.password.PasswordEncoder
+      passwordEncoder;
 
   @GetMapping
   @PreAuthorize("hasRole('ADMIN')")
@@ -48,12 +48,10 @@ public class AdminDashboardController {
   @PreAuthorize("hasRole('ADMIN')")
   public String users(Model model) {
     List<UserAccount> accounts;
-    try (IDocumentSession session = ravenDB.openSession()) {
-      // Load up to 1000 users for the admin table. Adjust as needed.
-      accounts = session.query(UserAccount.class)
-                       .take(1000)
-                       .toList();
-    }
+    // Load up to 1000 users for the admin table. Adjust as needed.
+    accounts = session.query(UserAccount.class)
+                      .take(1000)
+                      .toList();
 
     AdminUsersForm form = new AdminUsersForm();
     List<AdminUserRow> rows = new ArrayList<>();
@@ -93,7 +91,8 @@ public class AdminDashboardController {
   }
 
   /**
-   * Create a new user account. Uses distinct path to avoid collision with bulk update POST /admin/users.
+   * Create a new user account. Uses distinct path to avoid collision with bulk update
+   * POST /admin/users.
    */
   @PostMapping("/users/new")
   @PreAuthorize("hasRole('ADMIN')")
@@ -104,7 +103,8 @@ public class AdminDashboardController {
       String rawPassword = user.getPassword();
 
       if (username == null || username.isBlank() || rawPassword == null || rawPassword.isBlank()) {
-        redirectAttributes.addFlashAttribute("message", "Username and password are required.");
+        redirectAttributes.addFlashAttribute("message",
+                                             "Username and password are required.");
         redirectAttributes.addFlashAttribute("messageType", "error");
         redirectAttributes.addFlashAttribute("userForm", user);
         return "redirect:/admin/users/new";
@@ -113,7 +113,8 @@ public class AdminDashboardController {
       // Check if user already exists
       UserAccount existing = userRepository.findByUsername(username);
       if (existing != null) {
-        redirectAttributes.addFlashAttribute("message", "User already exists: " + username);
+        redirectAttributes.addFlashAttribute("message",
+                                             "User already exists: " + username);
         redirectAttributes.addFlashAttribute("messageType", "error");
         redirectAttributes.addFlashAttribute("userForm", user);
         return "redirect:/admin/users/new";
@@ -125,13 +126,13 @@ public class AdminDashboardController {
         roles = new java.util.ArrayList<>();
       }
       roles = roles.stream()
-          .filter(java.util.Objects::nonNull)
-          .map(String::trim)
-          .filter(s -> !s.isEmpty())
-          .map(String::toUpperCase)
-          .map(r -> r.startsWith("ROLE_") ? r : ("ROLE_" + r))
-          .distinct()
-          .collect(java.util.stream.Collectors.toCollection(java.util.ArrayList::new));
+                   .filter(java.util.Objects::nonNull)
+                   .map(String::trim)
+                   .filter(s -> !s.isEmpty())
+                   .map(String::toUpperCase)
+                   .map(r -> r.startsWith("ROLE_") ? r : ("ROLE_" + r))
+                   .distinct()
+                   .collect(java.util.stream.Collectors.toCollection(java.util.ArrayList::new));
       if (roles.isEmpty()) {
         roles.add("ROLE_USER");
       }
@@ -154,7 +155,8 @@ public class AdminDashboardController {
       return "redirect:/admin/users/new";
     } catch (Exception e) {
       log.error("Failed to create user", e);
-      redirectAttributes.addFlashAttribute("message", "Failed to create user. Please try again.");
+      redirectAttributes.addFlashAttribute("message",
+                                           "Failed to create user. Please try again.");
       redirectAttributes.addFlashAttribute("messageType", "error");
       return "redirect:/admin/users/new";
     }
@@ -172,28 +174,34 @@ public class AdminDashboardController {
     }
 
     String currentUsername = authentication != null ? authentication.getName() : null;
-    UserAccount current = (currentUsername != null) ? userRepository.findByUsername(currentUsername) : null;
+    UserAccount current =
+        (currentUsername != null) ? userRepository.findByUsername(currentUsername) : null;
     Set<String> warnings = new HashSet<>();
 
-    try (IDocumentSession session = ravenDB.openSession()) {
+    try {
       for (AdminUserRow row : form.getUsers()) {
-        if (row.getId() == null) continue;
+        if (row.getId() == null) {
+          continue;
+        }
         UserAccount ua = session.load(UserAccount.class, row.getId());
-        if (ua == null) continue;
+        if (ua == null) {
+          continue;
+        }
 
         // Update basic fields
         ua.setName(row.getName());
 
         // Compute normalized roles with ROLE_ prefix
-        List<String> newRoles = (row.getRoles() == null ? List.<String>of() : row.getRoles())
-            .stream()
-            .filter(Objects::nonNull)
-            .map(String::trim)
-            .filter(s -> !s.isEmpty())
-            .map(String::toUpperCase)
-            .map(r -> r.startsWith("ROLE_") ? r : ("ROLE_" + r))
-            .distinct()
-            .collect(Collectors.toCollection(ArrayList::new));
+        List<String> newRoles =
+            (row.getRoles() == null ? List.<String>of() : row.getRoles())
+                .stream()
+                .filter(Objects::nonNull)
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .map(String::toUpperCase)
+                .map(r -> r.startsWith("ROLE_") ? r : ("ROLE_" + r))
+                .distinct()
+                .collect(Collectors.toCollection(ArrayList::new));
 
         // Ensure at least ROLE_USER
         if (newRoles.isEmpty()) {
@@ -204,7 +212,8 @@ public class AdminDashboardController {
         if (current != null && ua.getId().equals(current.getId())) {
           boolean containsAdmin = newRoles.contains("ROLE_ADMIN");
           if (!containsAdmin) {
-            warnings.add("Cannot remove ROLE_ADMIN from your own account. Change skipped for " + ua.getUsername());
+            warnings.add(
+                "Cannot remove ROLE_ADMIN from your own account. Change skipped for " + ua.getUsername());
             // Keep existing roles for this user
           } else {
             ua.setRoles(newRoles);
@@ -218,14 +227,18 @@ public class AdminDashboardController {
       session.saveChanges();
     } catch (Exception e) {
       log.error("Failed to update users", e);
-      redirectAttributes.addFlashAttribute("message", "Failed to update users: " + e.getMessage());
+      redirectAttributes.addFlashAttribute("message",
+                                           "Failed to update users: " + e.getMessage());
       redirectAttributes.addFlashAttribute("messageType", "error");
       return "redirect:/admin/users";
     }
 
-    String msg = "User updates applied." + (!warnings.isEmpty() ? " " + String.join(" ", warnings) : "");
+    String msg = "User updates applied." + (!warnings.isEmpty() ?
+        " " + String.join(" ", warnings) :
+        "");
     redirectAttributes.addFlashAttribute("message", msg);
-    redirectAttributes.addFlashAttribute("messageType", warnings.isEmpty() ? "info" : "error");
+    redirectAttributes.addFlashAttribute("messageType",
+                                         warnings.isEmpty() ? "info" : "error");
     return "redirect:/admin/users";
   }
 
@@ -233,10 +246,11 @@ public class AdminDashboardController {
   @PreAuthorize("hasRole('ADMIN')")
   public String banner(Model model) {
     Banner banner;
-    try (IDocumentSession session = ravenDB.openSession()) {
-      banner = session.query(Banner.class).firstOrDefault();
-      if (banner == null) banner = new Banner();
+    banner = session.query(Banner.class).firstOrDefault();
+    if (banner == null) {
+      banner = new Banner();
     }
+
     model.addAttribute("banner", banner);
     model.addAttribute("title", "Admin · Banner");
     return "admin/banner";
@@ -246,7 +260,7 @@ public class AdminDashboardController {
   @PreAuthorize("hasRole('ADMIN')")
   public String saveBanner(@ModelAttribute Banner banner,
                            RedirectAttributes redirectAttributes) {
-    try (IDocumentSession session = ravenDB.openSession()) {
+    try {
       Banner existing = session.query(Banner.class).firstOrDefault();
       if (existing == null) {
         // Create new
@@ -260,7 +274,8 @@ public class AdminDashboardController {
       session.saveChanges();
     } catch (Exception e) {
       log.error("Failed to save banner", e);
-      redirectAttributes.addFlashAttribute("message", "Failed to save banner: " + e.getMessage());
+      redirectAttributes.addFlashAttribute("message",
+                                           "Failed to save banner: " + e.getMessage());
       redirectAttributes.addFlashAttribute("messageType", "error");
       return "redirect:/admin/banner";
     }
@@ -271,15 +286,20 @@ public class AdminDashboardController {
 
   @Data
   public static class AdminUsersForm {
+
     private List<AdminUserRow> users = new ArrayList<>();
+
   }
 
   @Data
   public static class AdminUserRow {
+
     private String id;
     private String name;
     private String username;
     private boolean enabled;
     private List<String> roles = new ArrayList<>(); // values: USER, INSTRUCTOR, ADMIN
+
   }
+
 }

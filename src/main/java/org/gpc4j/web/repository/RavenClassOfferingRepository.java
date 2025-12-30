@@ -19,7 +19,7 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class RavenClassOfferingRepository implements ClassOfferingRepository {
 
-  private final RavenDB ravenDB;
+  private final IDocumentSession session;
 
   @Override
   public List<ClassOffering> list(int page, int size) {
@@ -27,7 +27,7 @@ public class RavenClassOfferingRepository implements ClassOfferingRepository {
     int safeSize = Math.min(Math.max(1, size), 500);
     int skip = (safePage - 1) * safeSize;
 
-    try (IDocumentSession session = ravenDB.openSession()) {
+    try {
       List<ClassOffering> offerings = session
           .query(ClassOffering.class)
           .include("instructorId")
@@ -66,7 +66,7 @@ public class RavenClassOfferingRepository implements ClassOfferingRepository {
 
   @Override
   public ClassOffering findById(String id) {
-    try (IDocumentSession session = ravenDB.openSession()) {
+    try {
       ClassOffering found = session.load(ClassOffering.class, id);
       if (found == null) {
         log.info("ClassOffering not found for id={}", id);
@@ -80,7 +80,7 @@ public class RavenClassOfferingRepository implements ClassOfferingRepository {
 
   @Override
   public String save(ClassOffering offering) {
-    try (IDocumentSession session = ravenDB.openSession()) {
+    try {
 
       session.store(offering);
       String id = session.advanced().getDocumentId(offering);

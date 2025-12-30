@@ -13,11 +13,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserRepository {
 
-  private final RavenDB ravenDB;
+  private final IDocumentSession session;
 
   public UserAccount findByUsername(String username) {
     log.info("Finding UserAccount by username={}", username);
-    try (IDocumentSession session = ravenDB.openSession()) {
+    try {
       UserAccount user = session.query(UserAccount.class)
                                 .whereEquals("username", username)
                                 .firstOrDefault();
@@ -31,7 +31,7 @@ public class UserRepository {
 
   public List<UserAccount> findAllInstructors() {
     log.info("Finding All Instructors");
-    try (IDocumentSession session = ravenDB.openSession()) {
+    try {
       List<UserAccount> instructors = session.query(UserAccount.class)
                                              .whereIn("roles",
                                                       List.of("ROLE_INSTRUCTOR"))
@@ -46,7 +46,7 @@ public class UserRepository {
   }
 
   public UserAccount findById(String id) {
-    try (IDocumentSession session = ravenDB.openSession()) {
+    try {
       return session.load(UserAccount.class, id);
     } catch (Exception e) {
       log.error("Failed to load UserAccount by id={}: {}", id, e.toString());
@@ -57,7 +57,7 @@ public class UserRepository {
   public List<UserAccount> findUsers(List<String> ids) {
     log.info("Finding users with ids: " + ids);
 
-    try (IDocumentSession session = ravenDB.openSession()) {
+    try {
       List<UserAccount> users = session.query(UserAccount.class)
                                        .whereIn("id", ids)
                                        .toList();
@@ -71,25 +71,21 @@ public class UserRepository {
   }
 
   public String save(UserAccount user) {
-    try (IDocumentSession session = ravenDB.openSession()) {
-      session.store(user);
-      session.saveChanges();
-      String id = session.advanced().getDocumentId(user);
-      log.info("Stored UserAccount id={} username={}", id, user.getUsername());
-      return id;
-    }
+    session.store(user);
+    session.saveChanges();
+    String id = session.advanced().getDocumentId(user);
+    log.info("Stored UserAccount id={} username={}", id, user.getUsername());
+    return id;
   }
 
   public long count() {
-    try (IDocumentSession session = ravenDB.openSession()) {
-      List<UserAccount> users = session.query(UserAccount.class).take(1).toList();
-      if (users.isEmpty()) {
-        return 0L;
-      }
-      // Use a rough estimate by querying index stats if needed; here we just check
-      // existence.
-      return 1L;
+    List<UserAccount> users = session.query(UserAccount.class).take(1).toList();
+    if (users.isEmpty()) {
+      return 0L;
     }
+    // Use a rough estimate by querying index stats if needed; here we just check
+    // existence.
+    return 1L;
   }
 
 }
