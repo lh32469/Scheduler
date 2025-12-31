@@ -12,6 +12,7 @@ import net.ravendb.client.primitives.Reference;
 import org.gpc4j.web.dto.ClassSchedule;
 import org.gpc4j.web.dto.ScheduledClass;
 import org.gpc4j.web.security.UserAccount;
+import org.gpc4j.web.services.EtagWatchdog;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StopWatch;
 import org.springframework.util.StringUtils;
@@ -34,6 +35,8 @@ import java.util.Optional;
 public class ClassScheduleRepository {
 
   private final IDocumentSession session;
+  private final EtagWatchdog etagWatchdog;
+
 
   //  @Cacheable(value = CLASS_LIST, keyGenerator = "customKeyGenerator")
   public List<ScheduledClass> getClassesDuring(LocalDate startDate,
@@ -125,7 +128,7 @@ public class ClassScheduleRepository {
                  .flatMap(List::stream)
                  .filter(cls -> cls.getStart()
                                    .toLocalDate()
-                                   .isAfter(LocalDate.now(zoneId)))
+                                   .isAfter(LocalDate.now(zoneId).minusDays(1)))
                  .filter(cls -> cls.getStart()
                                    .toLocalDate()
                                    // To include first of month
@@ -196,6 +199,7 @@ public class ClassScheduleRepository {
 
     session.saveChanges();
     log.info("Stored ClassSchedule in RavenDB with id={}", id);
+    etagWatchdog.checkEtags();
     return id;
   }
 
