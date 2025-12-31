@@ -1,6 +1,7 @@
 package org.gpc4j.web.services;
 
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import net.ravendb.client.documents.DocumentStore;
 import net.ravendb.client.documents.session.IDocumentQuery;
@@ -11,9 +12,7 @@ import org.gpc4j.web.dto.ClassSchedule;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @Service
@@ -23,37 +22,16 @@ public class EtagWatchdog {
   private final EtagChangePublisher publisher;
   private final DocumentStore documentStore;
 
-  /**
-   * Map of DB Names (topics) to ETags
-   */
-  private final Map<String, String> etags = new HashMap<>();
-
+  @SneakyThrows
   @Scheduled(fixedRateString = "${application.tag-watchdog-timer}")
-  public void checkEtag() {
+  public void checkEtags() {
 
     // Topic is database name
     for (String topic : publisher.getTopics()) {
-
       try (IDocumentSession session = documentStore.openSession(topic)) {
-
-        String currentEtag = getEtag(session);
-        String lastEtag = etags.get(topic);
-
-        if (lastEtag == null) {
-          etags.put(topic, currentEtag);
-          return;
-        }
-
-        if (!lastEtag.equals(currentEtag)) {
-          log.info("ETag changed for {} from {} to {}. Notifying clients.",
-                   topic, lastEtag, currentEtag);
-          etags.put(topic, currentEtag);
-          publisher.publish(topic, currentEtag);
-        } else {
-          log.debug("Etag for topic " + topic + " has not changed.");
-        }
+        publisher.publish(topic, getEtag(session));
       }
-
+      Thread.sleep(250);
     }
 
   }
