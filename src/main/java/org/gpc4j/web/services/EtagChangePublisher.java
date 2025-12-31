@@ -1,6 +1,7 @@
 package org.gpc4j.web.services;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -19,7 +20,7 @@ public class EtagChangePublisher {
 
 //  private final List<SseEmitter> emitters = new CopyOnWriteArrayList<>();
 
-  public SseEmitter subscribe(String topic) {
+  public SseEmitter subscribe(@NonNull String topic) {
     SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
 
     List<SseEmitter> sseEmitters = emitterMap
@@ -29,16 +30,16 @@ public class EtagChangePublisher {
 
     emitter.onCompletion(() -> {
       if (sseEmitters.remove(emitter)) {
-        log.info("Emitter {} has been closed (Complete T)", emitter);
+        log.debug("Emitter {} has been closed (Complete T)", emitter);
       } else {
-        log.info("Emitter {} has been closed (Complete F)", emitter);
+        log.debug("Emitter {} has been closed (Complete F)", emitter);
       }
-      log.info(sseEmitters.size() + " emitters remaining for topic {}", topic);
+      log.debug(sseEmitters.size() + " emitters remaining for topic {}", topic);
     });
 
     emitter.onTimeout(() -> {
       sseEmitters.remove(emitter);
-      log.info("Emitter {} has been closed (Timeout)", emitter);
+      log.debug("Emitter {} has been closed (Timeout)", emitter);
     });
 
 //    emitter.onError((e) -> {
@@ -50,7 +51,7 @@ public class EtagChangePublisher {
 //      log.info(sseEmitters.size() + " emitters remaining for topic {}", topic);
 //    });
 
-    log.info("New SSE client subscribed to {}. Total clients: {}",
+    log.debug("New SSE client subscribed to {}. Total clients: {}",
              topic, emitterMap.get(topic).size());
     return emitter;
   }
@@ -60,7 +61,7 @@ public class EtagChangePublisher {
     // To avoid ConcurrentModificationException
     List<SseEmitter> emitters = new LinkedList<>(emitterMap.get(topic));
 
-    log.info("Publishing ETag update: {}:{}. Total clients: {}",
+    log.debug("Publishing ETag update: {}:{}. Total clients: {}",
              topic, etag, emitters.size());
 
     for (SseEmitter emitter : emitters) {
@@ -70,7 +71,7 @@ public class EtagChangePublisher {
                                .data(etag));
 
       } catch (IOException e) {
-        log.warn("Failed to send ETag update to emitter " + emitter);
+        log.debug("Failed to send ETag update to emitter " + emitter);
       }
     }
 
