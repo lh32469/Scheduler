@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -21,6 +22,9 @@ public class EtagChangePublisher {
 //  private final List<SseEmitter> emitters = new CopyOnWriteArrayList<>();
 
   public SseEmitter subscribe(@NonNull String topic) {
+
+    Objects.requireNonNull(topic, "Topic must not be null");
+
     SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
 
     List<SseEmitter> sseEmitters = emitterMap
@@ -52,7 +56,7 @@ public class EtagChangePublisher {
 //    });
 
     log.debug("New SSE client subscribed to {}. Total clients: {}",
-             topic, emitterMap.get(topic).size());
+              topic, emitterMap.get(topic).size());
     return emitter;
   }
 
@@ -62,9 +66,13 @@ public class EtagChangePublisher {
     List<SseEmitter> emitters = new LinkedList<>(emitterMap.get(topic));
 
     log.debug("Publishing ETag update: {}:{}. Total clients: {}",
-             topic, etag, emitters.size());
+              topic, etag, emitters.size());
 
     for (SseEmitter emitter : emitters) {
+      if (emitter == null) {
+        log.warn("Null Emitter for " + topic);
+        continue;
+      }
       try {
         emitter.send(SseEmitter.event()
                                .name("etag-update")
