@@ -9,6 +9,7 @@ import net.ravendb.client.documents.session.IDocumentSession;
 import net.ravendb.client.documents.session.IMetadataDictionary;
 import net.ravendb.client.documents.session.QueryStatistics;
 import net.ravendb.client.primitives.Reference;
+import org.gpc4j.web.dto.Booking;
 import org.gpc4j.web.dto.ClassSchedule;
 import org.gpc4j.web.dto.ScheduledClass;
 import org.gpc4j.web.security.UserAccount;
@@ -22,12 +23,13 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.util.Comparator;
+import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @Repository
@@ -36,54 +38,6 @@ public class ClassScheduleRepository {
 
   private final IDocumentSession session;
   private final EtagWatchdog etagWatchdog;
-
-
-  //  @Cacheable(value = CLASS_LIST, keyGenerator = "customKeyGenerator")
-  public List<ScheduledClass> getClassesDuring(LocalDate startDate,
-                                               LocalDate endDate) {
-    StopWatch stopWatch = new StopWatch();
-    stopWatch.start();
-
-    List<ScheduledClass> classes = new LinkedList<>();
-
-    // Start the Query
-    IDocumentQuery<ClassSchedule> query =
-        session.query(ClassSchedule.class)
-               .include("instructorId");
-
-    List<ClassSchedule> schedules = query.toList();
-
-    schedules.forEach(schedule -> {
-      List<ScheduledClass> scheduledClasses =
-          schedule.getScheduledClasses(startDate, endDate);
-
-      // Already loaded into session via include above.
-      // No request sent to DB.
-      UserAccount instructor =
-          session.load(UserAccount.class, schedule.getInstructorId());
-
-      scheduledClasses.forEach(clazz -> {
-        if (Objects.nonNull(instructor)) {
-          clazz.setInstructorAccount(instructor);
-          classes.add(clazz);
-        }
-      });
-    });
-
-    // Filter classes in the past
-    classes.removeIf(c -> c.getStart()
-                           .toLocalDate()
-                           .isBefore(LocalDate.now(ZoneOffset.UTC)));
-
-    classes.sort(Comparator.comparing(ScheduledClass::getStart));
-
-    stopWatch.stop();
-    log.debug("Found " + classes.size() + " classes for "
-                  + startDate + " to " + endDate
-                  + " in " + stopWatch.getTotalTimeMillis() + " ms");
-
-    return classes;
-  }
 
   public List<ScheduledClass> getClassesForMonth(YearMonth month,
                                                  ZoneId zoneId) {
@@ -103,9 +57,13 @@ public class ClassScheduleRepository {
     LocalDate firstOfMonth = month.atDay(1);
     LocalDate endOfMonth = month.atEndOfMonth();
 
+    List<String> classScheduleIds =
+        Collections.synchronizedList(new LinkedList<>());
+
     List<ScheduledClass> classes =
         schedules.stream()
                  .map(sched -> {
+                        classScheduleIds.add(sched.getId());
 
                         List<ScheduledClass> classList = sched.getScheduledClasses(
                             firstOfMonth,
@@ -116,9 +74,13 @@ public class ClassScheduleRepository {
                         UserAccount instructor =
                             session.load(UserAccount.class, sched.getInstructorId());
 
+                        AtomicInteger index = new AtomicInteger();
+
                         classList.forEach(clazz -> {
                           if (Objects.nonNull(instructor)) {
                             clazz.setInstructorAccount(instructor);
+                            clazz.setClassScheduleId(sched.getId());
+                            clazz.setId(sched.getId() + "." + index.getAndIncrement());
                           }
                         });
                         return classList;
@@ -138,35 +100,34 @@ public class ClassScheduleRepository {
                                    .isBefore(endOfMonth.plusDays(1)))
                  .toList();
 
-    log.info("Found " + classes.size() + " classes for " + month
+    log.debug("ClassScheduleIds: " + classScheduleIds);
+
+    List<Booking> bookings =
+        session.query(Booking.class)
+               .whereIn("classScheduleId", classScheduleIds)
+               .toList();
+
+    log.debug("Bookings " + bookings);
+
+    classes = classes.stream()
+                     // Only apply to classes with slots > 0
+                     .filter(c -> c.getSlots() > 0)
+                     .map(c -> {
+                       long bookedCount =
+                           bookings.stream()
+                                   .filter(b -> b.getClassId()
+                                                 .equals(c.getId()))
+                                   .count();
+                       c.setSlots((int) (c.getSlots() - bookedCount));
+                       return c;
+                     })
+                     .toList();
+
+    log.info("Found " + classes.size() + " classes for " + month + " with "
+                 + bookings.size() + " bookings"
                  + " in " + stopWatch.getTotalTimeMillis() + " ms");
 
     return classes;
-  }
-
-  List<ClassSchedule> getAllClassSchedules() {
-
-    StopWatch stopWatch = new StopWatch();
-    stopWatch.start();
-
-    Reference<QueryStatistics> statsRef = new Reference<>();
-
-    // Start the Query
-    IDocumentQuery<ClassSchedule> query =
-        session.query(ClassSchedule.class)
-               .statistics(statsRef)
-               .include("instructorId");
-
-    List<ClassSchedule> schedules = query.toList();
-
-    QueryStatistics value = statsRef.value;
-    log.debug("Query ETag: " + value.getResultEtag());
-
-    stopWatch.stop();
-    log.debug("Found " + schedules.size() + " ClassSchedules in "
-                  + stopWatch.getTotalTimeMillis() + " ms");
-
-    return schedules;
   }
 
   public Optional<ClassSchedule> findById(String id) {

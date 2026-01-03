@@ -1,7 +1,25 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+>
 <head th:replace="~{fragments/head :: head}"></head>
+
+<style>
+    .class-details {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .detail-label {
+        font-weight: bold;
+        padding: 8px;
+        width: 150px;
+    }
+
+    .detail-value {
+        padding: 8px;
+    }
+</style>
+
 <body>
 <header>
     <div class="container">
@@ -16,13 +34,22 @@
     </div>
 </header>
 
+
 <main class="container" style="margin: 2rem auto;">
+
+    <!-- Flash message from redirect -->
+    <div th:if="${message}"
+         th:classappend="${messageType} == 'error' ? ' error' : ' info'"
+         style="margin: 1rem 0; padding: 1rem; border-radius: 8px; background: #fdecea; color: #611a15;">
+        <span th:text="${message}"/>
+    </div>
 
     <section class="filters" style="padding: 1rem 1.25rem;">
         <h2 style="margin-bottom: 0;">Your Bookings</h2>
     </section>
 
-    <div th:if="${#lists.isEmpty(bookings)}" style="background: #fff; padding: 1.5rem; border-radius: 12px; margin-top: 1rem;">
+    <div th:if="${#lists.isEmpty(bookings)}"
+         style="background: #fff; padding: 1.5rem; border-radius: 12px; margin-top: 1rem;">
         <p>You don't have any bookings yet.</p>
         <p>
             <a class="book-btn" style="display: inline-block; width: auto; padding: 0.6rem 1rem; margin-top: 0.5rem;"
@@ -31,46 +58,47 @@
     </div>
 
     <div th:if="${!#lists.isEmpty(bookings)}" class="schedule-grid" style="padding-top: 1rem;">
-        <div class="class-card" 
-             th:each="b, iter : ${bookings}" 
-             th:with="off=${offeringsById[b.classId]}">
+        <div class="class-card"
+             th:each="booking, iter : ${bookings}">
             <div class="class-header">
                 <div>
-                    <div class="class-name" th:text="${off != null ? off.className : 'Class'}">Class Name</div>
+                    <div class="class-name"
+                         th:text="${booking.className}"/>
                 </div>
-                <div class="class-type" th:text="${off != null ? off.classType : ''}">Type</div>
+                <div class="class-type" th:text="${booking.classType}"/>
             </div>
 
-            <div class="class-details">
-                <div class="detail-item">
-                    <i class="fas fa-clock"></i>
-                    <span th:text="${off != null && off.schedule != null ? #temporals.format(off.schedule.start, 'EEE, MMM d • h:mm a') : ''}">Mon, Oct 27 • 7:00 AM</span>
-                </div>
-                <div class="detail-item">
-                    <i class="fas fa-signal"></i>
-                    <span th:text="${off != null ? off.level : ''}">All Levels</span>
-                </div>
-                <div class="detail-item">
-                    <i class="fas fa-calendar-check"></i>
-                    <span>
-                        Booked on
-                        <span th:text="${#temporals.format(b.dateBooked, 'yyyy-MM-dd HH:mm')}">2025-11-02 08:00</span>
-                    </span>
-                </div>
-            </div>
-
-            <div class="detail-item" th:if="${off != null}" style="color: #28a745; font-weight: 500;">
-                <i class="fas fa-users"></i>
-                <span th:text="${off.slots} + ' spots remaining'">0 spots remaining</span>
-            </div>
+            <table class="class-details" style="display: table !important; width: 100%; border-collapse: collapse;">
+                <tr>
+                    <td class="detail-label">Class Starts:</td>
+                    <td class="detail-value"
+                        th:text="${#temporals.format(booking.classStart, 'EEE, MMM d, h:mma')}"/>
+                </tr>
+                <tr>
+                    <td class="detail-label">Instructor:</td>
+                    <td class="detail-value"
+                        th:text="${booking.instructorName}"/>
+                </tr>
+                <tr>
+                    <td class="detail-label" style="width: 40%">Level:</td>
+                    <td class="detail-value"
+                        th:text="${booking.level}"/>
+                </tr>
+                <tr>
+                    <td class="detail-label">Booked On:</td>
+                    <td class="detail-value"
+                        th:text="${#temporals.format(booking.dateBooked, 'EEE, MMM d')}"/>
+                </tr>
+            </table>
 
             <form th:action="@{/bookings/cancel}" method="post" class="form" style="margin-top: .5rem;">
-                <input type="hidden" name="bookingId" th:value="${b.id}"/>
+                <input type="hidden" name="bookingId" th:value="${booking.id}"/>
                 <input type="hidden" name="page" th:value="${page}"/>
                 <input type="hidden" name="size" th:value="${size}"/>
                 <div class="actions">
                     <button class="book-btn" type="submit" style="width: auto; background: #dc3545;"
-                            onclick="return confirm('Cancel this booking?');">Cancel</button>
+                            onclick="return confirm('Cancel this booking?');">Cancel
+                    </button>
                 </div>
             </form>
         </div>

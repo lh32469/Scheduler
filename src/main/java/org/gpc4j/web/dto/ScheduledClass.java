@@ -14,7 +14,9 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class ScheduledClass {
 
-  private String id; // RavenDB document id (e.g., ClassOffering/1-A)
+  private String id; // RavenDB document id (e.g., ClassSchedule/1-A)
+
+  private String classScheduleId;
 
   @EqualsAndHashCode.Include
   private String className;

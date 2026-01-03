@@ -1,26 +1,32 @@
 package org.gpc4j.web.api;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.ravendb.client.documents.DocumentStore;
+import net.ravendb.client.documents.operations.compareExchange.CompareExchangeValue;
 import net.ravendb.client.documents.session.IDocumentSession;
-import net.ravendb.client.exceptions.ConcurrencyException;
+import net.ravendb.client.documents.session.SessionOptions;
+import net.ravendb.client.documents.session.TransactionMode;
+import org.gpc4j.web.dto.Booking;
 import org.gpc4j.web.dto.ScheduledClass;
 import org.gpc4j.web.security.UserAccount;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
+
+import static org.gpc4j.web.components.JsonUtil.MAPPER;
+import static org.gpc4j.web.configs.RavenConfig.DB_NAME;
 
 /**
  * Simple controller to handle class bookings and show user's bookings.
@@ -34,13 +40,17 @@ import java.util.Objects;
 @RequestMapping(path = "/bookings")
 public class BookingController {
 
+  private static final String LOCK_KEY = "locks/bookings";
+
   private final IDocumentSession session;
+  private final DocumentStore documentStore;
 
   @GetMapping
   public String listUserBookings(@RequestParam(name = "page", defaultValue = "1") int page,
                                  @RequestParam(name = "size", defaultValue = "50") int size,
                                  Authentication authentication,
                                  Model model) {
+
     int safePage = Math.max(1, page);
     int safeSize = Math.min(Math.max(1, size), 200);
     int skip = (safePage - 1) * safeSize;
@@ -66,20 +76,8 @@ public class BookingController {
       bookings = bookings.subList(0, safeSize);
     }
 
-    // Preload and map related ClassOffering docs for display
-    Map<String, ClassOffering> offeringsById = new HashMap<>();
-    for (Booking b : bookings) {
-      if (b.getClassId() != null && !offeringsById.containsKey(b.getClassId())) {
-        ClassOffering off = session.load(ClassOffering.class, b.getClassId());
-        if (off != null) {
-          offeringsById.put(b.getClassId(), off);
-        }
-      }
-    }
-
     model.addAttribute("title", "My Bookings");
     model.addAttribute("bookings", bookings);
-    model.addAttribute("offeringsById", offeringsById);
     model.addAttribute("page", safePage);
     model.addAttribute("size", safeSize);
     model.addAttribute("hasNext", hasNext);
@@ -88,79 +86,78 @@ public class BookingController {
   }
 
   @PostMapping()
-  public String createBooking(@ModelAttribute("class") ScheduledClass sClass,
+  public String createBooking(@RequestParam("json") String scheduleJson,
                               Authentication authentication,
-                              RedirectAttributes redirectAttributes) {
+                              @RequestAttribute(DB_NAME) String databaseName,
+                              RedirectAttributes redirectAttributes)
+      throws JsonProcessingException {
+
+    log.info("Create booking: {}", scheduleJson);
+
+    ScheduledClass sClass = MAPPER.readValue(scheduleJson, ScheduledClass.class);
 
     log.info("Received booking (ScheduledClass): {}", sClass);
 
     log.info("className = " + sClass.getClassName());
     log.info("Start:  + " + sClass.getStart());
 
-    try {
+    String username = authentication.getName();
 
-      String username = authentication.getName();
+    UserAccount user = session.query(UserAccount.class)
+                              .whereEquals("username", username)
+                              .firstOrDefault();
 
-      UserAccount user = session.query(UserAccount.class)
-                                .whereEquals("username",
-                                             username)
-                                .firstOrDefault();
+    Booking booking = new Booking(sClass);
 
-      int classHashCode = Math.abs(sClass.hashCode());
-      log.info("classHashCode = " + classHashCode);
+    // Pass through data
+    booking.setUserId(user.getId());
+    booking.setUsername(username);
 
-      // See if anyone has already booked this class
-      ScheduledClass scheduledClass =
-          session.load(ScheduledClass.class, "ScheduledClass/" + classHashCode);
+    SessionOptions sessionOptions = new SessionOptions();
+    sessionOptions.setTransactionMode(TransactionMode.CLUSTER_WIDE);
+    sessionOptions.setDatabase(databaseName);
 
-      log.info("scheduledClass = " + scheduledClass);
+    // Unique identifier for this lock holder
+    final String lockValue = UUID.randomUUID().toString();
 
-      if (scheduledClass == null) {
-        // class has not been booked yet, create a new one
-        scheduledClass = sClass;
+    try (IDocumentSession clusterSession = documentStore.openSession(sessionOptions)) {
+
+      clusterSession.advanced()
+                    .clusterTransaction()
+                    .createCompareExchangeValue(LOCK_KEY, lockValue);
+      clusterSession.saveChanges();
+
+      // After saveChanges, check if it was successful by retrieving the value
+      CompareExchangeValue<String> result =
+          clusterSession.advanced().clusterTransaction()
+                        .getCompareExchangeValue(String.class, LOCK_KEY);
+
+      if (result != null && lockValue.equals(result.getValue())) {
+        try {
+          // Lock acquired, do work
+          log.info("Lock acquired: {}", LOCK_KEY);
+
+          clusterSession.store(booking);
+          clusterSession.saveChanges();
+
+          redirectAttributes.addFlashAttribute("message",
+                                               sClass.getClassName() + " is booked.");
+          redirectAttributes.addFlashAttribute("messageType",
+                                               "info");
+        } finally {
+          // Release lock
+          clusterSession.advanced()
+                        .clusterTransaction()
+                        .deleteCompareExchangeValue(LOCK_KEY, result.getIndex());
+          clusterSession.saveChanges();
+          log.info("Lock released: {}", LOCK_KEY);
+        }
+
       }
 
-      if (scheduledClass.getSlots() == 0) {
-        // class is full, add message and redirect
-        redirectAttributes.addFlashAttribute("message",
-                                             "Class is full. Please choose another " +
-                                                 "time.");
-        redirectAttributes.addFlashAttribute("messageType",
-                                             "error");
-      } else {
-
-        scheduledClass.setSlots(scheduledClass.getSlots() - 1);
-        session.store(scheduledClass, "ScheduledClass/" + classHashCode);
-        String scheduledClassId = session.advanced().getDocumentId(scheduledClass);
-
-        Booking booking = new Booking();
-        booking.setClassId(scheduledClassId);
-
-        // Pass through data
-        booking.setUserId(user.getId());
-        booking.setUsername(username);
-
-        booking.setDateBooked(LocalDateTime.now());
-        session.store(booking);
-
-        session.saveChanges();
-
-        redirectAttributes.addFlashAttribute("message",
-                                             sClass.getClassName() + " is booked.");
-        redirectAttributes.addFlashAttribute("messageType",
-                                             "info");
-      }
-
-    } catch (ConcurrencyException e) {
-      // Document(s) has been modified by another transaction since we fetched it.
-
-      redirectAttributes.addFlashAttribute("message",
-                                           "Error booking class, please try again.");
-      redirectAttributes.addFlashAttribute("messageType",
-                                           "error");
     }
 
-    return "redirect:/#schedule";
+    return "redirect:/bookings";
   }
 
   @PostMapping("/cancel")
@@ -178,48 +175,30 @@ public class BookingController {
 
     String username = authentication.getName();
 
-    try {
+    log.debug("Cancel booking: {}", bookingId);
 
-      Booking booking = session.load(Booking.class, bookingId);
-      if (booking == null) {
-        redirectAttributes.addFlashAttribute("message", "Booking not found.");
-        redirectAttributes.addFlashAttribute("messageType", "error");
-        return "redirect:/bookings?page=" + safePage + "&size=" + safeSize;
-      }
+    Booking booking = session.load(Booking.class, bookingId);
 
-      if (!Objects.equals(username, booking.getUsername())) {
-        redirectAttributes.addFlashAttribute("message",
-                                             "You are not allowed to cancel this " +
-                                                 "booking.");
-        redirectAttributes.addFlashAttribute("messageType", "error");
-        return "redirect:/bookings?page=" + safePage + "&size=" + safeSize;
-      }
-
-      // Restore slot counts on the class offering if available
-      if (booking.getClassId() != null) {
-        ClassOffering off = session.load(ClassOffering.class, booking.getClassId());
-        if (off != null) {
-          off.setSlots(off.getSlots() + 1);
-          off.setParticipants(Math.max(0, off.getParticipants() - 1));
-          session.store(off);
-        }
-      }
-
-      session.delete(booking);
-      session.saveChanges();
-
-      redirectAttributes.addFlashAttribute("message", "Your booking has been canceled.");
-      redirectAttributes.addFlashAttribute("messageType", "info");
-    } catch (ConcurrencyException e) {
-      redirectAttributes.addFlashAttribute("message",
-                                           "Could not cancel booking due to a " +
-                                               "concurrent update. Please try again.");
+    if (booking == null) {
+      redirectAttributes.addFlashAttribute("message", "Booking not found.");
       redirectAttributes.addFlashAttribute("messageType", "error");
-    } catch (Exception e) {
-      redirectAttributes.addFlashAttribute("message",
-                                           "Failed to cancel booking: " + e.getMessage());
-      redirectAttributes.addFlashAttribute("messageType", "error");
+      return "redirect:/bookings?page=" + safePage + "&size=" + safeSize;
     }
+
+    if (!Objects.equals(username, booking.getUsername())) {
+      redirectAttributes.addFlashAttribute("message",
+                                           "You are not allowed to cancel this " +
+                                               "booking.");
+      redirectAttributes.addFlashAttribute("messageType", "error");
+      return "redirect:/bookings?page=" + safePage + "&size=" + safeSize;
+    }
+
+    session.delete(booking);
+    session.saveChanges();
+
+    redirectAttributes.addFlashAttribute("message",
+                                         "Your booking has been canceled.");
+    redirectAttributes.addFlashAttribute("messageType", "info");
 
     return "redirect:/bookings?page=" + safePage + "&size=" + safeSize;
   }

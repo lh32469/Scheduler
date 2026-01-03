@@ -31,7 +31,7 @@ import java.util.Objects;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ClassOffering {
+public class ClassSchedule {
 
   private String id; // RavenDB document id (e.g., ClassOffering/1-A)
   private String domain; // Client hostname with domain.

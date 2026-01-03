@@ -640,13 +640,9 @@
 
                 <form th:if="${clazz.slots != -1}"
                       th:action="@{/bookings}"
+                      th:with="json=${@jsonUtil.toJson(clazz)}"
                       method="post" class="form">
-                    <input type="hidden" name="id" th:value="${clazz.id}"/>
-                    <input type="hidden" name="className" th:value="${clazz.className}"/>
-                    <input type="hidden" name="classType" th:value="${clazz.classType}"/>
-                    <input type="hidden" name="level" th:value="${clazz.level}"/>
-                    <input type="hidden" name="start" th:value="${clazz.start}"/>
-                    <input type="hidden" name="slots" th:value="${clazz.slots}"/>
+                    <input type="hidden" name="json" th:value="${json}"/>
                     <button class="book-btn" type="submit">Book</button>
                 </form>
 
