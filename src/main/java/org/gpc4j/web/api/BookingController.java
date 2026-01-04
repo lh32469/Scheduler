@@ -65,7 +65,7 @@ public class BookingController {
     // Fetch bookings for current user, newest first
     List<Booking> bookings = session.query(Booking.class)
                                     .whereEquals("username", username)
-                                    .orderByDescending("dateBooked")
+                                    .orderBy("classStart")
                                     .skip(skip)
                                     .take(safeSize + 1) // over-fetch by one to
                                     // detect if a next page exists
@@ -135,7 +135,14 @@ public class BookingController {
       if (result != null && lockValue.equals(result.getValue())) {
         try {
           // Lock acquired, do work
-          log.info("Lock acquired: {}", LOCK_KEY);
+          log.debug("Lock acquired: {}", LOCK_KEY);
+
+          int availableSlots = session.query(Booking.class)
+                                      .whereEquals("classId", sClass.getId())
+                                      .count();
+
+          log.debug(" {} slots already booked for {} ",
+                   availableSlots, sClass.getId());
 
           clusterSession.store(booking);
           clusterSession.saveChanges();

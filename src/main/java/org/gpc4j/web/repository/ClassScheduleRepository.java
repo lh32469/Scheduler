@@ -24,6 +24,7 @@ import java.time.YearMonth;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -83,6 +84,7 @@ public class ClassScheduleRepository {
                  )
 
                  .flatMap(List::stream)
+                 .sorted(Comparator.comparing(ScheduledClass::getStart))
                  .toList();
 
     log.debug("ClassScheduleIds: " + classScheduleIds);
@@ -97,14 +99,12 @@ public class ClassScheduleRepository {
     classes.stream()
            // Only apply to classes with slots > 0
            .filter(c -> c.getSlots() > 0)
-           .map(c -> {
+           .forEach(c -> {
              long bookedCount =
                  bookings.stream()
-                         .filter(b -> b.getClassId()
-                                       .equals(c.getId()))
+                         .filter(b -> b.getClassId().equals(c.getId()))
                          .count();
              c.setSlots((int) (c.getSlots() - bookedCount));
-             return c;
            });
 
     log.info("Found " + classes.size() + " classes for " + month + " with "
