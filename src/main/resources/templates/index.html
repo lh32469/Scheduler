@@ -423,6 +423,11 @@
                             chip.appendChild(t);
                             chip.appendChild(name);
                             cell.appendChild(chip);
+                            if (e.slots > -1) {
+                                chip.style = "color: #d8618a;"
+                                t.style = "color: #d8618a;"
+                                name.style = "color: #d8618a;"
+                            }
                         });
                     }
                     frag.appendChild(cell);
@@ -535,7 +540,7 @@
                 if (ev.location) line('Location:', ev.location);
 
                 if (typeof ev.slots === 'number') {
-                    const cap = (ev.slots < 0) ? 'Unlimited' : (ev.slots + ' spots');
+                    const cap = (ev.slots < 0) ? 'Open' : (ev.slots + ' spots');
                     line('Capacity:', cap);
                 }
 
