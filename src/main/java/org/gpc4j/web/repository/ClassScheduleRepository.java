@@ -54,9 +54,6 @@ public class ClassScheduleRepository {
 
     List<ClassSchedule> schedules = query.toList();
 
-    LocalDate firstOfMonth = month.atDay(1);
-    LocalDate endOfMonth = month.atEndOfMonth();
-
     List<String> classScheduleIds =
         Collections.synchronizedList(new LinkedList<>());
 
@@ -65,9 +62,7 @@ public class ClassScheduleRepository {
                  .map(sched -> {
                         classScheduleIds.add(sched.getId());
 
-                        List<ScheduledClass> classList = sched.getScheduledClasses(
-                            firstOfMonth,
-                            endOfMonth.plusDays(1));
+                        List<ScheduledClass> classList = sched.getScheduledClasses(month);
 
                         // Already loaded into session via include above.
                         // No request sent to DB.
@@ -88,16 +83,6 @@ public class ClassScheduleRepository {
                  )
 
                  .flatMap(List::stream)
-                 .filter(cls -> cls.getStart()
-                                   .toLocalDate()
-                                   .isAfter(LocalDate.now(zoneId).minusDays(1)))
-                 .filter(cls -> cls.getStart()
-                                   .toLocalDate()
-                                   // To include first of month
-                                   .isAfter(firstOfMonth.minusDays(1)))
-                 .filter(cls -> cls.getStart()
-                                   .toLocalDate()
-                                   .isBefore(endOfMonth.plusDays(1)))
                  .toList();
 
     log.debug("ClassScheduleIds: " + classScheduleIds);
@@ -109,19 +94,18 @@ public class ClassScheduleRepository {
 
     log.debug("Bookings " + bookings);
 
-    classes = classes.stream()
-                     // Only apply to classes with slots > 0
-                     .filter(c -> c.getSlots() > 0)
-                     .map(c -> {
-                       long bookedCount =
-                           bookings.stream()
-                                   .filter(b -> b.getClassId()
-                                                 .equals(c.getId()))
-                                   .count();
-                       c.setSlots((int) (c.getSlots() - bookedCount));
-                       return c;
-                     })
-                     .toList();
+    classes.stream()
+           // Only apply to classes with slots > 0
+           .filter(c -> c.getSlots() > 0)
+           .map(c -> {
+             long bookedCount =
+                 bookings.stream()
+                         .filter(b -> b.getClassId()
+                                       .equals(c.getId()))
+                         .count();
+             c.setSlots((int) (c.getSlots() - bookedCount));
+             return c;
+           });
 
     log.info("Found " + classes.size() + " classes for " + month + " with "
                  + bookings.size() + " bookings"

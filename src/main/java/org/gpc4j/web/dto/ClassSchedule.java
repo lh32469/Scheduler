@@ -11,10 +11,11 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.YearMonth;
 import java.time.temporal.TemporalAdjusters;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -77,51 +78,78 @@ public class ClassSchedule {
    */
   private String location;
 
-  public List<ScheduledClass> getScheduledClasses(LocalDate startDate,
-                                                  LocalDate endDate) {
+  public List<ScheduledClass> getScheduledClasses(YearMonth month) {
+
+    log.debug("StartWeek: " + startWeek);
+    log.debug("Generating classes for {}.", month);
+
+    LocalDate begin = month.atDay(1).minusDays(1);
+    LocalDate end = month.atEndOfMonth().plusDays(1);
 
     // Whatever date is provided find the corresponding Sunday of that week
     startWeek = startWeek.with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY));
+    log.debug("StartWeek Sunday: " + startWeek);
 
     List<ScheduledClass> classes = new LinkedList<>();
-
-    log.debug(className);
-    log.debug("Generating classes for {} to {}.", startDate, endDate);
-    log.debug("Number of weeks: {}", numberOfWeeks);
-    log.debug("Start week: {}", startWeek);
-
-    // For recurring classes
-    if (numberOfWeeks == 0) {
-      numberOfWeeks = 5;
-    }
 
     for (int i = 0; i < numberOfWeeks; i++) {
 
       LocalDate week = startWeek.plusWeeks(i);
-      if ((week.isAfter(startWeek) || week.equals(startWeek))
-          && (week.isBefore(endDate))) {
-        // Generate classes for this week
-        for (DayOfWeek dayOfWeek : daysOfWeek) {
-          ScheduledClass scheduledClass = new ScheduledClass();
-          scheduledClass.setStart(
-              week.plusDays(dayOfWeek.getValue()).atTime(classStartTime));
-          scheduledClass.setDuration(duration);
-          scheduledClass.setLocation(location);
-          scheduledClass.setSlots(slots);
 
-          scheduledClass.setClassName(className);
-          scheduledClass.setClassDescription(classDescription);
-          scheduledClass.setClassType(classType);
-          scheduledClass.setLevel(level);
-          classes.add(scheduledClass);
+      for (DayOfWeek dayOfWeek : daysOfWeek) {
+
+        LocalDateTime startTime =
+            week.plusDays(dayOfWeek.getValue()).atTime(classStartTime);
+        LocalDate startDay = startTime.toLocalDate();
+
+        if (startDay.isBefore(end) && startDay.isAfter(begin)) {
+          classes.add(createClass(startTime));
         }
-      } else {
-        log.debug("No classes in week " + week);
+
       }
+
     }
 
-    classes.sort(Comparator.comparing(ScheduledClass::getStart));
+    if (numberOfWeeks == -1) {
+
+      // Begin at startWeek and continue until we've passed through
+      // the desired month.
+      LocalDate week = startWeek;
+
+      while (week.isBefore(end)) {
+
+        for (DayOfWeek dayOfWeek : daysOfWeek) {
+
+          LocalDateTime startTime =
+              week.plusDays(dayOfWeek.getValue()).atTime(classStartTime);
+          LocalDate startDay = startTime.toLocalDate();
+
+          if (startDay.isBefore(end) && startDay.isAfter(begin)) {
+            classes.add(createClass(startTime));
+          }
+        }
+
+        week = week.plusWeeks(1);
+      }
+
+    }
+
     return classes;
+  }
+
+  ScheduledClass createClass(LocalDateTime classStartTime) {
+
+    ScheduledClass scheduledClass = new ScheduledClass();
+    scheduledClass.setStart(classStartTime);
+    scheduledClass.setDuration(duration);
+    scheduledClass.setLocation(location);
+    scheduledClass.setSlots(slots);
+    scheduledClass.setClassName(className);
+    scheduledClass.setClassDescription(classDescription);
+    scheduledClass.setClassType(classType);
+    scheduledClass.setLevel(level);
+
+    return scheduledClass;
   }
 
 }

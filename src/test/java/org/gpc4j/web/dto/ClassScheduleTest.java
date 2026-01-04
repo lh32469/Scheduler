@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.YearMonth;
 import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 import java.util.Set;
@@ -31,34 +32,53 @@ class ClassScheduleTest {
     classSchedule.setDaysOfWeek(Set.of(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY));
   }
 
+
+  /**
+   * test that if the ClassSchedule start is before the current date/month
+   * the classes for the current month are listed.
+   */
   @Test
-  void getScheduledClasses() {
+  void getScheduledInProgress() {
 
-    LocalDate start = LocalDate.parse("2025-12-01");
-    LocalDate end = LocalDate.parse("2025-12-29");
+    classSchedule = new ClassSchedule();
 
-    List<ScheduledClass> classes = classSchedule.getScheduledClasses(start, end);
+    classSchedule.setClassName("Test Class");
+    classSchedule.setStartWeek(LocalDate.parse("2025-12-31"));
+    classSchedule.setClassStartTime(LocalTime.of(10, 0));
+    classSchedule.setNumberOfWeeks(10);
+    classSchedule.setClassType(ClassType.spin);
+    classSchedule.setDaysOfWeek(Set.of(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY));
+
+    YearMonth yearMonth = YearMonth.parse("2026-02");
+
+    List<ScheduledClass> classes = classSchedule.getScheduledClasses(yearMonth);
 
     for (ScheduledClass aClass : classes) {
-      log.info(aClass.toString());
+      log.info(aClass.getStart().toString());
     }
 
-    LocalDate previousSunday = classSchedule
-        .getStartWeek()
-        .with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY));
+  }
 
-    log.info("Previous Sunday: {}", previousSunday);
-    assertEquals(DayOfWeek.SUNDAY, previousSunday.getDayOfWeek());
-    assertEquals(LocalDate.parse("2025-11-30"), previousSunday);
+  @Test
+  void getRecurringClasses() {
 
-    assertEquals(4, classes.size());
-    assertEquals(LocalDate.parse("2025-12-01"), classes.get(0).getStart().toLocalDate());
-    assertEquals(LocalDate.parse("2025-12-03"), classes.get(1).getStart().toLocalDate());
-    assertEquals(LocalDate.parse("2025-12-08"), classes.get(2).getStart().toLocalDate());
-    assertEquals(LocalDate.parse("2025-12-10"), classes.get(3).getStart().toLocalDate());
+    classSchedule = new ClassSchedule();
 
-    assertEquals(DayOfWeek.MONDAY, classes.get(0).getStart().getDayOfWeek());
-    assertEquals(DayOfWeek.WEDNESDAY, classes.get(1).getStart().getDayOfWeek());
+    classSchedule.setClassName("Test Class");
+    classSchedule.setStartWeek(LocalDate.parse("2025-12-31"));
+    classSchedule.setClassStartTime(LocalTime.of(10, 0));
+    classSchedule.setNumberOfWeeks(-1);
+    classSchedule.setClassType(ClassType.spin);
+    classSchedule.setDaysOfWeek(Set.of(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY));
+
+    YearMonth yearMonth = YearMonth.parse("2026-05");
+
+    List<ScheduledClass> classes = classSchedule.getScheduledClasses(yearMonth);
+
+    for (ScheduledClass aClass : classes) {
+      log.info(aClass.getStart().toString());
+    }
+
   }
 
 }

@@ -144,21 +144,5 @@ public class UtilitiesIT {
     session.store(schedule, "ClassSchedule/3-A");
   }
 
-  @Test
-  void getClassesFromSchedule() {
-    ClassSchedule schedule = session.load(ClassSchedule.class, "ClassSchedule/1-A");
-//     System.out.println(schedule);
-    log.info(schedule.toString());
-
-    LocalDate startDate = LocalDate.of(2025, 11, 30);
-    LocalDate endDate = LocalDate.of(2025, 12, 14);
-    List<ScheduledClass> classes =
-        schedule.getScheduledClasses(startDate, endDate);
-
-    for (ScheduledClass aClass : classes) {
-      log.info("Class: {}", aClass);
-    }
-
-  }
 
 }
