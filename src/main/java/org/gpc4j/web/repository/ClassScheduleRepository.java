@@ -20,6 +20,7 @@ import org.springframework.util.StringUtils;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
@@ -84,6 +85,8 @@ public class ClassScheduleRepository {
                  )
 
                  .flatMap(List::stream)
+                 // Filter out classes in the past
+                 .filter(clazz -> clazz.getStart().isAfter(LocalDateTime.now(zoneId)))
                  .sorted(Comparator.comparing(ScheduledClass::getStart))
                  .toList();
 
