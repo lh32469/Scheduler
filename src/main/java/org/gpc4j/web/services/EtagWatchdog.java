@@ -4,15 +4,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import net.ravendb.client.documents.DocumentStore;
-import net.ravendb.client.documents.session.IDocumentQuery;
 import net.ravendb.client.documents.session.IDocumentSession;
 import net.ravendb.client.documents.session.QueryStatistics;
 import net.ravendb.client.primitives.Reference;
+import org.gpc4j.web.dto.Booking;
 import org.gpc4j.web.dto.ClassSchedule;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Slf4j
 @Service
@@ -37,7 +35,7 @@ public class EtagWatchdog {
   }
 
   /**
-   * Retrieves the ETag representing the current state of the query result set
+   * Retrieves the ETag representing the current state of the query result sets
    * within the provided document session.
    *
    * @param session the current document session used to query the database
@@ -47,16 +45,23 @@ public class EtagWatchdog {
 
     Reference<QueryStatistics> statsRef = new Reference<>();
 
-    // Start the Query
-    IDocumentQuery<ClassSchedule> query =
-        session.query(ClassSchedule.class)
-               .statistics(statsRef)
-               .include("instructorId");
+    // Check ClassSchedules
+    var query = session.query(ClassSchedule.class)
+                       .statistics(statsRef)
+                       .include("instructorId");
 
-    List<ClassSchedule> schedules = query.toList();
+    var schedules = query.toList();
+    Long schedulesEtag = statsRef.value.getResultEtag();
 
-    QueryStatistics value = statsRef.value;
-    return String.valueOf(value.getResultEtag());
+    // Check Bookings
+    statsRef = new Reference<>();
+    var bookingQuery = session.query(Booking.class)
+                              .statistics(statsRef);
+
+    var bookings = bookingQuery.toList();
+    Long bookingsEtag = statsRef.value.getResultEtag();
+
+    return String.valueOf(bookingsEtag + schedulesEtag);
   }
 
 }
