@@ -12,10 +12,15 @@ import org.gpc4j.web.dto.ClassSchedule;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class EtagWatchdog {
+
+  private final Map<String, String> databaseETags = new HashMap<>();
 
   private final EtagChangePublisher publisher;
   private final DocumentStore documentStore;
@@ -27,9 +32,16 @@ public class EtagWatchdog {
     // Topic is database name
     for (String topic : publisher.getTopics()) {
       try (IDocumentSession session = documentStore.openSession(topic)) {
-        publisher.publish(topic, getEtag(session));
+
+        String currentTag = getEtag(session);
+        String previousTag = databaseETags.put(topic, currentTag);
+
+        if (!currentTag.equals(previousTag)) {
+          log.debug("Etag changed from {} to {}", previousTag, currentTag);
+          publisher.publish(topic, currentTag);
+        }
+
       }
-      Thread.sleep(250);
     }
 
   }

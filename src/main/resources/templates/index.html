@@ -298,17 +298,19 @@
 
             if (currentTag) {
                 // Get previous tag
-                const storedETag = localStorage.getItem(CLASSES_ETAG_KEY);
+                const storedETag = sessionStorage.getItem(CLASSES_ETAG_KEY);
                 console.log("storedETag", storedETag);
+                // Update stored tag
+                // sessionStorage.setItem(CLASSES_ETAG_KEY, currentTag);
 
                 if (storedETag) {
-                    if (storedETag && storedETag !== currentTag) {
-                        localStorage.setItem(CLASSES_ETAG_KEY, currentTag);
+                    if (currentTag !== storedETag) {
+                        sessionStorage.removeItem(CLASSES_ETAG_KEY);
                         window.location.reload();
                     }
                 } else {
-                    // Store initial tag
-                    localStorage.setItem(CLASSES_ETAG_KEY, currentTag);
+                    sessionStorage.setItem(CLASSES_ETAG_KEY, currentTag);
+                    console.log("Stored ETag", currentTag);
                 }
 
             }
@@ -316,23 +318,26 @@
             let eventSource = null;
 
             function setupEtagPush() {
+
                 eventSource = new EventSource('/etag-updates');
 
                 eventSource.addEventListener('etag-update', (event) => {
-                    const latestETag = event.data;
-                    console.log("latestETag", latestETag);
-                    const storedETag = localStorage.getItem('classesETag');
-                    if (storedETag && latestETag && storedETag !== latestETag) {
-                        console.info('ETag changed via push, reloading page...');
-                        window.location.reload();
-                    }
+                    console.log("event", event);
+                    const data = JSON.parse(event.data);
+                    console.log("parsed data", data);
+
+                    const latestETag = data.etag;
+                    console.log("Previous ETag",
+                        sessionStorage.getItem(CLASSES_ETAG_KEY));
+                    console.log("Latest ETag", latestETag);
+                    sessionStorage.setItem(CLASSES_ETAG_KEY, latestETag);
                 });
 
                 eventSource.onerror = (error) => {
                     console.error('EventSource failed:', error);
                     eventSource.close();
                     // Optional: Reconnect logic
-                    setTimeout(setupEtagPush, 5000);
+                    setTimeout(setupEtagPush, 15000);
                 };
             }
 

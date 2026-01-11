@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -68,6 +69,9 @@ public class EtagChangePublisher {
     log.debug("Publishing ETag update: {}:{}. Total clients: {}",
               topic, etag, emitters.size());
 
+    Map<String, Object> data = new HashMap<>();
+    data.put("etag", etag);
+
     for (SseEmitter emitter : emitters) {
       if (emitter == null) {
         log.warn("Null Emitter for " + topic);
@@ -76,7 +80,7 @@ public class EtagChangePublisher {
       try {
         emitter.send(SseEmitter.event()
                                .name("etag-update")
-                               .data(etag));
+                               .data(data));
 
       } catch (IOException e) {
         log.debug("Failed to send ETag update to emitter " + emitter);
