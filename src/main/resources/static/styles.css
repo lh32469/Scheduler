@@ -187,6 +187,7 @@ nav a:hover {
 .day-cell .date-num { font-weight: 700; color: #333; }
 .day-cell.muted { opacity: .55; }
 .day-cell.today { outline: 2px solid #667eea; outline-offset: -2px; background: #eef2ff; }
+.day-cell.holiday { background: #ede592; }
 .event-chip {
     display: inline-flex;
     align-items: center;

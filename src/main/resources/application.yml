@@ -102,6 +102,9 @@ logging:
     org:
       gpc4j:
         web:
+          services:
+            EtagChangePublisher: INFO
+            EtagWatchdog: INFO
           HomeController: INFO
           api:
             InstructorsController: INFO

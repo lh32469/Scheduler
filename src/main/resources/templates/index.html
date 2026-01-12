@@ -291,6 +291,7 @@
             const CAL_MONTH_START = /*[[${#temporals.format(calendarMonthStart, 'yyyy-MM-dd')}]]*/ '2025-11-01';
             const CAL_MONTH_END = /*[[${#temporals.format(calendarMonthEnd, 'yyyy-MM-dd')}]]*/ '2025-11-30';
             const CAL_EVENTS = /*[[${calendarEvents}]]*/ [];
+            const HOLIDAYS = /*[[${holidays}]]*/ [];
             const CLASSES_ETAG_KEY = 'classesETag';
 
             const currentTag = /*[[${classesETag}]]*/ '';
@@ -389,6 +390,21 @@
                     map.get(d).push(ev);
                 });
 
+                // Group holidays by ISO date for quick lookup
+                const holidayMap = new Map();
+                (HOLIDAYS || []).forEach(h => {
+                    // h.date is an array [year, month, day] or an ISO string depending on Jackson config
+                    // Let's handle both. If it's an object with date field, use that.
+                    let d = h.date;
+                    if (Array.isArray(d)) {
+                        const year = d[0];
+                        const month = String(d[1]).padStart(2, '0');
+                        const day = String(d[2]).padStart(2, '0');
+                        d = `${year}-${month}-${day}`;
+                    }
+                    holidayMap.set(d, h.name);
+                });
+
                 // Build cells from firstCell to lastCell inclusive
                 const todayISO = new Date().toISOString().slice(0, 10);
                 const frag = document.createDocumentFragment();
@@ -400,11 +416,20 @@
                     const inMonth = (d.getMonth() === start.getMonth());
                     if (!inMonth) cell.classList.add('muted');
                     if (iso === todayISO) cell.classList.add('today');
+                    if (holidayMap.has(iso)) cell.classList.add('holiday');
 
                     const dayNum = document.createElement('div');
                     dayNum.className = 'date-num';
                     dayNum.textContent = String(d.getDate());
                     cell.appendChild(dayNum);
+
+                    if (holidayMap.has(iso)) {
+                        const holiday = document.createElement('div');
+                        holiday.textContent = holidayMap.get(iso);
+                        holiday.style = "font-size: 12px;";
+                        // holiday.style = "font-size: x-small;";
+                        cell.appendChild(holiday);
+                    }
 
                     const evts = map.get(iso) || [];
                     if (evts.length) {

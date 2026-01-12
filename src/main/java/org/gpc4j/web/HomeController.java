@@ -5,10 +5,12 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.ravendb.client.documents.session.IDocumentSession;
+import org.gpc4j.web.dto.Holiday;
 import org.gpc4j.web.dto.ScheduledClass;
 import org.gpc4j.web.repository.ClassScheduleRepository;
 import org.gpc4j.web.services.EtagChangePublisher;
 import org.gpc4j.web.services.EtagWatchdog;
+import org.gpc4j.web.services.HolidayService;
 import org.springframework.http.CacheControl;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
@@ -45,6 +47,7 @@ public class HomeController {
   private final EtagChangePublisher etagChangePublisher;
   private final IDocumentSession session;
   private final EtagWatchdog etagWatchdog;
+  private final HolidayService holidayService;
 
   @GetMapping(value = "/etag-updates", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
   public SseEmitter subscribeToEtagUpdates(HttpServletRequest request) {
@@ -103,6 +106,8 @@ public class HomeController {
     List<ScheduledClass> classes =
         classScheduleRepository.getClassesForMonth(yearMonth, ZoneId.of(timezone));
 
+    List<Holiday> holidays = holidayService.getHolidays(yearMonth.getYear());
+
     // Transform into a lightweight event map for the client (ISO date + display fields)
     DateTimeFormatter isoDate = java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
     DateTimeFormatter time24 = java.time.format.DateTimeFormatter.ofPattern("HH:mm");
@@ -141,6 +146,7 @@ public class HomeController {
     model.addAttribute("calendarMonthStart", firstOfMonth);
     model.addAttribute("calendarMonthEnd", yearMonth.atEndOfMonth());
     model.addAttribute("calendarEvents", calendarEvents);
+    model.addAttribute("holidays", holidays);
 
     // Month navigation params for UI
     String currentMonthParam = yearMonth.toString(); // yyyy-MM
@@ -154,6 +160,8 @@ public class HomeController {
     model.addAttribute("classesETag", etagWatchdog.getEtag(session));
     model.addAttribute("page", safePage);
     model.addAttribute("size", safeSize);
+
+    log.info("classesETag: " + model.getAttribute("classesETag"));
 
     return "index"; // resolved from src/main/resources/templates/index.html
   }

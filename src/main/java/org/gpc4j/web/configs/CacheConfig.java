@@ -34,6 +34,12 @@ public class CacheConfig {
                                              .maximumSize(100)
                                              .build());
 
+    cacheManager.registerCustomCache("holidays",
+                                     Caffeine.newBuilder()
+                                             .expireAfterWrite(24, TimeUnit.HOURS)
+                                             .maximumSize(100)
+                                             .build());
+
     return cacheManager;
   }
 
