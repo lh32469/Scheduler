@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.ravendb.client.documents.session.IDocumentSession;
+import org.gpc4j.web.dto.Closed;
 import org.gpc4j.web.dto.Holiday;
 import org.gpc4j.web.dto.ScheduledClass;
 import org.gpc4j.web.repository.ClassScheduleRepository;
@@ -31,6 +32,8 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static org.gpc4j.web.configs.RavenConfig.DB_NAME;
 
@@ -107,6 +110,42 @@ public class HomeController {
         classScheduleRepository.getClassesForMonth(yearMonth, ZoneId.of(timezone));
 
     List<Holiday> holidays = holidayService.getHolidays(yearMonth.getYear());
+
+    // Get days closed
+    Map<LocalDate, Closed> closedDays =
+        session.query(Closed.class)
+               .whereBetween("date",
+                             yearMonth.atDay(1),
+                             yearMonth.atEndOfMonth())
+               .toList()
+               .stream()
+               .collect(Collectors.toMap(Closed::date, Function.identity()));
+
+    log.info("Days Closed for " + yearMonth + ": " + closedDays);
+
+    // Filter out classes during Closed hours
+    classes = classes.stream()
+                     .filter(clss -> {
+                       LocalDateTime classStartTime = clss.getStart();
+                       LocalDate classStartDate = classStartTime.toLocalDate();
+                       Closed closed = closedDays.get(classStartDate);
+
+                       if (closed == null) {
+                         return true;
+                       }
+
+                       return closed.hours()
+                                    .stream()
+                                    .noneMatch(hours ->
+                                                   classStartTime.isAfter(
+                                                       hours.start()
+                                                            .atDate(classStartDate))
+                                                       &&
+                                                       classStartTime.isBefore(
+                                                           hours.end()
+                                                                .atDate(classStartDate)));
+                     })
+                     .collect(Collectors.toList());
 
     // Transform into a lightweight event map for the client (ISO date + display fields)
     DateTimeFormatter isoDate = java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
