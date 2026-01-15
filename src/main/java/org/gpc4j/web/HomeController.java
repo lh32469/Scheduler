@@ -148,9 +148,9 @@ public class HomeController {
                      .collect(Collectors.toList());
 
     // Transform into a lightweight event map for the client (ISO date + display fields)
-    DateTimeFormatter isoDate = java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
-    DateTimeFormatter time24 = java.time.format.DateTimeFormatter.ofPattern("HH:mm");
-    DateTimeFormatter time12 = java.time.format.DateTimeFormatter.ofPattern("h:mm a");
+    DateTimeFormatter isoDate = DateTimeFormatter.ISO_LOCAL_DATE;
+    DateTimeFormatter time24 = DateTimeFormatter.ofPattern("HH:mm");
+    DateTimeFormatter time12 = DateTimeFormatter.ofPattern("h:mm a");
 
     List<Map<String, Object>> calendarEvents =
         classes.stream().map(sc -> {
