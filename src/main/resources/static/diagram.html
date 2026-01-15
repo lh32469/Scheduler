@@ -26,155 +26,180 @@
     </marker>
   </defs>
 
+
   <!-- Title -->
-  <text x="300" y="30" text-anchor="middle" class="ns-title" fill="#1a237e">Kubernetes Multi-Tier Architecture</text>
+  <text x="300" y="230" text-anchor="middle" class="ns-title" fill="#1a237e">Kubernetes Multi-Tier Architecture</text>
 
-  <!-- External Clients (Left side, positioned to avoid namespace circles) -->
-  <rect x="50" y="150" width="140" height="70" rx="5" class="client"/>
-  <text x="120" y="178" text-anchor="middle" class="title">External Client</text>
-  <text x="120" y="198" text-anchor="middle" class="text">(API Consumer)</text>
+  <!-- External Clients (Bottom Center) -->
+  <rect x="650" y="950" width="140" height="70" rx="5" class="client"/>
+  <text x="720" y="978" text-anchor="middle" class="title">External User</text>
+  <text x="720" y="998" text-anchor="middle" class="text">(Browser)</text>
 
-  <rect x="50" y="850" width="140" height="70" rx="5" class="client"/>
-  <text x="120" y="878" text-anchor="middle" class="title">External User</text>
-  <text x="120" y="898" text-anchor="middle" class="text">(Browser)</text>
+  <rect x="810" y="950" width="140" height="70" rx="5" class="client"/>
+  <text x="880" y="978" text-anchor="middle" class="title">External Client</text>
+  <text x="880" y="998" text-anchor="middle" class="text">(API Consumer)</text>
 
   <!-- RavenDB Namespace (Top Center) -->
-  <circle cx="800" cy="230" r="220" class="namespace"/>
-  <text x="800" y="80" text-anchor="middle" class="ns-title" fill="#1976d2">RavenDB Namespace</text>
+  <circle cx="800" cy="220" r="220" class="namespace"/>
+  <text x="800" y="45" text-anchor="middle" class="ns-title" fill="#1976d2">RavenDB Namespace</text>
   
   <!-- RavenDB Pods -->
-  <rect x="620" y="140" width="110" height="90" rx="5" class="pod"/>
-  <text x="675" y="163" text-anchor="middle" class="title">Pod</text>
-  <text x="675" y="181" text-anchor="middle" class="text">RavenDB</text>
-  <text x="675" y="198" text-anchor="middle" class="text">Node 1</text>
-  <text x="675" y="215" text-anchor="middle" class="text">:8080</text>
+  <rect x="620" y="130" width="110" height="90" rx="5" class="pod"/>
+  <text x="675" y="153" text-anchor="middle" class="title">Pod</text>
+  <text x="675" y="171" text-anchor="middle" class="text">RavenDB</text>
+  <text x="675" y="188" text-anchor="middle" class="text">Node 1</text>
+  <text x="675" y="205" text-anchor="middle" class="text">:8080</text>
 
-  <rect x="745" y="140" width="110" height="90" rx="5" class="pod"/>
-  <text x="800" y="163" text-anchor="middle" class="title">Pod</text>
-  <text x="800" y="181" text-anchor="middle" class="text">RavenDB</text>
-  <text x="800" y="198" text-anchor="middle" class="text">Node 2</text>
-  <text x="800" y="215" text-anchor="middle" class="text">:8080</text>
+  <rect x="745" y="130" width="110" height="90" rx="5" class="pod"/>
+  <text x="800" y="153" text-anchor="middle" class="title">Pod</text>
+  <text x="800" y="171" text-anchor="middle" class="text">RavenDB</text>
+  <text x="800" y="188" text-anchor="middle" class="text">Node 2</text>
+  <text x="800" y="205" text-anchor="middle" class="text">:8080</text>
 
-  <rect x="870" y="140" width="110" height="90" rx="5" class="pod"/>
-  <text x="925" y="163" text-anchor="middle" class="title">Pod</text>
-  <text x="925" y="181" text-anchor="middle" class="text">RavenDB</text>
-  <text x="925" y="198" text-anchor="middle" class="text">Node 3</text>
-  <text x="925" y="215" text-anchor="middle" class="text">:8080</text>
+  <rect x="870" y="130" width="110" height="90" rx="5" class="pod"/>
+  <text x="925" y="153" text-anchor="middle" class="title">Pod</text>
+  <text x="925" y="171" text-anchor="middle" class="text">RavenDB</text>
+  <text x="925" y="188" text-anchor="middle" class="text">Node 3</text>
+  <text x="925" y="205" text-anchor="middle" class="text">:8080</text>
 
   <!-- RavenDB Service -->
-  <rect x="680" y="280" width="240" height="65" rx="5" class="service"/>
-  <text x="800" y="303" text-anchor="middle" class="title">Service</text>
-  <text x="800" y="322" text-anchor="middle" class="text">ravendb-service</text>
-  <text x="800" y="339" text-anchor="middle" class="text">ClusterIP :8080</text>
+  <rect x="680" y="270" width="240" height="65" rx="5" class="service"/>
+  <text x="800" y="293" text-anchor="middle" class="title">Service</text>
+  <text x="800" y="312" text-anchor="middle" class="text">ravendb-service</text>
+  <text x="800" y="329" text-anchor="middle" class="text">ClusterIP :8080</text>
 
   <!-- Arrows from RavenDB service to pods -->
-  <path d="M 720 280 L 675 230" class="arrow"/>
-  <path d="M 800 280 L 800 230" class="arrow"/>
-  <path d="M 880 280 L 925 230" class="arrow"/>
+  <path d="M 720 270 L 675 220" class="arrow"/>
+  <path d="M 800 270 L 800 220" class="arrow"/>
+  <path d="M 880 270 L 925 220" class="arrow"/>
 
-  <!-- Middle-Tier Namespace (Right side) -->
-  <circle cx="1200" cy="500" r="240" class="namespace"/>
-  <text x="1200" y="280" text-anchor="middle" class="ns-title" fill="#1976d2">Middle-Tier Namespace</text>
+  <circle cx="1300" cy="600" r="280" class="namespace"/>
+  <text x="1300" y="350" text-anchor="middle" class="ns-title" fill="#1976d2">Middle-Tier Namespace</text>
 
   <!-- Middle-Tier Pods -->
-  <rect x="1020" y="360" width="155" height="160" rx="5" class="pod"/>
-  <text x="1097" y="383" text-anchor="middle" class="title">Pod 1</text>
-  <rect x="1030" y="398" width="135" height="26" rx="3" class="component"/>
-  <text x="1097" y="414" text-anchor="middle" class="text">Spring Boot</text>
-  <rect x="1030" y="428" width="135" height="26" rx="3" class="component"/>
-  <text x="1097" y="444" text-anchor="middle" class="text">Hazelcast</text>
-  <text x="1097" y="458" text-anchor="middle" class="text" font-size="9">(Cache/Rate/Coord)</text>
-  <rect x="1030" y="468" width="135" height="24" rx="3" class="component"/>
-  <text x="1097" y="484" text-anchor="middle" class="text">JobRunr</text>
-  <rect x="1030" y="496" width="135" height="20" rx="3" class="component"/>
-  <text x="1097" y="510" text-anchor="middle" class="text" font-size="10">REST APIs</text>
+  <rect x="1040" y="460" width="155" height="160" rx="5" class="pod"/>
+  <text x="1117" y="483" text-anchor="middle" class="title">Pod 1</text>
+  <rect x="1050" y="498" width="135" height="26" rx="3" class="component"/>
+  <text x="1117" y="514" text-anchor="middle" class="text">Spring Boot</text>
+  <rect x="1050" y="528" width="135" height="26" rx="3" class="component"/>
+  <text x="1117" y="539" text-anchor="middle" class="text">Hazelcast</text>
+  <text x="1117" y="553" text-anchor="middle" class="text" font-size="9">(Cache/Rate/Coord)</text>
+  <rect x="1050" y="568" width="135" height="24" rx="3" class="component"/>
+  <text x="1117" y="584" text-anchor="middle" class="text">JobRunr</text>
+  <rect x="1050" y="596" width="135" height="20" rx="3" class="component"/>
+  <text x="1117" y="610" text-anchor="middle" class="text" font-size="10">REST APIs</text>
 
-  <rect x="1225" y="360" width="155" height="160" rx="5" class="pod"/>
-  <text x="1302" y="383" text-anchor="middle" class="title">Pod 2</text>
-  <rect x="1235" y="398" width="135" height="26" rx="3" class="component"/>
-  <text x="1302" y="414" text-anchor="middle" class="text">Spring Boot</text>
-  <rect x="1235" y="428" width="135" height="26" rx="3" class="component"/>
-  <text x="1302" y="444" text-anchor="middle" class="text">Hazelcast</text>
-  <text x="1302" y="458" text-anchor="middle" class="text" font-size="9">(Cache/Rate/Coord)</text>
-  <rect x="1235" y="468" width="135" height="24" rx="3" class="component"/>
-  <text x="1302" y="484" text-anchor="middle" class="text">JobRunr</text>
-  <rect x="1235" y="496" width="135" height="20" rx="3" class="component"/>
-  <text x="1302" y="510" text-anchor="middle" class="text" font-size="10">REST APIs</text>
+  <rect x="1222" y="460" width="155" height="160" rx="5" class="pod"/>
+  <text x="1299" y="483" text-anchor="middle" class="title">Pod 2</text>
+  <rect x="1232" y="498" width="135" height="26" rx="3" class="component"/>
+  <text x="1299" y="514" text-anchor="middle" class="text">Spring Boot</text>
+  <rect x="1232" y="528" width="135" height="26" rx="3" class="component"/>
+  <text x="1299" y="539" text-anchor="middle" class="text">Hazelcast</text>
+  <text x="1299" y="553" text-anchor="middle" class="text" font-size="9">(Cache/Rate/Coord)</text>
+  <rect x="1232" y="568" width="135" height="24" rx="3" class="component"/>
+  <text x="1299" y="584" text-anchor="middle" class="text">JobRunr</text>
+  <rect x="1232" y="596" width="135" height="20" rx="3" class="component"/>
+  <text x="1299" y="610" text-anchor="middle" class="text" font-size="10">REST APIs</text>
+
+  <rect x="1405" y="460" width="155" height="160" rx="5" class="pod"/>
+  <text x="1482" y="483" text-anchor="middle" class="title">Pod 3</text>
+  <rect x="1415" y="498" width="135" height="26" rx="3" class="component"/>
+  <text x="1482" y="514" text-anchor="middle" class="text">Spring Boot</text>
+  <rect x="1415" y="528" width="135" height="26" rx="3" class="component"/>
+  <text x="1482" y="539" text-anchor="middle" class="text">Hazelcast</text>
+  <text x="1482" y="553" text-anchor="middle" class="text" font-size="9">(Cache/Rate/Coord)</text>
+  <rect x="1415" y="568" width="135" height="24" rx="3" class="component"/>
+  <text x="1482" y="584" text-anchor="middle" class="text">JobRunr</text>
+  <rect x="1415" y="596" width="135" height="20" rx="3" class="component"/>
+  <text x="1482" y="610" text-anchor="middle" class="text" font-size="10">REST APIs</text>
 
   <!-- Middle-Tier Service -->
-  <rect x="1060" y="570" width="280" height="65" rx="5" class="service"/>
-  <text x="1200" y="593" text-anchor="middle" class="title">Service</text>
-  <text x="1200" y="612" text-anchor="middle" class="text">middle-tier-service</text>
-  <text x="1200" y="629" text-anchor="middle" class="text">ClusterIP :8080</text>
+  <rect x="1160" y="670" width="280" height="65" rx="5" class="service"/>
+  <text x="1300" y="693" text-anchor="middle" class="title">Service</text>
+  <text x="1300" y="712" text-anchor="middle" class="text">middle-tier-service</text>
+  <text x="1300" y="729" text-anchor="middle" class="text">ClusterIP :8080</text>
 
   <!-- Middle-Tier Ingress -->
-  <rect x="1060" y="660" width="280" height="55" rx="5" class="ingress"/>
-  <text x="1200" y="683" text-anchor="middle" class="title">Ingress</text>
-  <text x="1200" y="702" text-anchor="middle" class="text">middle-tier-ingress (/api/*)</text>
+  <rect x="1160" y="760" width="280" height="55" rx="5" class="ingress"/>
+  <text x="1300" y="783" text-anchor="middle" class="title">Ingress</text>
+  <text x="1300" y="802" text-anchor="middle" class="text">middle-tier-ingress (/api/*)</text>
 
   <!-- Arrows for Middle-Tier -->
-  <path d="M 1150 570 L 1097 520" class="arrow"/>
-  <path d="M 1250 570 L 1302 520" class="arrow"/>
-  <path d="M 1200 660 L 1200 635" class="arrow"/>
+  <path d="M 1230 670 L 1117 620" class="arrow"/>
+  <path d="M 1300 670 L 1299 620" class="arrow"/>
+  <path d="M 1370 670 L 1482 620" class="arrow"/>
+  <path d="M 1300 760 L 1300 735" class="arrow"/>
 
-  <!-- Connection from External Client to Middle-Tier Ingress (arc around namespaces) -->
-  <path d="M 190 185 Q 100 100 1060 687" class="arrow-red" stroke-dasharray="5,5"/>
-  <text x="500" y="425" class="text" fill="#d32f2f" font-size="11">API Requests</text>
+  <!-- Connection from External Client to Middle-Tier Ingress -->
+  <path d="M 880 950 L 1160 787" class="arrow-red" stroke-dasharray="5,5"/>
+  <text x="940" y="860" class="text" fill="#d32f2f" font-size="11">API Requests</text>
 
   <!-- UI Layer Namespace (Left-Center) -->
-  <circle cx="500" cy="750" r="240" class="namespace"/>
-  <text x="500" y="530" text-anchor="middle" class="ns-title" fill="#1976d2">UI Layer Namespace</text>
+  <circle cx="300" cy="600" r="280" class="namespace"/>
+  <text x="300" y="350" text-anchor="middle" class="ns-title" fill="#1976d2">UI Layer Namespace</text>
 
   <!-- UI Layer Pods -->
-  <rect x="330" y="640" width="150" height="135" rx="5" class="pod"/>
-  <text x="405" y="663" text-anchor="middle" class="title">Pod 1</text>
-  <rect x="340" y="680" width="130" height="26" rx="3" class="component"/>
-  <text x="405" y="696" text-anchor="middle" class="text">Spring Boot</text>
-  <rect x="340" y="710" width="130" height="26" rx="3" class="component"/>
-  <text x="405" y="726" text-anchor="middle" class="text">Thymeleaf</text>
-  <rect x="340" y="740" width="130" height="26" rx="3" class="component"/>
-  <text x="405" y="756" text-anchor="middle" class="text">Hazelcast</text>
-  <text x="405" y="768" text-anchor="middle" class="text" font-size="9">(Rate Limiting)</text>
+  <rect x="40" y="490" width="150" height="135" rx="5" class="pod"/>
+  <text x="115" y="513" text-anchor="middle" class="title">Pod 1</text>
+  <rect x="50" y="530" width="130" height="26" rx="3" class="component"/>
+  <text x="115" y="546" text-anchor="middle" class="text">Spring Boot</text>
+  <rect x="50" y="560" width="130" height="26" rx="3" class="component"/>
+  <text x="115" y="576" text-anchor="middle" class="text">Thymeleaf</text>
+  <rect x="50" y="590" width="130" height="26" rx="3" class="component"/>
+  <text x="115" y="600" text-anchor="middle" class="text">Hazelcast</text>
+  <text x="115" y="613" text-anchor="middle" class="text" font-size="9">(Cache/Rate/Coord)</text>
 
-  <rect x="520" y="640" width="150" height="135" rx="5" class="pod"/>
-  <text x="595" y="663" text-anchor="middle" class="title">Pod 2</text>
-  <rect x="530" y="680" width="130" height="26" rx="3" class="component"/>
-  <text x="595" y="696" text-anchor="middle" class="text">Spring Boot</text>
-  <rect x="530" y="710" width="130" height="26" rx="3" class="component"/>
-  <text x="595" y="726" text-anchor="middle" class="text">Thymeleaf</text>
-  <rect x="530" y="740" width="130" height="26" rx="3" class="component"/>
-  <text x="595" y="756" text-anchor="middle" class="text">Hazelcast</text>
-  <text x="595" y="768" text-anchor="middle" class="text" font-size="9">(Rate Limiting)</text>
+  <rect x="225" y="490" width="150" height="135" rx="5" class="pod"/>
+  <text x="300" y="513" text-anchor="middle" class="title">Pod 2</text>
+  <rect x="235" y="530" width="130" height="26" rx="3" class="component"/>
+  <text x="300" y="546" text-anchor="middle" class="text">Spring Boot</text>
+  <rect x="235" y="560" width="130" height="26" rx="3" class="component"/>
+  <text x="300" y="576" text-anchor="middle" class="text">Thymeleaf</text>
+  <rect x="235" y="590" width="130" height="26" rx="3" class="component"/>
+  <text x="300" y="600" text-anchor="middle" class="text">Hazelcast</text>
+  <text x="300" y="613" text-anchor="middle" class="text" font-size="9">(Cache/Rate/Coord)</text>
+
+  <rect x="410" y="490" width="150" height="135" rx="5" class="pod"/>
+  <text x="485" y="513" text-anchor="middle" class="title">Pod 3</text>
+  <rect x="420" y="530" width="130" height="26" rx="3" class="component"/>
+  <text x="485" y="546" text-anchor="middle" class="text">Spring Boot</text>
+  <rect x="420" y="560" width="130" height="26" rx="3" class="component"/>
+  <text x="485" y="576" text-anchor="middle" class="text">Thymeleaf</text>
+  <rect x="420" y="590" width="130" height="26" rx="3" class="component"/>
+  <text x="485" y="600" text-anchor="middle" class="text">Hazelcast</text>
+  <text x="485" y="613" text-anchor="middle" class="text" font-size="9">(Cache/Rate/Coord)</text>
 
   <!-- UI Layer Service -->
-  <rect x="350" y="830" width="300" height="65" rx="5" class="service"/>
-  <text x="500" y="853" text-anchor="middle" class="title">Service</text>
-  <text x="500" y="872" text-anchor="middle" class="text">ui-service</text>
-  <text x="500" y="889" text-anchor="middle" class="text">ClusterIP :8080</text>
+  <rect x="150" y="680" width="300" height="65" rx="5" class="service"/>
+  <text x="300" y="703" text-anchor="middle" class="title">Service</text>
+  <text x="300" y="722" text-anchor="middle" class="text">ui-service</text>
+  <text x="300" y="739" text-anchor="middle" class="text">ClusterIP :8080</text>
 
   <!-- UI Layer Ingress -->
-  <rect x="350" y="920" width="300" height="55" rx="5" class="ingress"/>
-  <text x="500" y="943" text-anchor="middle" class="title">Ingress</text>
-  <text x="500" y="962" text-anchor="middle" class="text">ui-ingress (/)</text>
+  <rect x="150" y="770" width="300" height="55" rx="5" class="ingress"/>
+  <text x="300" y="793" text-anchor="middle" class="title">Ingress</text>
+  <text x="300" y="812" text-anchor="middle" class="text">ui-ingress (/)</text>
 
   <!-- Arrows for UI Layer -->
-  <path d="M 430 830 L 405 775" class="arrow"/>
-  <path d="M 570 830 L 595 775" class="arrow"/>
-  <path d="M 500 920 L 500 895" class="arrow"/>
+  <path d="M 200 680 L 115 625" class="arrow"/>
+  <path d="M 300 680 L 300 625" class="arrow"/>
+  <path d="M 400 680 L 485 625" class="arrow"/>
+  <path d="M 300 770 L 300 745" class="arrow"/>
 
-  <!-- Connection from External User to UI Ingress (direct line, no crossing) -->
-  <path d="M 190 885 L 350 947" class="arrow-blue" stroke-dasharray="5,5"/>
-  <text x="220" y="910" class="text" fill="#1976d2" font-size="11">HTTP Requests</text>
+  <!-- Connection from External User to UI Ingress -->
+  <path d="M 720 950 L 450 797" class="arrow-red" stroke-dasharray="5,5"/>
+  <path d="M 720 950 L 450 797" class="arrow-red" stroke-dasharray="5,5"/>
+  <text x="660" y="860" class="text" fill="#d32f2f" font-size="11">HTTP Requests</text>
 
   <!-- Connection from UI Layer to Middle-Tier Service -->
-  <path d="M 670 700 L 1060 602" class="arrow"/>
-  <path d="M 670 720 L 1060 610" class="arrow"/>
-  <text x="850" y="645" class="text" fill="#424242" font-size="11">REST API Calls</text>
+  <path d="M 560 550 L 1160 702" class="arrow"/>
+  <path d="M 560 570 L 1160 710" class="arrow"/>
+  <text x="800" y="650" class="text" fill="#424242" font-size="11">REST API Calls</text>
 
   <!-- Connection from Middle-Tier to RavenDB Service -->
-  <path d="M 1020 420 L 920 352" class="arrow"/>
-  <path d="M 1020 450 L 920 360" class="arrow"/>
-  <text x="950" y="390" class="text" fill="#424242" font-size="11">DB Queries</text>
+  <path d="M 1040 520 L 920 310" class="arrow"/>
+  <path d="M 1040 550 L 920 320" class="arrow"/>
+  <text x="950" y="420" class="text" fill="#424242" font-size="11">DB Queries</text>
 
   <!-- Legend -->
   <rect x="1350" y="800" width="220" height="270" rx="5" fill="white" stroke="#666" stroke-width="1"/>
@@ -184,7 +209,7 @@
   <text x="1400" y="855" class="text">Namespace</text>
   
   <rect x="1360" y="875" width="30" height="20" rx="3" class="pod"/>
-  <text x="1400" y="890" class="text">Pod</text>
+  <text x="1400" y="890" class="text">Pod (HPA >=3)</text>
   
   <rect x="1360" y="905" width="30" height="20" rx="3" class="service"/>
   <text x="1400" y="920" class="text">Service</text>
