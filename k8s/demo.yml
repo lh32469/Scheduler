@@ -10,17 +10,17 @@ metadata:
 spec:
   tls:
     - hosts:
-        - demo.fithub.mcquarrie.cc
+        - demo.schduleer.mcquarrie.cc
       secretName: demo-tls-secret
   rules:
-    - host: demo.fithub.mcquarrie.cc 
+    - host: demo.schduleer.mcquarrie.cc 
       http:
         paths:
           - pathType: Prefix
             path: /
             backend:
               service:
-                name: fithub
+                name: scheduler
                 port:
                   number: 8085
 
