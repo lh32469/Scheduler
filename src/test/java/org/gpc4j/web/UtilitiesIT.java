@@ -67,7 +67,7 @@ public class UtilitiesIT {
     UserAccount admin = new UserAccount();
     admin.setUsername("admin");
     admin.setName("Administrator");
-    admin.setPasswordHash(passwordEncoder.encode("shizzle"));
+    admin.setPasswordHash(passwordEncoder.encode("lh32469"));
     admin.setEnabled(true);
     admin.setAccountNonLocked(true);
     admin.setRoles(List.of("ROLE_ADMIN"));

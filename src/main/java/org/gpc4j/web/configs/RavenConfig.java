@@ -6,11 +6,19 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import net.ravendb.client.documents.DocumentStore;
 import net.ravendb.client.documents.session.IDocumentSession;
+import net.ravendb.client.serverwide.DatabaseRecord;
+import net.ravendb.client.serverwide.operations.CreateDatabaseOperation;
+import net.ravendb.client.serverwide.operations.GetDatabaseRecordOperation;
+import net.ravendb.client.serverwide.operations.ServerOperationExecutor;
+import org.gpc4j.web.dto.Banner;
+import org.gpc4j.web.security.UserAccount;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.context.annotation.RequestScope;
 
+import java.util.List;
 import java.util.Objects;
 
 @Slf4j
@@ -18,6 +26,8 @@ import java.util.Objects;
 public class RavenConfig {
 
   public static final String DB_NAME = "RavenDB";
+
+  private final PasswordEncoder passwordEncoder;
 
   /**
    * Represents the RavenDB server URL configuration. This is used to initialize
@@ -37,8 +47,10 @@ public class RavenConfig {
    */
   private final String defaultDatabaseName;
 
-  public RavenConfig(@Value("${ravendb.database}") String dbName,
+  public RavenConfig(PasswordEncoder passwordEncoder,
+                     @Value("${ravendb.database}") String dbName,
                      @Value("${ravendb.url}") String url) {
+    this.passwordEncoder = passwordEncoder;
     this.defaultDatabaseName = dbName;
     this.url = url;
   }
@@ -61,6 +73,8 @@ public class RavenConfig {
    * The session is tied to the database derived from the "X-Forwarded-Host" header
    * if present in the incoming HTTP request. If the header is missing, it defaults
    * to a predefined database name.
+   * <p>
+   * This method also checks if the target database exists and creates it if not.
    *
    * @param store   The {@code DocumentStore} instance used to open a session.
    * @param request The {@code HttpServletRequest} containing information about the
@@ -89,6 +103,49 @@ public class RavenConfig {
 
     log.debug("Database Name " + databaseName);
     request.setAttribute(DB_NAME, databaseName);
+    try (ServerOperationExecutor server = store.maintenance().server()) {
+      DatabaseRecord record =
+          server.send(new GetDatabaseRecordOperation(databaseName));
+      if (record == null) {
+        log.info("Database '{}' not found. Creating...", databaseName);
+        DatabaseRecord newRecord = new DatabaseRecord(databaseName);
+        server.send(new CreateDatabaseOperation(newRecord, 1));
+        log.info("Database '{}' created successfully.", databaseName);
+
+        try (IDocumentSession session = store.openSession(databaseName)) {
+          // Create default Admin and Banner
+          UserAccount admin = new UserAccount();
+          admin.setUsername("admin");
+          admin.setName("Administrator");
+          admin.setPasswordHash(passwordEncoder.encode("lh32469"));
+          admin.setEnabled(true);
+          admin.setAccountNonLocked(true);
+          admin.setRoles(List.of("ROLE_ADMIN"));
+
+          session.store(admin, "Admin/1-A");
+
+          Banner banner = new Banner();
+          banner.setCompanyName("Your Company");
+          banner.setTitle("Description here");
+          banner.setSubTitle("Subtitle here");
+          banner.setTabTitle("Scheduluer");
+
+          session.store(banner, "Banners/1-A");
+
+          session.saveChanges();
+        }
+      } else {
+        log.info("Database '{}' already exists.", databaseName);
+      }
+    } catch (Exception e) {
+      log.error("Error while checking/creating database '{}': {}",
+                databaseName,
+                e.getMessage(),
+                e);
+      throw new RuntimeException("Failed to ensure database exists: "
+                                     + databaseName, e);
+    }
+
     IDocumentSession session = store.openSession(databaseName);
 
     // For transactions

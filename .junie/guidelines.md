@@ -1,0 +1,1 @@
+- Set line limit in Java files to 85 characters.

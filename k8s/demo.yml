@@ -10,10 +10,10 @@ metadata:
 spec:
   tls:
     - hosts:
-        - demo.schduleer.mcquarrie.cc
+        - demo.scheduler.mcquarrie.cc
       secretName: demo-tls-secret
   rules:
-    - host: demo.schduleer.mcquarrie.cc 
+    - host: demo.scheduler.mcquarrie.cc 
       http:
         paths:
           - pathType: Prefix
