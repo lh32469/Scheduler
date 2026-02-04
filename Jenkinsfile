@@ -1,6 +1,6 @@
 @Library('GitHub') _
 
-def buildPodYml = libraryResource 'buildPodMaven25.yml'
+def buildPodYml = libraryResource 'buildPodMaven21.yml'
 
 project = ""
 branch = ""
