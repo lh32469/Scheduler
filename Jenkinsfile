@@ -1,11 +1,9 @@
-def registry = "registry.container-registry:5000"
-def dockerHost = "tcp://dind.container-registry:2375"
+@Library('GitHub') _
+
+def buildPodYml = libraryResource 'buildPodMaven25.yml'
 
 project = ""
 branch = ""
-secretsYml = ""
-github_HTTPS = "https://github.com/lh32469/"
-github_SSH = "git@github.com:lh32469"
 
 pipeline {
 
@@ -21,134 +19,40 @@ pipeline {
 
   agent {
     kubernetes {
-      yamlFile 'buildPod.yml'
+      yaml buildPodYml
     }
   }
 
   stages {
 
-    stage('Setup') {
+    stage("Building") {
       steps {
-        container('maven') {
-          script {
-            sh "env"
-            sh "git config --global --add safe.directory $WORKSPACE"
-            origin = sh(
-                returnStdout: true,
-                script: "git remote get-url origin"
-            )
-            project = origin.trim()
-                .toLowerCase()
-                .replaceAll(github_HTTPS, "")
-                .replaceAll(github_SSH, "")
-                .replaceAll(".git", "")
-            branch = env.BRANCH_NAME.toLowerCase()
-            println "Project/Branch = " + project + "/" + branch
 
-            def file = readFile "k8s.yml"
+        // Build Image Step
+        mavenBuild()
 
-            if (branch == "master") {
-              host = project
-            } else if (branch == "main") {
-              host = project
-            } else {
-              host = "${branch}.${project}"
-            }
-
-            def domain = env.DNS_DOMAIN.toLowerCase()
-            println "Domain = " + domain
-
-            def binding = [
-                project: project,
-                branch : branch,
-                domain : domain,
-                host   : host
-            ]
-
-            def engine = new groovy.text.SimpleTemplateEngine()
-            def template = engine.createTemplate(file).make(binding)
-
-            k8sYml = template.toString()
-          }
-
-          script {
-            // Need separate script because of SimpleTemplateEngine
-            // NotSerializableException
-            def secretsFile = readFile "secrets.yml"
-
-            withCredentials([string(credentialsId: 'JASYPT-b28dca2e', variable: 'SECRET')]) {
-
-              def binding = [
-                  secret: SECRET
-              ]
-
-              def engine = new groovy.text.SimpleTemplateEngine()
-              def template = engine.createTemplate(secretsFile).make(binding)
-              secretsYml = template.toString()
-            }
-          }
-
+        script {
+          branch = env.BRANCH_NAME.toLowerCase()
+          def registry = "registry.container-registry:5000"
+          project = getProject()
+          println "Project/Branch = " + project + "/" + branch
         }
+
+        // Build and push Docker image
+        dockerBuild("${registry}/${project}:${branch}", "Dockerfile.Java25")
+
       }
     }
 
-    stage('Maven') {
+    stage("Deploy") {
       steps {
-        container('maven') {
-          sh 'mvn -B -DskipTests package'
-        }
-      }
-    }
+        // Deploy application
+        deploy(project, branch)
 
-    stage('Docker') {
-      steps {
-        container('docker') {
-          sh 'docker -v'
-          sh "docker build -t ${registry}/${project}:${branch} \
-              --build-arg PROFILE=jenkins,${branch} \
-              --label job.name=$JOB_NAME ."
-          sh "docker push ${registry}/${project}:${branch}"
-          sh 'docker image ls'
-          // Cleanup image(s) once pushed
-          sh "docker image prune -af \
-              --filter label=job.name=$JOB_NAME"
-          sh 'docker image ls'
-        }
-      }
-    }
-
-    stage('Kubernetes') {
-      steps {
-        container('kubectl') {
-
-          script {
-            def namespace = "${project}-${branch}" as String
-
-            status = sh(
-                returnStatus: true,
-                script: "kubectl get namespace $namespace"
-            )
-
-            if (status == 0) {
-              println "$namespace namespace exists"
-              sh "kubectl -n ${namespace} rollout restart deployment/${project}"
-            } else {
-              sh "kubectl create namespace $namespace"
-
-              writeFile file: 'secrets-out.yml', text: secretsYml
-              sh "kubectl -n ${namespace} create -f secrets-out.yml"
-
-              writeFile file: 'k8s-out.yml', text: k8sYml
-              sh "kubectl -n ${namespace} create -f k8s-out.yml"
-            }
-
-          }
-        }
+        ingress(project, branch)
       }
     }
 
   }
-
-
 }
 
