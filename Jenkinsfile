@@ -29,11 +29,11 @@ pipeline {
       steps {
 
         // Build Image Step
-        mavenBuild()
+        mavenBuild(args: "-DskipTests")
 
         script {
           branch = env.BRANCH_NAME.toLowerCase()
-          def registry = "registry.container-registry:5000"
+          registry = "registry.container-registry:5000"
           project = getProject()
           println "Project/Branch = " + project + "/" + branch
         }
