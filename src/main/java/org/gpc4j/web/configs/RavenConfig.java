@@ -5,8 +5,10 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import net.ravendb.client.documents.DocumentStore;
+import net.ravendb.client.documents.operations.expiration.ExpirationConfiguration;
 import net.ravendb.client.documents.session.IDocumentSession;
 import net.ravendb.client.serverwide.DatabaseRecord;
+import net.ravendb.client.serverwide.DatabaseTopology;
 import net.ravendb.client.serverwide.operations.CreateDatabaseOperation;
 import net.ravendb.client.serverwide.operations.GetDatabaseRecordOperation;
 import net.ravendb.client.serverwide.operations.ServerOperationExecutor;
@@ -40,7 +42,7 @@ public class RavenConfig {
    * Example configurations might include domain names or IP addresses in the
    * format "http://<hostname>:<port>" or "https://<hostname>:<port>".
    */
-  private final String url;
+  private final List<String> urls;
 
   /**
    * Default databaseName
@@ -49,15 +51,16 @@ public class RavenConfig {
 
   public RavenConfig(PasswordEncoder passwordEncoder,
                      @Value("${ravendb.database}") String dbName,
-                     @Value("${ravendb.url}") String url) {
+                     @Value("${ravendb.urls}") List<String> urls) {
     this.passwordEncoder = passwordEncoder;
     this.defaultDatabaseName = dbName;
-    this.url = url;
+    this.urls = urls;
+    log.info("URLs: {}", urls);
   }
 
   @Bean
   public DocumentStore documentStore() {
-    DocumentStore store = new DocumentStore(url, null);
+    DocumentStore store = new DocumentStore(urls.toArray(new String[0]), null);
 
     // Configure Jackson ObjectMapper for proper DateTime handling
     ObjectMapper mapper = store.getConventions().getEntityMapper();
@@ -108,8 +111,25 @@ public class RavenConfig {
           server.send(new GetDatabaseRecordOperation(databaseName));
       if (record == null) {
         log.info("Database '{}' not found. Creating...", databaseName);
+
         DatabaseRecord newRecord = new DatabaseRecord(databaseName);
-        server.send(new CreateDatabaseOperation(newRecord, 1));
+
+        // Set up topology with all 3 nodes in the database group
+        DatabaseTopology topology = new DatabaseTopology();
+//        // All 3 nodes in the group
+//        topology.setMembers(Arrays.asList("A", "B"));
+//        // But only 2 will have data at any time
+        topology.setReplicationFactor(2);
+        newRecord.setTopology(topology);
+
+        // Enable expiration
+        ExpirationConfiguration expirationConfig = new ExpirationConfiguration();
+        expirationConfig.setDisabled(false);
+        // License limit of 36 hours in seconds
+        expirationConfig.setDeleteFrequencyInSec(129600L);
+        newRecord.setExpiration(expirationConfig);
+
+        server.send(new CreateDatabaseOperation(newRecord, 2));
         log.info("Database '{}' created successfully.", databaseName);
 
         try (IDocumentSession session = store.openSession(databaseName)) {
@@ -128,14 +148,14 @@ public class RavenConfig {
           banner.setCompanyName("Your Company");
           banner.setTitle("Description here");
           banner.setSubTitle("Subtitle here");
-          banner.setTabTitle("Scheduluer");
+          banner.setTabTitle("Scheduler");
 
           session.store(banner, "Banners/1-A");
 
           session.saveChanges();
         }
       } else {
-        log.info("Database '{}' already exists.", databaseName);
+        log.debug("Database '{}' already exists.", databaseName);
       }
     } catch (Exception e) {
       log.error("Error while checking/creating database '{}': {}",
