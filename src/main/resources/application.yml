@@ -93,7 +93,6 @@ application:
 # RavenDB Configuration
 ravendb:
   database: v3.scheduler.mcquarrie.cc
-  url: http://raven.dell.mcquarrie.cc
 
 logging:
   level:
