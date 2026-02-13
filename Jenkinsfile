@@ -58,7 +58,11 @@ pipeline {
             ]
          )
 
-        ingress(project, branch)
+        ingress(
+            project: project,
+            branch: branch
+        )
+
       }
     }
 
