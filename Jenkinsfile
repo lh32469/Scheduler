@@ -47,7 +47,16 @@ pipeline {
     stage("Deploy") {
       steps {
         // Deploy application
-        deploy(project, branch)
+        deploy(
+            project: project,
+            branch: branch,
+            envVars: [
+                 'DATABASE_HOST': 'db.example.com',
+                 'API_KEY': 'secret-key-123',
+                 'FEATURE_FLAG_X': 'true',
+                 'MAX_CONNECTIONS': '100'
+            ]
+         )
 
         ingress(project, branch)
       }
